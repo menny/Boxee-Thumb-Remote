@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest 
+	xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.menny.android.boxeethumbremote"
+    android:versionCode="1"
+    android:versionName="20110605-thumbs_up">
+    
+    <application 
+    	android:icon="@drawable/boxee48"
+    	android:label="@string/app_name">
+    	
+        <activity 
+        	android:name=".BoxeeActivity"
+            android:label="@string/app_name">
+            
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            
+        </activity>
+        
+    	<activity android:name=".SettingsActivity" />
+		
+    </application>
+    
+    <supports-screens
+          android:largeScreens="true"
+          android:normalScreens="true"
+          android:smallScreens="true"
+          android:anyDensity="true" />
+          <!-- http://d.android.com/guide/practices/screens_support.html read about legacy. -->
+    
+    <uses-sdk android:minSdkVersion="3" android:targetSdkVersion="10"></uses-sdk>
+	
+	<uses-permission android:name="android.permission.INTERNET" />
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+</manifest> 

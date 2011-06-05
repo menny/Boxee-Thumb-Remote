@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/nowplayinginfo"
+	android:orientation="horizontal"
+	android:layout_height="fill_parent"
+	android:focusable="false"
+	android:layout_width="fill_parent"
+	android:weightSum="100">
+
+	<ImageView
+		android:id="@+id/thumbnail"
+		android:layout_width="0px"
+		android:layout_weight="25"
+		android:layout_height="fill_parent"
+		android:scaleType="fitCenter"
+		android:adjustViewBounds="true"
+		android:focusable="false"
+		android:src="@drawable/boxee48"
+		/>
+		
+	<LinearLayout 
+		android:id="@+id/layoutPlayControlBar"
+		android:layout_height="fill_parent" 
+		android:layout_width="0px"
+		android:layout_weight="75"
+		android:orientation="vertical"
+		android:layout_marginLeft="12dp"
+		android:layout_marginRight="6dp"
+		>
+		
+		<TextView
+		android:id="@+id/textNowPlayingTitle"
+		android:text="title"
+		android:layout_height="wrap_content"
+		android:layout_width="fill_parent" 
+		android:gravity="center"
+		android:maxLines="1"
+   		android:marqueeRepeatLimit="marquee_forever"
+   		android:ellipsize="marquee"
+   		android:textSize="16sp"
+		/>
+		
+		<LinearLayout android:layout_height="wrap_content" 
+		android:layout_width="fill_parent"
+		android:orientation="horizontal">
+			<Button 
+				android:id="@+id/buttonSmallSkipBack"
+				android:layout_height="wrap_content" 
+				android:layout_width="wrap_content"
+				android:background="@drawable/icon_osd_small_skip_bwd" 
+				/>
+						
+			<Button 
+				android:id="@+id/buttonStop"
+				android:layout_height="wrap_content" 
+				android:layout_width="wrap_content"
+				android:background="@drawable/icon_osd_stop" 
+				/>
+			
+			<Button 
+				android:id="@+id/buttonPlayPause" 
+				android:layout_width="wrap_content" 
+				android:layout_height="wrap_content" 
+				android:background="@drawable/icon_osd_play" 
+				/>
+								
+			<Button 
+				android:id="@+id/buttonSmallSkipFwd"
+				android:layout_height="wrap_content" 
+				android:layout_width="wrap_content"
+				android:background="@drawable/icon_osd_small_skip_fwd" 
+				/>
+		</LinearLayout>
+		
+		<RelativeLayout 
+		android:id="@+id/layoutTimeBar" 
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content"
+		android:padding="5dp"
+		>
+
+		<ProgressBar 
+			android:id="@+id/progressTimeBar"
+			android:layout_height="10dp" 
+			android:layout_width="fill_parent" 
+			android:layout_alignParentTop="true"
+			android:max="100"
+			android:layout_marginBottom="5dp"
+			style="?android:attr/progressBarStyleHorizontal"
+			/>
+		
+		<TextView
+			android:id="@+id/textElapsed"
+			android:text="time"
+			android:layout_height="wrap_content"
+			android:layout_width="wrap_content" 
+			android:layout_below="@id/progressTimeBar"
+			android:layout_alignLeft="@id/progressTimeBar"
+			android:gravity="left"
+			/>
+		
+		<TextView
+			android:id="@+id/textDuration"
+			android:text="duration"
+			android:layout_height="wrap_content"
+			android:layout_width="wrap_content" 
+			android:layout_below="@id/progressTimeBar"
+			android:layout_alignRight="@id/progressTimeBar"
+			/>
+		</RelativeLayout>
+	</LinearLayout>
+		
+</LinearLayout>

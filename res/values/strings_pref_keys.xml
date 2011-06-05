@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="volume_step_size_key">volume_step_size_key</string>
+	<string name="screen_orientation_key">screen_orientation_key</string>
+	
+	<string-array name="screen_orientation_types_values">
+        <item>auto</item>
+        <item>portrait</item>
+        <item>landscape</item>
+    </string-array>
+    
+	<string name="screen_orientation_default_value">portrait</string>
+	
+	<string name="keep_screen_on_key">keep_screen_on_key</string>
+</resources>

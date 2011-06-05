@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen 
+	xmlns:android="http://schemas.android.com/apk/res/android">
+			
+    <PreferenceScreen
+        android:key="name"
+        android:title="Boxee Server"
+        />
+	
+    <com.menny.android.boxeethumbremote.SeekBarPreference  
+        android:key="sensitivity"
+        android:defaultValue="50"
+        android:title="@string/preference_sensitivity" 
+        />  
+		
+	<CheckBoxPreference 
+		android:key="require_wifi"
+		android:title="@string/require_wifi_title" 
+		android:summaryOn="@string/require_wifi_yes"
+		android:summaryOff="@string/require_wifi_no" 
+		android:defaultValue="true"
+		/>
+
+	<EditTextPreference 
+		android:key="timeout" 
+		android:title="@string/timeout_title"
+		android:summary="@string/timeout_summary"
+		android:defaultValue="2000"
+		/>
+	
+	<com.menny.android.boxeethumbremote.SeekBarPreference  
+        android:key="@string/volume_step_size_key"
+        android:defaultValue="@integer/volume_step_size_default_value"
+        android:title="@string/preference_volume_step_size" 
+        max="30"
+        min="1"
+        interval="1"
+        />
+    
+    <CheckBoxPreference 
+		android:key="@string/keep_screen_on_key"
+		android:title="@string/keep_screen_on_title" 
+		android:summaryOn="@string/keep_screen_on_yes"
+		android:summaryOff="@string/keep_screen_on_no" 
+		android:defaultValue="false"
+		/>
+		
+    <ListPreference
+			android:key="@string/screen_orientation_key"
+			android:title="@string/screen_orientation_title"
+			android:entries="@array/screen_orientation_types_strings"
+			android:entryValues="@array/screen_orientation_types_values"
+			android:dialogTitle="@string/screen_orientation_title"
+			android:defaultValue="@string/screen_orientation_default_value" />
+</PreferenceScreen>
