@@ -57,7 +57,6 @@ public class BoxeeActivity extends Activity implements
 	private Point mTouchPoint = new Point();
 	private boolean mDragged = false;
 	private boolean mIsNowPlaying = false;
-	private boolean mIsScreenOverride = false;
 	private ProgressDialog mPleaseWaitDialog;
 
 	Handler mHandler = new Handler() {
@@ -202,11 +201,9 @@ public class BoxeeActivity extends Activity implements
 	private void refreshNowPlaying() {
 		mIsNowPlaying = mNowPlaying.isNowPlaying();
 
-		if (!mIsScreenOverride) 
-			flipTo(mNowPlaying.isOnNowPlayingScreen() ? PAGE_NOWPLAYING : PAGE_NOTPLAYING);
+		flipTo(mNowPlaying.isNowPlaying() ? PAGE_NOWPLAYING : PAGE_NOTPLAYING);
 
 		if (!mIsNowPlaying) {
-			mIsScreenOverride = false;
 			if (mElapsedThread.isAlive())
 				mElapsedThread.stop();
 			return;
@@ -233,7 +230,11 @@ public class BoxeeActivity extends Activity implements
 	}
 
 	private void refreshThumbnail() {
-		mImageThumbnail.setImageBitmap(mNowPlaying.getThumbnail());
+		mIsNowPlaying = mNowPlaying.isNowPlaying();
+		if (mIsNowPlaying)
+			mImageThumbnail.setImageBitmap(mNowPlaying.getThumbnail());
+		else
+			mImageThumbnail.setImageResource(R.drawable.boxee132);
 	}
 
 	/**

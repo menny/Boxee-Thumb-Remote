@@ -1,39 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:orientation="vertical"
-    android:weightSum="100">
-    
-    <ViewFlipper
-        android:id="@+id/now_playing_flipper"
-        android:layout_width="fill_parent" 
-        android:layout_height="0px" android:layout_weight="30"
-        >
-    	<include layout="@layout/notplaying" />
-        <include layout="@layout/nowplaying" />
-	</ViewFlipper>
-    
-    <RelativeLayout android:layout_height="0px" android:layout_width="fill_parent" android:layout_weight="70">
-    	
-	    <ImageView
-			android:id="@+id/image_logo"
-			android:src="@drawable/boxee132"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_centerInParent="true"
-			/>
-			
+    android:layout_height="fill_parent">
+    <TextView
+		android:id="@+id/textNowPlayingTitle"
+		android:text=""
+		android:layout_height="wrap_content"
+		android:layout_width="fill_parent" 
+		android:gravity="center"
+		android:maxLines="1"
+   		android:marqueeRepeatLimit="marquee_forever"
+   		android:ellipsize="marquee"
+   		android:textSize="16sp"
+   		android:layout_alignParentTop="true"
+		/>
+		
+    <LinearLayout android:id="@+id/controls_layout" android:layout_alignParentBottom="true" android:layout_height="wrap_content" android:layout_width="fill_parent" android:orientation="horizontal">
+    		
 		<Button 
 			android:id="@+id/back" 
 			android:background="@drawable/back"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content" 
-			android:layout_alignParentLeft="true"
-			android:layout_alignParentBottom="true" 
 			android:layout_margin="10dp" 
 			/>
-	</RelativeLayout>
-</LinearLayout>
+			
+		<ViewFlipper
+	        android:id="@+id/now_playing_flipper"
+	        android:layout_width="fill_parent" 
+	        android:layout_height="fill_parent"
+	        >
+	    	<include layout="@layout/notplaying" />
+	        <include layout="@layout/nowplaying" />
+		</ViewFlipper>
+	</LinearLayout>
+	
+	<ImageView
+		android:id="@+id/thumbnail"
+		android:src="@drawable/boxee132"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_below="@id/textNowPlayingTitle"
+		android:layout_above="@id/controls_layout"
+		android:layout_margin="4dp"
+		/>
+		
+</RelativeLayout>
     

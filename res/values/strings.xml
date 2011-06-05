@@ -44,6 +44,4 @@
     <string name="keep_screen_on_title">Keep screen on</string>
     <string name="keep_screen_on_yes">Screen will no go to sleep (drains battery!)</string>
     <string name="keep_screen_on_no">Screen will go to sleep on inactivity</string>
-    
-    <string name="no_media_is_currently_playing">No media</string>
 </resources>

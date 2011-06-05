@@ -6,13 +6,5 @@
 	android:layout_height="fill_parent"
 	android:focusable="false"
 	android:layout_width="fill_parent">
-
-	<TextView
-		android:text="@string/no_media_is_currently_playing"
-		android:layout_height="wrap_content"
-		android:layout_width="fill_parent" 
-		android:gravity="center"
-   		android:textSize="24sp"
-		/>
 		
 </LinearLayout>
