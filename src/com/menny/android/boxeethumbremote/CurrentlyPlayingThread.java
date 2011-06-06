@@ -81,7 +81,8 @@ class CurrentlyPlayingThread extends Thread {
 		}
 		if (thumb != null)
 			mPlaying.setThumbnail(BitmapFactory.decodeByteArray(thumb, 0, thumb.length));
-
+		else
+			mPlaying.setThumbnail(null);
 		return true;
 	}
 }

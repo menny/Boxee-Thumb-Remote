@@ -68,7 +68,10 @@ public class DiscovererThread extends Thread {
 			servers = new ArrayList<BoxeeServer>(); // use an empty one
 			Log.e(TAG, "Could not send discovery request", e);
 		}
-		mReceiver.addAnnouncedServers(servers);
+		finally
+		{
+			mReceiver.addAnnouncedServers(servers);
+		}
 	}
 
 	/**

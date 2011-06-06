@@ -65,7 +65,7 @@ public class BoxeeActivity extends Activity implements
 			switch (msg.what) {
 			case CurrentlyPlayingThread.MESSAGE_NOW_PLAYING_UPDATED:
 				refreshNowPlaying();
-				getNowPlayingAfter(5000);
+				getNowPlayingAfter(100);
 				break;
 			case CurrentlyPlayingThread.MESSAGE_THUMBNAIL_UPDATED:
 				refreshThumbnail();
@@ -77,9 +77,18 @@ public class BoxeeActivity extends Activity implements
 		}
 	};
 
-	Thread mElapsedThread = new Thread(new Runnable() {
+	private class ElapsedThread extends Thread
+	{
+		private boolean mRunning = true;
+		
+		public void stopRunning()
+		{
+			mRunning = false;
+		}
+		
 		public void run() {
-			while (true) {
+			mRunning = true;
+			while (mRunning) {
 				mHandler.sendMessage(mHandler
 						.obtainMessage(MESSAGE_UPDATE_ELAPSED));
 				try {
@@ -90,7 +99,8 @@ public class BoxeeActivity extends Activity implements
 				}
 			}
 		}
-	});
+	}
+	ElapsedThread mElapsedThread = new ElapsedThread();
 
 	Runnable mRunnableGetNowPlaying = new Runnable() {
 		public void run() {
@@ -134,13 +144,15 @@ public class BoxeeActivity extends Activity implements
 	protected void onPause() {
 		mSettings.unlisten(this);
 		super.onPause();
+		mHandler.removeCallbacks(mRunnableGetNowPlaying);
+		finish();
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
 		mSettings.listen(this);
-		getNowPlayingAfter(100);
+		getNowPlayingAfter(50);
 	}
 
 	@Override
@@ -204,8 +216,9 @@ public class BoxeeActivity extends Activity implements
 		flipTo(mNowPlaying.isNowPlaying() ? PAGE_NOWPLAYING : PAGE_NOTPLAYING);
 
 		if (!mIsNowPlaying) {
+			mTextTitle.setText("");
 			if (mElapsedThread.isAlive())
-				mElapsedThread.stop();
+				mElapsedThread.stopRunning();
 			return;
 		}
 
@@ -491,13 +504,13 @@ public class BoxeeActivity extends Activity implements
 	 */
 	public void addAnnouncedServers(ArrayList<BoxeeServer> servers) {
 
+		mPleaseWaitDialog.dismiss();
+		
 		// This condition shouldn't ever be true.
 		if (mSettings.isManual()) {
 			Log.d(TAG, "Skipping announced servers. Set manually");
 			return;
 		}
-
-		mPleaseWaitDialog.dismiss();
 
 		String preferred = mSettings.getServerName();
 
