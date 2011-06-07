@@ -55,14 +55,12 @@ final class NowPlaying {
 	}
 
 	boolean isPaused() {
-		String playstatus = mEntries.containsKey("PlayStatus") ? mEntries
-				.get("PlayStatus") : "";
+		String playstatus = mEntries.containsKey("PlayStatus") ? mEntries.get("PlayStatus") : "";
 		return playstatus.equals("Paused");
 	}
 
 	boolean isOnNowPlayingScreen() {
-		String screen = mEntries.containsKey("ActiveWindowName") ? mEntries
-				.get("ActiveWindowName") : "";
+		String screen = mEntries.containsKey("ActiveWindowName") ? mEntries.get("ActiveWindowName") : "";
 
 		return screen.equals("Fullscreen video");
 	}

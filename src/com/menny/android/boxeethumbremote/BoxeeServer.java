@@ -4,13 +4,14 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 
+
 import android.content.Intent;
 
 /**
  * Holds information about a Boxee server which announced itself in response to
  * a discovery request.
  */
-class BoxeeServer {
+public class BoxeeServer {
 	private String mVersion;
 	private String mName;
 	private boolean mAuthRequired;
@@ -24,7 +25,7 @@ class BoxeeServer {
 	 */
 	public BoxeeServer(Intent data) {
 		mName = data.getStringExtra(Settings.SERVER_NAME_KEY);
-		mPort = data.getIntExtra(Settings.PORT_KEY, Remote.BAD_PORT);
+		mPort = data.getIntExtra(Settings.PORT_KEY, BoxeeRemote.BAD_PORT);
 		mAuthRequired = data.getBooleanExtra(Settings.AUTH_REQUIRED_KEY, false);
 
 		try {
@@ -50,7 +51,7 @@ class BoxeeServer {
 		try {
 			mPort = Integer.parseInt(attributes.get("httpPort"));
 		} catch (NumberFormatException e) {
-			mPort = Remote.BAD_PORT;
+			mPort = BoxeeRemote.BAD_PORT;
 		}
 
 		String auth = attributes.get("httpAuthRequired");
@@ -79,7 +80,7 @@ class BoxeeServer {
 	}
 
 	public boolean valid() {
-		return mPort != Remote.BAD_PORT && mAddr != null;
+		return mPort != BoxeeRemote.BAD_PORT && mAddr != null;
 	}
 
 	public String version() {

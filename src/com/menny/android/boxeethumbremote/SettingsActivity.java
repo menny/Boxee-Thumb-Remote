@@ -3,6 +3,8 @@ package com.menny.android.boxeethumbremote;
 import java.util.ArrayList;
 import java.util.WeakHashMap;
 
+import com.menny.android.boxeethumbremote.R;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -26,7 +28,7 @@ import android.widget.Toast;
  * Handles preference storage for BoxeeRemote.
  */
 public class SettingsActivity extends PreferenceActivity implements
-		DiscovererThread.Receiver, Remote.ErrorHandler,
+		DiscovererThread.Receiver, BoxeeRemote.ErrorHandler,
 		OnPreferenceClickListener, OnSharedPreferenceChangeListener {
 	/**
 	 * private constants
@@ -47,7 +49,7 @@ public class SettingsActivity extends PreferenceActivity implements
 
 		mSettings = new Settings(this);
 
-		addPreferencesFromResource(R.xml.preferences);
+		addPreferencesFromResource(R.layout.preferences);
 
 		onCreatePreferences();
 

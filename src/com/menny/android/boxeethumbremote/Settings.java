@@ -1,5 +1,7 @@
 package com.menny.android.boxeethumbremote;
 
+import com.menny.android.boxeethumbremote.R;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -31,7 +33,7 @@ public class Settings {
 		mPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 		
 		// Attempt to set default values if they have not yet been set
-		PreferenceManager.setDefaultValues(context, R.xml.preferences, false);
+		PreferenceManager.setDefaultValues(context, R.layout.preferences, false);
 		
 		VOLUME_STEP_SIZE_KEY = context.getString(R.string.volume_step_size_key);
 		VOLUME_STEP_SIZE_DEFAULT_VALUE = context.getResources().getInteger(R.integer.volume_step_size_default_value);

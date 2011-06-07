@@ -2,6 +2,8 @@ package com.menny.android.boxeethumbremote;
 
 import java.util.ArrayList;
 
+import com.menny.android.boxeethumbremote.R;
+
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -26,14 +28,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
 
-public class BoxeeActivity extends Activity implements
+public class UiActivity extends Activity implements
 		OnSharedPreferenceChangeListener, DiscovererThread.Receiver,
-		Remote.ErrorHandler, OnClickListener {
+		BoxeeRemote.ErrorHandler, OnClickListener {
 
-	public final static String TAG = BoxeeActivity.class.toString();
-
-	// Messages
-	public static final int MESSAGE_UPDATE_ELAPSED = 100;
+	public final static String TAG = UiActivity.class.toString();
 
 	// Menu items
 	private static final int MENU_SETTINGS = Menu.FIRST;
@@ -51,9 +50,10 @@ public class BoxeeActivity extends Activity implements
 	ProgressBar mElapsedBar;
 
 	private Settings mSettings;
-	private Remote mRemote;
+	private BoxeeRemote mRemote;
 	private NowPlaying mNowPlaying = new NowPlaying();
-
+	private ServerStatePoller mStatePoller = null; 
+	
 	private Point mTouchPoint = new Point();
 	private boolean mDragged = false;
 	private boolean mIsNowPlaying = false;
@@ -63,56 +63,29 @@ public class BoxeeActivity extends Activity implements
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
-			case CurrentlyPlayingThread.MESSAGE_NOW_PLAYING_UPDATED:
+			case ServerStatePoller.MESSAGE_NOW_PLAYING_UPDATED:
 				refreshNowPlaying();
-				getNowPlayingAfter(100);
 				break;
-			case CurrentlyPlayingThread.MESSAGE_THUMBNAIL_UPDATED:
-				refreshThumbnail();
-				break;
-			case MESSAGE_UPDATE_ELAPSED:
-				refreshElapsed();
+			case ServerStatePoller.MESSAGE_MEDIA_METADATA_UPDATED:
+				refreshMediaMetdata();
 				break;
 			}
 		}
 	};
 
-	private class ElapsedThread extends Thread
-	{
-		private boolean mRunning = true;
-		
-		public void stopRunning()
-		{
-			mRunning = false;
-		}
-		
+	private final Runnable mRequestStatusUpdateRunnable = new Runnable() {
+		@Override
 		public void run() {
-			mRunning = true;
-			while (mRunning) {
-				mHandler.sendMessage(mHandler
-						.obtainMessage(MESSAGE_UPDATE_ELAPSED));
-				try {
-					Thread.sleep(200);
-				} catch (InterruptedException e) {
-					// ignore
-					e.printStackTrace();
-				}
-			}
-		}
-	}
-	ElapsedThread mElapsedThread = new ElapsedThread();
-
-	Runnable mRunnableGetNowPlaying = new Runnable() {
-		public void run() {
-			new CurrentlyPlayingThread(mHandler, mRemote, mNowPlaying).start();
+			if (mStatePoller != null)
+				mStatePoller.checkStateNow();
 		}
 	};
-
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		mRemote = new Remote(this, this);
+		mRemote = new BoxeeRemote(this, this);
 
 		setContentView(R.layout.main);
 
@@ -143,16 +116,20 @@ public class BoxeeActivity extends Activity implements
 	@Override
 	protected void onPause() {
 		mSettings.unlisten(this);
+		mHandler.removeCallbacks(mRequestStatusUpdateRunnable);
+		
 		super.onPause();
-		mHandler.removeCallbacks(mRunnableGetNowPlaying);
-		finish();
+		if (mStatePoller != null)
+			mStatePoller.stop();
+		mStatePoller = null;
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
 		mSettings.listen(this);
-		getNowPlayingAfter(50);
+		mStatePoller = new ServerStatePoller(mHandler, mRemote, mNowPlaying);
+		mStatePoller.start();
 	}
 
 	@Override
@@ -172,12 +149,12 @@ public class BoxeeActivity extends Activity implements
 		
 		case R.id.buttonPlayPause:
 			mRemote.pause();
-			getNowPlayingAfter(100);
+			requestUpdateASAP(100);
 			break;
 
 		case R.id.buttonStop:
 			mRemote.stop();
-			getNowPlayingAfter(100);
+			requestUpdateASAP(100);
 			break;
 
 		case R.id.buttonSmallSkipBack:
@@ -186,7 +163,7 @@ public class BoxeeActivity extends Activity implements
 			if (duration == 0)
 				break;
 			mRemote.seek(-10 * 100 / duration);
-			getNowPlayingAfter(100);
+			requestUpdateASAP(100);
 			break;
 
 		case R.id.buttonSmallSkipFwd:
@@ -195,7 +172,7 @@ public class BoxeeActivity extends Activity implements
 			if (duration == 0)
 				break;
 			mRemote.seek(30.0 * 100 / duration);
-			getNowPlayingAfter(100);
+			requestUpdateASAP(100);
 			break;
 
 		case R.id.back:
@@ -203,6 +180,10 @@ public class BoxeeActivity extends Activity implements
 			break;
 		}
 
+	}
+
+	private void requestUpdateASAP(int delay_ms) {
+		mHandler.postDelayed(mRequestStatusUpdateRunnable,delay_ms);
 	}
 
 	private void flipTo(int page) {
@@ -215,50 +196,33 @@ public class BoxeeActivity extends Activity implements
 
 		flipTo(mNowPlaying.isNowPlaying() ? PAGE_NOWPLAYING : PAGE_NOTPLAYING);
 
-		if (!mIsNowPlaying) {
-			mTextTitle.setText("");
-			if (mElapsedThread.isAlive())
-				mElapsedThread.stopRunning();
-			return;
+		if (mIsNowPlaying) {
+			mButtonPlayPause.setBackgroundDrawable(getResources().getDrawable(
+					mNowPlaying.isPaused() ? R.drawable.icon_osd_play
+							: R.drawable.icon_osd_pause));
+	
+			String title = mNowPlaying.getTitle();
+			mTextTitle.setText(title);
+	
+			mDuration.setText(mNowPlaying.getDuration());
+			
+			String elapsed = mNowPlaying.getElapsed();
+			mTextElapsed.setText(elapsed);
+
+			mElapsedBar.setProgress(mNowPlaying.getPercentage());			
 		}
-
-		if (!mElapsedThread.isAlive())
-			mElapsedThread.start();
-
-		mButtonPlayPause.setBackgroundDrawable(getResources().getDrawable(
-				mNowPlaying.isPaused() ? R.drawable.icon_osd_play
-						: R.drawable.icon_osd_pause));
-
-		String title = mNowPlaying.getTitle();
-		mTextTitle.setText(title);
-
-		mDuration.setText(mNowPlaying.getDuration());
+		else
+		{
+			mTextTitle.setText("");
+		}
 	}
-
-	private void refreshElapsed() {
-		String elapsed = mNowPlaying.getElapsed();
-		mTextElapsed.setText(elapsed);
-
-		mElapsedBar.setProgress(mNowPlaying.getPercentage());
-	}
-
-	private void refreshThumbnail() {
+	
+	private void refreshMediaMetdata() {
 		mIsNowPlaying = mNowPlaying.isNowPlaying();
 		if (mIsNowPlaying)
 			mImageThumbnail.setImageBitmap(mNowPlaying.getThumbnail());
 		else
 			mImageThumbnail.setImageResource(R.drawable.boxee132);
-	}
-
-	/**
-	 * Schedule an attempt to get the currently-playing item.
-	 * 
-	 * @param delay_ms
-	 *            Delay before attempt in milliseconds
-	 */
-	private void getNowPlayingAfter(int delay_ms) {
-		mHandler.removeCallbacks(mRunnableGetNowPlaying);
-		mHandler.postDelayed(mRunnableGetNowPlaying, delay_ms);
 	}
 
 	/**
@@ -470,7 +434,7 @@ public class BoxeeActivity extends Activity implements
 		// Discoverer -> addAnnouncedServers
 		if (mSettings.isManual()) {
 			mRemote.setServer(mSettings.constructServer());
-			getNowPlayingAfter(100);
+			requestUpdateASAP(100);
 		}
 		else {
 			mPleaseWaitDialog = ProgressDialog.show(this, "", "Connecting to "
@@ -525,7 +489,7 @@ public class BoxeeActivity extends Activity implements
 					// Yay, found it and it works
 					mRemote.setServer(server);
 					mRemote.displayMessage("Connected to Boxee Remote");
-					getNowPlayingAfter(100);
+					requestUpdateASAP(100);
 					if (server.authRequired())
 						passwordCheck();
 					return;

@@ -86,14 +86,9 @@ class HttpRequestBlocking {
 
 	private void maybeAddAuthentication(HttpURLConnection conn) {
 		if (mPassword != null && mPassword.length() != 0) {
-			//TODO: fix Base64
-			//byte[] enc = Base64.encodeBase64((mUser + ":" + mPassword)
-			//		.getBytes());
-			//conn
-			//		.setRequestProperty("Authorization", "Basic "
-			//				+ new String(enc));
+			byte[] enc = iharder.base64.Base64.encodeBytesToBytes((mUser + ":" + mPassword).getBytes());
+			conn.setRequestProperty("Authorization", "Basic " + new String(enc));
 		}
-
 	}
 
 	public static void setUserPassword(String user, String password) {

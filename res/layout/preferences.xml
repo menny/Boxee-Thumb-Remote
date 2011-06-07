@@ -7,7 +7,7 @@
         android:title="Boxee Server"
         />
 	
-    <com.menny.android.boxeethumbremote.SeekBarPreference  
+    <com.menny.android.boxeethumbremote.MySeekBarPreference  
         android:key="sensitivity"
         android:defaultValue="50"
         android:title="@string/preference_sensitivity" 
@@ -28,7 +28,7 @@
 		android:defaultValue="2000"
 		/>
 	
-	<com.menny.android.boxeethumbremote.SeekBarPreference  
+	<com.menny.android.boxeethumbremote.MySeekBarPreference  
         android:key="@string/volume_step_size_key"
         android:defaultValue="@integer/volume_step_size_default_value"
         android:title="@string/preference_volume_step_size" 

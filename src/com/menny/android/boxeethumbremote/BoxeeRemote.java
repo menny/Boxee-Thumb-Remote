@@ -15,7 +15,7 @@ import android.util.Log;
  * @author chatham
  * 
  */
-public class Remote {
+public class BoxeeRemote {
 
 	/**
 	 * Keycodes, from boxee API
@@ -36,7 +36,7 @@ public class Remote {
 	}
 
 	static public final int BAD_PORT = -1;
-	public final static String TAG = Remote.class.toString();
+	public final static String TAG = BoxeeRemote.class.toString();
 	private ErrorHandler mError;
 	private String mHost;
 	private int mPort;
@@ -44,7 +44,7 @@ public class Remote {
 
 	private NetworkInfo mWifiInfo;
 
-	public Remote(Context context, ErrorHandler error) {
+	public BoxeeRemote(Context context, ErrorHandler error) {
 		ConnectivityManager connectivity = (ConnectivityManager) context
 				.getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo wifiInfo = connectivity
