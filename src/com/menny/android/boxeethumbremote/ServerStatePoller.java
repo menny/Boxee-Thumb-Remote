@@ -6,6 +6,7 @@ import java.net.URLEncoder;
 import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.text.TextUtils;
+import android.util.Log;
 
 public final class ServerStatePoller {
 	private static final String TAG = ServerStatePoller.class.toString();
@@ -18,6 +19,7 @@ public final class ServerStatePoller {
 	private final Handler mHandler;
 	private final BoxeeRemote mRemote;
 	
+	
 	private boolean mRun;
 
 	public ServerStatePoller(Handler handler, BoxeeRemote remote, NowPlaying playing) {
@@ -27,44 +29,52 @@ public final class ServerStatePoller {
 		
 		mRun = true;
 	}
-	
-	public void start() {
-		String currentlyRunningTitle = "";
-		while(mRun)
-		{
-			try
+	private final Thread mPollerThread = new Thread()
+	{	
+		public void run() {
+			Log.d(TAG, "Starting ServerStatePoller.");
+			String currentlyRunningTitle = "";
+			while(mRun)
 			{
-				if (getCurrentlyPlayingStatus())
+				try
 				{
-					//GUI! Update!
-					mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_NOW_PLAYING_UPDATED));
-					//now we check for thumb. If needed (a new title, or no title)
-					if (!TextUtils.isEmpty(mPlaying.getThumbnailUrl()) && !currentlyRunningTitle.equals(mPlaying.getTitle()))
+					if (getCurrentlyPlayingStatus())
 					{
-						currentlyRunningTitle = mPlaying.getTitle();
-						if (currentlyRunningTitle == null) currentlyRunningTitle = "";
-						getThumbnail();
-						
-						mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_MEDIA_METADATA_UPDATED));
+						//GUI! Update!
+						mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_NOW_PLAYING_UPDATED));
+						//now we check for thumb. If needed (a new title, or no title)
+						if (!TextUtils.isEmpty(mPlaying.getThumbnailUrl()) && !currentlyRunningTitle.equals(mPlaying.getTitle()))
+						{
+							currentlyRunningTitle = mPlaying.getTitle();
+							if (currentlyRunningTitle == null) currentlyRunningTitle = "";
+							getThumbnail();
+							
+							mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_MEDIA_METADATA_UPDATED));
+						}
 					}
 				}
-			}
-			finally
-			{
-				if (mRun)
+				finally
 				{
-					synchronized (mWaiter) {
-						//refreshing state every 500 ms
-						try {
-							mWaiter.wait(500);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-							mRun = false;
+					if (mRun)
+					{
+						synchronized (mWaiter) {
+							//refreshing state every 500 ms
+							try {
+								mWaiter.wait(500);
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+								mRun = false;
+							}
 						}
 					}
 				}
 			}
+			Log.d(TAG, "ServerStatePoller ended.");
 		}
+	};
+	
+	public void poll() {
+		mPollerThread.start();
 	}
 	
 	public void checkStateNow()

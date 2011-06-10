@@ -28,11 +28,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
 
-public class UiActivity extends Activity implements
+public class RemoteUiActivity extends Activity implements
 		OnSharedPreferenceChangeListener, DiscovererThread.Receiver,
 		BoxeeRemote.ErrorHandler, OnClickListener {
 
-	public final static String TAG = UiActivity.class.toString();
+	public final static String TAG = RemoteUiActivity.class.toString();
 
 	// Menu items
 	private static final int MENU_SETTINGS = Menu.FIRST;
@@ -122,14 +122,22 @@ public class UiActivity extends Activity implements
 		if (mStatePoller != null)
 			mStatePoller.stop();
 		mStatePoller = null;
+		
+		if (mPleaseWaitDialog != null)
+			mPleaseWaitDialog.dismiss();
+		mPleaseWaitDialog = null;
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
 		mSettings.listen(this);
+		
+		if (!mRemote.hasServers() && !mServerDiscoverer.isLookingForServers())
+			setServer();
+		
 		mStatePoller = new ServerStatePoller(mHandler, mRemote, mNowPlaying);
-		mStatePoller.start();
+		mStatePoller.poll();
 	}
 
 	@Override
@@ -390,6 +398,8 @@ public class UiActivity extends Activity implements
 	private String mLastErrorMessage = null;
 	private long mLastErrorMessageTime = 0;
 	private static final long MINIMUM_ms_TIME_BETWEEN_ERRORS = 1000;//
+
+	private DiscovererThread mServerDiscoverer;
 	/**
 	 * Display a short error via a popup message.
 	 */
@@ -423,6 +433,14 @@ public class UiActivity extends Activity implements
 		// Setup the proper pageflipper page:
 		flipTo(PAGE_NOTPLAYING);
 
+		// Read the "require wifi" setting.
+		boolean requireWifi = mSettings.requiresWifi();
+		mRemote.setRequireWifi(requireWifi);
+		
+		// Setup the HTTP timeout.
+		int timeout_ms = mSettings.getTimeout();
+		HttpRequestBlocking.setTimeout(timeout_ms);
+
 		// Parse the credentials, if needed.
 		String user = mSettings.getUser();
 		String password = mSettings.getPassword();
@@ -430,6 +448,10 @@ public class UiActivity extends Activity implements
 			HttpRequestBlocking.setUserPassword(user, password);
 		}
 
+		setServer();
+	}
+
+	private void setServer() {
 		// Only set the host if manual. Otherwise we'll auto-detect it with
 		// Discoverer -> addAnnouncedServers
 		if (mSettings.isManual()) {
@@ -437,19 +459,10 @@ public class UiActivity extends Activity implements
 			requestUpdateASAP(100);
 		}
 		else {
-			mPleaseWaitDialog = ProgressDialog.show(this, "", "Connecting to "
-					+ mSettings.getServerName() + "...", true);
-			DiscovererThread discoverer = new DiscovererThread(this, this);
-			discoverer.start();
+			mPleaseWaitDialog = ProgressDialog.show(this, "", "Looking for a server...", true);
+			mServerDiscoverer = new DiscovererThread(this, this);
+			mServerDiscoverer.start();
 		}
-		
-		// Setup the HTTP timeout.
-		int timeout_ms = mSettings.getTimeout();
-		HttpRequestBlocking.setTimeout(timeout_ms);
-
-		// Read the "require wifi" setting.
-		boolean requireWifi = mSettings.requiresWifi();
-		mRemote.setRequireWifi(requireWifi);
 	}
 
 	/**
@@ -467,8 +480,11 @@ public class UiActivity extends Activity implements
 	 *            list of discovered servers
 	 */
 	public void addAnnouncedServers(ArrayList<BoxeeServer> servers) {
-
-		mPleaseWaitDialog.dismiss();
+		
+		if (mPleaseWaitDialog != null)
+			mPleaseWaitDialog.dismiss();
+		mPleaseWaitDialog = null;
+		
 		
 		// This condition shouldn't ever be true.
 		if (mSettings.isManual()) {
@@ -482,8 +498,7 @@ public class UiActivity extends Activity implements
 			BoxeeServer server = servers.get(k);
 			if (server.name().equals(preferred)) {
 				if (!server.valid()) {
-					ShowError(String.format("Found '%s' but looks broken",
-							server.name()));
+					ShowError(String.format("Found '%s' but looks broken", server.name()));
 					continue;
 				} else {
 					// Yay, found it and it works
@@ -497,8 +512,7 @@ public class UiActivity extends Activity implements
 			}
 		}
 
-		ShowError(String.format("Could not find preferred server '%s'",
-				preferred));
+		ShowError(String.format("Could not find preferred server '%s'", preferred));
 	}
 
 	private void passwordCheck() {

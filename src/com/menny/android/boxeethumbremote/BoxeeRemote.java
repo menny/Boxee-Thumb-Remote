@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.text.TextUtils;
 import android.util.Log;
 
 /**
@@ -62,7 +63,7 @@ public class BoxeeRemote {
 	 *            percent increase/decrease in volume
 	 */
 	public void changeVolume(final int percent) {
-		if (mHost == null)
+		if (!hasServers())
 			return;
 
 		final String getvolume = getRequestPrefix()
@@ -186,7 +187,7 @@ public class BoxeeRemote {
 	}
 
 	private void sendKeyPress(int keycode) {
-		if (mHost == null || mHost.length() == 0) {
+		if (!hasServers()) {
 			mError.ShowError("Run scan or go to settings and set the host");
 			return;
 		}
@@ -214,6 +215,10 @@ public class BoxeeRemote {
 
 	public void setRequireWifi(boolean requireWifi) {
 		mRequireWifi = requireWifi;
+	}
+
+	public boolean hasServers() {
+		return !TextUtils.isEmpty(mHost);
 	}
 
 }

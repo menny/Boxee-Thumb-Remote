@@ -38,6 +38,7 @@ public class DiscovererThread extends Thread {
 	// TODO: Vary the challenge, or it's not much of a challenge :)
 	private static final String mChallenge = "myvoice";
 	private WifiManager mWifi;
+	private boolean mListening = true;
 
 	interface Receiver {
 		/**
@@ -72,6 +73,7 @@ public class DiscovererThread extends Thread {
 		finally
 		{
 			mReceiver.addAnnouncedServers(servers);
+			mListening = false;
 		}
 	}
 
@@ -257,5 +259,9 @@ public class DiscovererThread extends Thread {
 			hexString.append(s);
 		}
 		return hexString.toString();
+	}
+
+	public boolean isLookingForServers() {
+		return mListening;
 	}
 }
