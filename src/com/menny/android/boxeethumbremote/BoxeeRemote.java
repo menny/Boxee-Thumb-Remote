@@ -32,8 +32,8 @@ public class BoxeeRemote {
 	private final static int KEY_ASCII = 0xF100;
 
 	interface ErrorHandler {
-		public void ShowError(int id);
-		public void ShowError(String s);
+		public void ShowError(int id, boolean longDelay);
+		public void ShowError(String s, boolean longDelay);
 	}
 
 	static public final int BAD_PORT = -1;
@@ -77,7 +77,7 @@ public class BoxeeRemote {
 			new HttpRequestThread(getvolume, new CallbackHandler() {
 				public void HandleResponse(boolean success, String resp) {
 					if (!success) {
-						mError.ShowError("Problem fetching URL " + getvolume);
+						mError.ShowError("Problem fetching URL " + getvolume, false);
 					}
 
 					// Parse out the current volume and send a setvolume
@@ -97,7 +97,7 @@ public class BoxeeRemote {
 				}
 			});
 		} catch (MalformedURLException e) {
-			mError.ShowError("Malformed URL: " + getvolume);
+			mError.ShowError("Malformed URL: " + getvolume, true);
 		}
 	}
 
@@ -121,12 +121,12 @@ public class BoxeeRemote {
 			new HttpRequestThread(request, new CallbackHandler() {
 				public void HandleResponse(boolean success, String resp) {
 					if (!success) {
-						mError.ShowError("Problem fetching URL " + request);
+						mError.ShowError("Problem fetching URL " + request, true);
 					}
 				}
 			});
 		} catch (MalformedURLException e) {
-			mError.ShowError("Malformed URL: " + request);
+			mError.ShowError("Malformed URL: " + request, false);
 		}
 	}
 
@@ -188,17 +188,17 @@ public class BoxeeRemote {
 
 	private void sendKeyPress(int keycode) {
 		if (!hasServers()) {
-			mError.ShowError("Run scan or go to settings and set the host");
+			mError.ShowError("Run scan or go to settings and set the host", true);
 			return;
 		}
 
 		if (mPort == BAD_PORT) {
-			mError.ShowError("Run scan or go to settings and set the port");
+			mError.ShowError("Run scan or go to settings and set the port", true);
 			return;
 		}
 
 		if (mRequireWifi && !mWifiInfo.isAvailable()) {
-			mError.ShowError(R.string.no_wifi);
+			mError.ShowError(R.string.no_wifi, true);
 			return;
 		}
 

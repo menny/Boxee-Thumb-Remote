@@ -32,7 +32,7 @@ public class DiscovererThread extends Thread {
 
 	private static final String REMOTE_KEY = "b0xeeRem0tE!";
 	private static final int DISCOVERY_PORT = 2562;
-	private static final int TIMEOUT_MS = 500;
+	private static final int TIMEOUT_MS = 750;
 	private Receiver mReceiver;
 
 	// TODO: Vary the challenge, or it's not much of a challenge :)
@@ -137,8 +137,7 @@ public class DiscovererThread extends Thread {
 				DatagramPacket packet = new DatagramPacket(buf, buf.length);
 				socket.receive(packet);
 				String s = new String(packet.getData(), 0, packet.getLength());
-				Log.d(TAG, "Packet received after "
-						+ (System.currentTimeMillis() - start) + " " + s);
+				Log.d(TAG, "Packet received after "+ (System.currentTimeMillis() - start) + " " + s);
 				BoxeeServer server = parseResponse(s,
 						((InetSocketAddress) packet.getSocketAddress())
 								.getAddress());

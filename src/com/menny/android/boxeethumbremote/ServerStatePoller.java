@@ -43,7 +43,7 @@ public final class ServerStatePoller {
 						//GUI! Update!
 						mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_NOW_PLAYING_UPDATED));
 						//now we check for thumb. If needed (a new title, or no title)
-						if (!TextUtils.isEmpty(mPlaying.getThumbnailUrl()) && !currentlyRunningTitle.equals(mPlaying.getTitle()))
+						if (!currentlyRunningTitle.equals(mPlaying.getTitle()))
 						{
 							currentlyRunningTitle = mPlaying.getTitle();
 							if (currentlyRunningTitle == null) currentlyRunningTitle = "";

@@ -140,13 +140,11 @@ public class SettingsActivity extends PreferenceActivity implements
 	}
 
 	@Override
-	public void ShowError(int id) {
-		// TODO Auto-generated method stub
-
+	public void ShowError(int id, boolean longDelay) {
 	}
 
 	@Override
-	public void ShowError(String s) {
+	public void ShowError(String s, boolean longDelay) {
 		// TODO Auto-generated method stub
 
 	}

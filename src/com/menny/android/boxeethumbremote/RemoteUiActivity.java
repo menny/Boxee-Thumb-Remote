@@ -228,9 +228,16 @@ public class RemoteUiActivity extends Activity implements
 	private void refreshMediaMetdata() {
 		mIsNowPlaying = mNowPlaying.isNowPlaying();
 		if (mIsNowPlaying)
+		{
 			mImageThumbnail.setImageBitmap(mNowPlaying.getThumbnail());
+			String title = mNowPlaying.getTitle();
+			mTextTitle.setText(title);
+		}
 		else
+		{
 			mImageThumbnail.setImageResource(R.drawable.boxee132);
+			mTextTitle.setText("");
+		}
 	}
 
 	/**
@@ -386,8 +393,8 @@ public class RemoteUiActivity extends Activity implements
 	 * @param id
 	 *            an id from R.strings
 	 */
-	public void ShowError(int id) {
-		ShowError(getString(id));
+	public void ShowError(int id, boolean longDelay) {
+		ShowError(getString(id), longDelay);
 	}
 
 	/**
@@ -403,21 +410,21 @@ public class RemoteUiActivity extends Activity implements
 	/**
 	 * Display a short error via a popup message.
 	 */
-	private void ShowErrorInternal(String s) {
+	private void ShowErrorInternal(String s, boolean longDelay) {
 		//checking for repeating error
 		final long currentTime = System.currentTimeMillis();
 		if ((!s.equals(mLastErrorMessage)) || ((currentTime - mLastErrorMessageTime) > MINIMUM_ms_TIME_BETWEEN_ERRORS))
-			Toast.makeText(this, s, Toast.LENGTH_SHORT).show();//we can show the error.
+			Toast.makeText(this, s, longDelay? Toast.LENGTH_LONG : Toast.LENGTH_SHORT).show();//we can show the error.
 		mLastErrorMessage = s;
 		mLastErrorMessageTime = currentTime;
 	}
 	/**
 	 * Show an error, may be called from any thread
 	 */
-	public void ShowError(final String s) {
+	public void ShowError(final String s, final boolean longDelay) {
 		runOnUiThread(new Runnable() {
 			public void run() {
-				ShowErrorInternal(s);
+				ShowErrorInternal(s, longDelay);
 			}
 		});
 	}
@@ -496,14 +503,14 @@ public class RemoteUiActivity extends Activity implements
 
 		for (int k = 0; k < servers.size(); ++k) {
 			BoxeeServer server = servers.get(k);
-			if (server.name().equals(preferred)) {
+			if (server.name().equals(preferred) || TextUtils.isEmpty(preferred)) {
 				if (!server.valid()) {
-					ShowError(String.format("Found '%s' but looks broken", server.name()));
+					ShowError(String.format("Found '%s' but looks broken", server.name()), false);
 					continue;
 				} else {
 					// Yay, found it and it works
 					mRemote.setServer(server);
-					mRemote.displayMessage("Connected to Boxee Remote");
+					mRemote.displayMessage("Connected to server "+server.name());
 					requestUpdateASAP(100);
 					if (server.authRequired())
 						passwordCheck();
@@ -512,14 +519,14 @@ public class RemoteUiActivity extends Activity implements
 			}
 		}
 
-		ShowError(String.format("Could not find preferred server '%s'", preferred));
+		ShowError("Could not find any servers. Try specifying it in the Settings (press MENU)", true);
 	}
 
 	private void passwordCheck() {
 		// TODO: open a dialog box here instead
 		String password = HttpRequestBlocking.password();
 		if (password == null || password.length() == 0)
-			ShowError("Server requires password. Set one in preferences.");
+			ShowError("Server requires password. Set one in preferences.", true);
 	}
 
 }
