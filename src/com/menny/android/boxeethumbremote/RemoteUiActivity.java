@@ -1,8 +1,14 @@
+/* The following code was written by Menny Even Danan
+ * and is released under the APACHE 2.0 license
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
 package com.menny.android.boxeethumbremote;
 
 import java.util.ArrayList;
 
 import com.menny.android.boxeethumbremote.R;
+import com.menny.android.boxeethumbremote.ShakeListener.OnShakeListener;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -30,7 +36,7 @@ import android.widget.ViewFlipper;
 
 public class RemoteUiActivity extends Activity implements
 		OnSharedPreferenceChangeListener, DiscovererThread.Receiver,
-		BoxeeRemote.ErrorHandler, OnClickListener {
+		BoxeeRemote.ErrorHandler, OnClickListener, OnShakeListener {
 
 	public final static String TAG = RemoteUiActivity.class.toString();
 
@@ -53,6 +59,9 @@ public class RemoteUiActivity extends Activity implements
 	private BoxeeRemote mRemote;
 	private NowPlaying mNowPlaying = new NowPlaying();
 	private ServerStatePoller mStatePoller = null; 
+
+	//Not ready for prime time
+	//private ShakeListener mShakeDetector;
 	
 	private Point mTouchPoint = new Point();
 	private boolean mDragged = false;
@@ -80,6 +89,7 @@ public class RemoteUiActivity extends Activity implements
 				mStatePoller.checkStateNow();
 		}
 	};
+
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -111,10 +121,14 @@ public class RemoteUiActivity extends Activity implements
 		setButtonAction(R.id.buttonStop, 0);
 		setButtonAction(R.id.buttonSmallSkipBack, 0);
 		setButtonAction(R.id.buttonSmallSkipFwd, 0);
+		
+		//mShakeDetector = new ShakeListener(getApplicationContext());
+		//mShakeDetector.setOnShakeListener(this);
 	}
 
 	@Override
 	protected void onPause() {
+		//mShakeDetector.pause();
 		mSettings.unlisten(this);
 		mHandler.removeCallbacks(mRequestStatusUpdateRunnable);
 		
@@ -138,6 +152,8 @@ public class RemoteUiActivity extends Activity implements
 		
 		mStatePoller = new ServerStatePoller(mHandler, mRemote, mNowPlaying);
 		mStatePoller.poll();
+		
+		//mShakeDetector.resume();
 	}
 
 	@Override
@@ -156,7 +172,7 @@ public class RemoteUiActivity extends Activity implements
 		switch (v.getId()) {
 		
 		case R.id.buttonPlayPause:
-			mRemote.pause();
+			mRemote.flipPlayPause();
 			requestUpdateASAP(100);
 			break;
 
@@ -510,7 +526,15 @@ public class RemoteUiActivity extends Activity implements
 				} else {
 					// Yay, found it and it works
 					mRemote.setServer(server);
-					mRemote.displayMessage("Connected to server "+server.name());
+					final String serverName = server.name();
+					mRemote.displayMessage("Connected to server "+serverName);
+					runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							setTitle(getString(R.string.app_name)+" - "+serverName);
+						}
+					});
+					
 					requestUpdateASAP(100);
 					if (server.authRequired())
 						passwordCheck();
@@ -519,6 +543,12 @@ public class RemoteUiActivity extends Activity implements
 			}
 		}
 
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				setTitle(getString(R.string.app_name));
+			}
+		});
 		ShowError("Could not find any servers. Try specifying it in the Settings (press MENU)", true);
 	}
 
@@ -527,6 +557,14 @@ public class RemoteUiActivity extends Activity implements
 		String password = HttpRequestBlocking.password();
 		if (password == null || password.length() == 0)
 			ShowError("Server requires password. Set one in preferences.", true);
+	}
+	
+	@Override
+	public void onShake() {
+		Log.d(TAG, "Shake detect! Fullscreen? "+mNowPlaying.isOnNowPlayingScreen());
+		mRemote.flipPlayPause();
+		//if (mNowPlaying.isOnNowPlayingScreen())
+			
 	}
 
 }

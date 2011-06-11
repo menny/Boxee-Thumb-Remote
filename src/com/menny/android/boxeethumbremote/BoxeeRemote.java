@@ -1,3 +1,8 @@
+/* The following code was written by Menny Even Danan
+ * and is released under the APACHE 2.0 license
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
 package com.menny.android.boxeethumbremote;
 
 import java.net.MalformedURLException;
@@ -163,7 +168,7 @@ public class BoxeeRemote {
 		sendKeyPress(unicode + KEY_ASCII);
 	}
 
-	public void pause() {
+	public void flipPlayPause() {
 		sendHttpCommand(getRequestPrefix() + "Pause");
 	}
 

@@ -1,3 +1,8 @@
+/* The following code was written by Menny Even Danan
+ * and is released under the APACHE 2.0 license
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
 package com.menny.android.boxeethumbremote;
 
 import java.io.IOException;
@@ -5,7 +10,6 @@ import java.net.URLEncoder;
 
 import android.graphics.BitmapFactory;
 import android.os.Handler;
-import android.text.TextUtils;
 import android.util.Log;
 
 public final class ServerStatePoller {

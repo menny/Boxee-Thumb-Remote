@@ -3,7 +3,7 @@
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Copyright 2011 AnySoftKeyboard
+ * Revised by Menny Even Danan. Copyright 2011 AnySoftKeyboard
  */
 package com.menny.android.boxeethumbremote;
 
