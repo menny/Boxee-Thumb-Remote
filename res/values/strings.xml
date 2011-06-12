@@ -44,4 +44,11 @@
     <string name="keep_screen_on_title">Keep screen on</string>
     <string name="keep_screen_on_yes">Screen will no go to sleep (drains battery!)</string>
     <string name="keep_screen_on_no">Screen will go to sleep on inactivity</string>
+    
+    <string name="handle_back_hard">Use physical BACK</string>
+    <string name="handle_back_hard_on">Pressing BACK will send it to the server</string>
+    <string name="handle_back_hard_off">Pressing BACK will be passed to Android</string>
+    
+    <string name="ux_group">UX Settings</string>
+    <string name="network_group">Network Settings</string>
 </resources>

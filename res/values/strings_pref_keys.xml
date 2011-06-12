@@ -12,4 +12,6 @@
 	<string name="screen_orientation_default_value">portrait</string>
 	
 	<string name="keep_screen_on_key">keep_screen_on_key</string>
+	
+	<string name="handle_back_hard_key">handle_back_hard_key</string>
 </resources>

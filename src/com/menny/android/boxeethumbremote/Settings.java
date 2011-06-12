@@ -31,6 +31,11 @@ public class Settings {
 	public static final String TIMEOUT_KEY = "timeout";
 	private final String VOLUME_STEP_SIZE_KEY;
 	private final int VOLUME_STEP_SIZE_DEFAULT_VALUE;
+	private final String HANDLE_HARD_BACK_KEY;
+	private final boolean HANDLE_HARD_BACK_DEFAULT;
+	private final String KEEP_SCREEN_ON_KEY;
+	private final boolean KEEP_SCREEN_ON_DEFAULT;
+	
 	
 	private SharedPreferences mPreferences;
 
@@ -42,10 +47,24 @@ public class Settings {
 		
 		VOLUME_STEP_SIZE_KEY = context.getString(R.string.volume_step_size_key);
 		VOLUME_STEP_SIZE_DEFAULT_VALUE = context.getResources().getInteger(R.integer.volume_step_size_default_value);
+		
+		HANDLE_HARD_BACK_KEY = context.getString(R.string.handle_back_hard_key);
+		HANDLE_HARD_BACK_DEFAULT = context.getResources().getBoolean(R.bool.handle_back_hard_default);
+		
+		KEEP_SCREEN_ON_KEY = context.getString(R.string.keep_screen_on_key);
+		KEEP_SCREEN_ON_DEFAULT = context.getResources().getBoolean(R.bool.keep_screen_on_default);
 	}
 
 	public int getVolumeStep() {
 		return mPreferences.getInt(VOLUME_STEP_SIZE_KEY, VOLUME_STEP_SIZE_DEFAULT_VALUE);
+	}
+	
+	public boolean getHandleBack() {
+		return mPreferences.getBoolean(HANDLE_HARD_BACK_KEY, HANDLE_HARD_BACK_DEFAULT);
+	}
+	
+	public boolean getKeepScreenOn(){
+		return mPreferences.getBoolean(KEEP_SCREEN_ON_KEY, KEEP_SCREEN_ON_DEFAULT);
 	}
 	
 	public String getServerName() {

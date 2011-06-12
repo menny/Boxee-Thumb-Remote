@@ -154,6 +154,8 @@ public class RemoteUiActivity extends Activity implements
 		mStatePoller.poll();
 		
 		//mShakeDetector.resume();
+		
+		mImageThumbnail.setKeepScreenOn(mSettings.getKeepScreenOn());
 	}
 
 	@Override
@@ -283,8 +285,15 @@ public class RemoteUiActivity extends Activity implements
 			return true;
 
 		case KeyEvent.KEYCODE_BACK:
-			mRemote.back();
-			return true;
+			if (mSettings.getHandleBack())
+			{
+				mRemote.back();
+				return true;
+			}
+			else
+			{
+				super.onKeyDown(keyCode, event);
+			}
 
 		case KeyEvent.KEYCODE_DPAD_CENTER:
 			mRemote.select();

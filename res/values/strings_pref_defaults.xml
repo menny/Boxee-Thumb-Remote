@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<integer name="volume_step_size_default_value">10</integer>
+	<bool name="handle_back_hard_default">true</bool>
+	<bool name="keep_screen_on_default">true</bool>
 </resources>
