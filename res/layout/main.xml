@@ -38,7 +38,7 @@
 	
 	<ImageView
 		android:id="@+id/thumbnail"
-		android:src="@drawable/boxee132"
+		android:src="@drawable/remote_background"
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
 		android:layout_below="@id/textNowPlayingTitle"

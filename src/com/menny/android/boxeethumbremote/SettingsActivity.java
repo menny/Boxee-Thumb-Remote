@@ -126,7 +126,7 @@ public class SettingsActivity extends PreferenceActivity implements
 
 		builder.setNegativeButton(android.R.string.cancel, null);
 		builder.setTitle(R.string.custom_server);
-		builder.setIcon(R.drawable.ic_menu_boxee_logo);
+		builder.setIcon(R.drawable.app_icon);
 
 		return builder.create();
 	}

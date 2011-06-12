@@ -248,10 +248,12 @@ public class RemoteUiActivity extends Activity implements
 			mImageThumbnail.setImageBitmap(mNowPlaying.getThumbnail());
 			String title = mNowPlaying.getTitle();
 			mTextTitle.setText(title);
+			//this will fire up the marquee thingy
+			mTextTitle.setSelected(true);
 		}
 		else
 		{
-			mImageThumbnail.setImageResource(R.drawable.boxee132);
+			mImageThumbnail.setImageResource(R.drawable.remote_background);
 			mTextTitle.setText("");
 		}
 	}
