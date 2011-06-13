@@ -3,7 +3,7 @@
 	xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.menny.android.boxeethumbremote"
     android:versionCode="2"
-    android:versionName="20110612-thumbs_up">
+    android:versionName="20110613-thumbs_up">
     
     <application 
     	android:icon="@drawable/app_icon"
