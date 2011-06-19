@@ -51,8 +51,7 @@ public class BoxeeRemote {
 	private NetworkInfo mWifiInfo;
 
 	public BoxeeRemote(Context context, ErrorHandler error) {
-		ConnectivityManager connectivity = (ConnectivityManager) context
-				.getSystemService(Context.CONNECTIVITY_SERVICE);
+		ConnectivityManager connectivity = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo wifiInfo = connectivity
 				.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
 

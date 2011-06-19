@@ -11,7 +11,11 @@ import com.menny.android.boxeethumbremote.R;
 import com.menny.android.boxeethumbremote.ShakeListener.OnShakeListener;
 
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -40,6 +44,27 @@ public class RemoteUiActivity extends Activity implements
 
 	public final static String TAG = RemoteUiActivity.class.toString();
 
+	private static RemoteUiActivity msActivity = null;
+
+	public static void onExternalImportantEvent(String event) {
+		final RemoteUiActivity realActivity = msActivity;
+		if (realActivity != null)
+		{
+			Log.i(TAG, "Got an important external event '"+event+"'!");
+			realActivity.pauseIfPlaying();
+		}
+	}
+	
+	public static void onNetworkAvailable()
+	{
+		final RemoteUiActivity realActivity = msActivity;
+		if (realActivity != null)
+		{
+			Log.i(TAG, "Got network! Trying to reconnect...");
+			realActivity.mRemote = new BoxeeRemote(realActivity, realActivity);
+			realActivity.setServer();
+		}
+	}
 	// Menu items
 	private static final int MENU_SETTINGS = Menu.FIRST;
 	// ViewFlipper
@@ -55,6 +80,11 @@ public class RemoteUiActivity extends Activity implements
 	TextView mDuration;
 	ProgressBar mElapsedBar;
 
+	private static final int NOTIFICATION_PLAYING_ID = 1;
+	private NotificationManager mNotificationManager;
+
+	private boolean mThisAcitivityPaused = true;
+	
 	private Settings mSettings;
 	private BoxeeRemote mRemote;
 	private NowPlaying mNowPlaying = new NowPlaying();
@@ -90,11 +120,12 @@ public class RemoteUiActivity extends Activity implements
 		}
 	};
 
-	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		
 		mRemote = new BoxeeRemote(this, this);
 
 		setContentView(R.layout.main);
@@ -124,38 +155,61 @@ public class RemoteUiActivity extends Activity implements
 		
 		//mShakeDetector = new ShakeListener(getApplicationContext());
 		//mShakeDetector.setOnShakeListener(this);
+		msActivity = this;
+		
+		mStatePoller = new ServerStatePoller(mHandler, mRemote, mNowPlaying);
+		mStatePoller.poll();
 	}
 
 	@Override
 	protected void onPause() {
+		mThisAcitivityPaused = true;
 		//mShakeDetector.pause();
 		mSettings.unlisten(this);
 		mHandler.removeCallbacks(mRequestStatusUpdateRunnable);
 		
 		super.onPause();
 		if (mStatePoller != null)
-			mStatePoller.stop();
-		mStatePoller = null;
+			mStatePoller.moveToBackground();
 		
 		if (mPleaseWaitDialog != null)
 			mPleaseWaitDialog.dismiss();
 		mPleaseWaitDialog = null;
 	}
+	
+	@Override
+	protected void onDestroy() {
+		msActivity = null;
+		mNotificationManager.cancel(NOTIFICATION_PLAYING_ID);
+		if (mStatePoller != null)
+			mStatePoller.stop();
+		mStatePoller = null;
+		super.onDestroy();
+	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
+		mThisAcitivityPaused = false;
+		
 		mSettings.listen(this);
 		
 		if (!mRemote.hasServers() && !mServerDiscoverer.isLookingForServers())
 			setServer();
 		
-		mStatePoller = new ServerStatePoller(mHandler, mRemote, mNowPlaying);
-		mStatePoller.poll();
-		
 		//mShakeDetector.resume();
 		
 		mImageThumbnail.setKeepScreenOn(mSettings.getKeepScreenOn());
+		
+		if (mStatePoller == null)
+		{
+			mStatePoller = new ServerStatePoller(mHandler, mRemote, mNowPlaying);
+			mStatePoller.poll();
+		}
+		else
+		{
+			mStatePoller.comeBackToForeground();
+		}
 	}
 
 	@Override
@@ -165,6 +219,12 @@ public class RemoteUiActivity extends Activity implements
 				new Intent(this, SettingsActivity.class));
 
 		return true;
+	}
+	
+	private void pauseIfPlaying()
+	{
+		if (!mNowPlaying.isPaused())
+			mRemote.flipPlayPause();
 	}
 
 	@Override
@@ -218,7 +278,9 @@ public class RemoteUiActivity extends Activity implements
 	}
 
 	private void refreshNowPlaying() {
-		mIsNowPlaying = mNowPlaying.isNowPlaying();
+		final boolean newNowPlaying = mNowPlaying.isNowPlaying();
+		final boolean nowPlayingChanged = newNowPlaying != mIsNowPlaying;
+		mIsNowPlaying = newNowPlaying;
 
 		flipTo(mNowPlaying.isNowPlaying() ? PAGE_NOWPLAYING : PAGE_NOTPLAYING);
 
@@ -227,7 +289,7 @@ public class RemoteUiActivity extends Activity implements
 					mNowPlaying.isPaused() ? R.drawable.icon_osd_play
 							: R.drawable.icon_osd_pause));
 	
-			String title = mNowPlaying.getTitle();
+			final String title = mNowPlaying.getTitle();
 			mTextTitle.setText(title);
 	
 			mDuration.setText(mNowPlaying.getDuration());
@@ -235,11 +297,36 @@ public class RemoteUiActivity extends Activity implements
 			String elapsed = mNowPlaying.getElapsed();
 			mTextElapsed.setText(elapsed);
 
-			mElapsedBar.setProgress(mNowPlaying.getPercentage());			
+			mElapsedBar.setProgress(mNowPlaying.getPercentage());
+			
+			if (nowPlayingChanged)
+			{
+				Notification notification = new Notification(R.drawable.notification_playing, getString(R.string.server_is_playing, title), System.currentTimeMillis());
+
+				Intent notificationIntent = new Intent(this, RemoteUiActivity.class);
+				PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+
+				notification.setLatestEventInfo(getApplicationContext(),
+						getText(R.string.app_name), getString(R.string.server_is_playing, title),
+						contentIntent);
+				notification.flags |= Notification.FLAG_ONGOING_EVENT;
+				notification.flags |= Notification.FLAG_NO_CLEAR;
+				//notification.defaults = 0;// no sound, vibrate, etc.
+				// notifying
+				mNotificationManager.notify(NOTIFICATION_PLAYING_ID, notification);
+			}
 		}
 		else
 		{
 			mTextTitle.setText("");
+			mNotificationManager.cancel(NOTIFICATION_PLAYING_ID);
+			//in case this activity is in the background, I also want to kill
+			//the poller (if alive)
+			if (mThisAcitivityPaused)
+			{
+				//not playing, and in the background? Die!
+				finish();
+			}
 		}
 	}
 	
@@ -491,6 +578,9 @@ public class RemoteUiActivity extends Activity implements
 			requestUpdateASAP(100);
 		}
 		else {
+			if (mPleaseWaitDialog != null)
+				mPleaseWaitDialog.dismiss();
+			
 			mPleaseWaitDialog = ProgressDialog.show(this, "", "Looking for a server...", true);
 			mServerDiscoverer = new DiscovererThread(this, this);
 			mServerDiscoverer.start();

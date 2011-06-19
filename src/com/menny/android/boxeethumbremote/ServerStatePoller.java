@@ -17,12 +17,17 @@ public final class ServerStatePoller {
 	
 	public static final int MESSAGE_NOW_PLAYING_UPDATED = 1;
 	public static final int MESSAGE_MEDIA_METADATA_UPDATED = 2;
+
+	public static final long REGULAR_DELAY = 500;
+	public static final long BACKGROUND_DELAY = REGULAR_DELAY * 3;
 	
 	private final Object mWaiter = new Object();
 	private final NowPlaying mPlaying;
 	private final Handler mHandler;
 	private final BoxeeRemote mRemote;
 	
+	private long mWaitTime = REGULAR_DELAY;
+
 	
 	private boolean mRun;
 
@@ -35,6 +40,7 @@ public final class ServerStatePoller {
 	}
 	private final Thread mPollerThread = new Thread()
 	{	
+		
 		public void run() {
 			Log.d(TAG, "Starting ServerStatePoller.");
 			String currentlyRunningTitle = "";
@@ -64,7 +70,7 @@ public final class ServerStatePoller {
 						synchronized (mWaiter) {
 							//refreshing state every 500 ms
 							try {
-								mWaiter.wait(500);
+								mWaiter.wait(mWaitTime );
 							} catch (InterruptedException e) {
 								e.printStackTrace();
 								mRun = false;
@@ -78,6 +84,8 @@ public final class ServerStatePoller {
 	};
 	
 	public void poll() {
+		mRun = true;
+		mWaitTime = REGULAR_DELAY;
 		mPollerThread.start();
 	}
 	
@@ -88,13 +96,21 @@ public final class ServerStatePoller {
 		}
 	}
 	
+	public void moveToBackground() {
+		mWaitTime = BACKGROUND_DELAY;
+	}
+	
+	public void comeBackToForeground() {
+		mWaitTime = REGULAR_DELAY;
+	}
+	
+	
 	public void stop() {
 		mRun = false;
 		synchronized (mWaiter) {
 			mWaiter.notifyAll();
 		}
 	}
-	
 	
 	private boolean getCurrentlyPlayingStatus() {
 
