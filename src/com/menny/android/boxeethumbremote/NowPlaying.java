@@ -17,6 +17,8 @@ import android.util.Log;
 /**
  * NowPlaying represents information we know about the currently playing item in
  * Boxee. It parses the information from Boxee's getcurrentlyplaying() function.
+ * 
+ * ftp://ohnopublishing.net/distfiles/svn-src/xbmc/trunk/xbmc/lib/libGoAhead/XBMChttp.cpp
  */
 final class NowPlaying {
 	private final static String TAG = NowPlaying.class.toString();
@@ -59,9 +61,9 @@ final class NowPlaying {
 		return mEntries.containsKey("Time");
 	}
 
-	boolean isPaused() {
+	boolean isPlaying() {
 		String playstatus = mEntries.containsKey("PlayStatus") ? mEntries.get("PlayStatus") : "";
-		return playstatus.equals("Paused");
+		return playstatus.equals("Playing");
 	}
 
 	boolean isOnNowPlayingScreen() {
@@ -103,10 +105,12 @@ final class NowPlaying {
 	}
 	
 	String getElapsed() {
-		if (isPaused())
+		if (isPlaying())
+			return secondsToHms(getElapsedSeconds());
+		else
 			return mEntries.containsKey("Time") ? mEntries.get("Time") : "";
 			
-		return secondsToHms(getElapsedSeconds());
+		
 	}
 
 	String getDuration() {

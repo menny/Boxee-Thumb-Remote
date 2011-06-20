@@ -223,7 +223,7 @@ public class RemoteUiActivity extends Activity implements
 	
 	private void pauseIfPlaying()
 	{
-		if (!mNowPlaying.isPaused())
+		if (mNowPlaying.isPlaying())
 			mRemote.flipPlayPause();
 	}
 
@@ -286,8 +286,8 @@ public class RemoteUiActivity extends Activity implements
 
 		if (mIsNowPlaying) {
 			mButtonPlayPause.setBackgroundDrawable(getResources().getDrawable(
-					mNowPlaying.isPaused() ? R.drawable.icon_osd_play
-							: R.drawable.icon_osd_pause));
+					mNowPlaying.isPlaying() ? R.drawable.icon_osd_pause
+							: R.drawable.icon_osd_play));
 	
 			final String title = mNowPlaying.getTitle();
 			mTextTitle.setText(title);
