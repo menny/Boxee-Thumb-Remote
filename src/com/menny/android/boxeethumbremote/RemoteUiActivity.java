@@ -58,7 +58,7 @@ public class RemoteUiActivity extends Activity implements
 	public static void onNetworkAvailable()
 	{
 		final RemoteUiActivity realActivity = msActivity;
-		if (realActivity != null)
+		if (realActivity != null && !realActivity.mThisAcitivityPaused)
 		{
 			Log.i(TAG, "Got network! Trying to reconnect...");
 			realActivity.mRemote = new BoxeeRemote(realActivity, realActivity);
