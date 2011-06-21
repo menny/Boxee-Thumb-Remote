@@ -27,6 +27,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.KeyCharacterMap.KeyData;
@@ -67,6 +68,8 @@ public class RemoteUiActivity extends Activity implements
 	}
 	// Menu items
 	private static final int MENU_SETTINGS = Menu.FIRST;
+	private static final int MENU_EXIT = MENU_SETTINGS+1;
+	
 	// ViewFlipper
 	private static final int PAGE_NOTPLAYING = 0;
 	private static final int PAGE_NOWPLAYING = 1;
@@ -217,8 +220,21 @@ public class RemoteUiActivity extends Activity implements
 		menu.add(Menu.NONE, MENU_SETTINGS, 0, R.string.settings).setIcon(
 				android.R.drawable.ic_menu_preferences).setIntent(
 				new Intent(this, SettingsActivity.class));
-
+		menu.add(Menu.NONE, MENU_EXIT, 0, R.string.exit_app).setIcon(
+				android.R.drawable.ic_menu_close_clear_cancel);
 		return true;
+	}
+	
+	@Override
+	public boolean onMenuItemSelected(int featureId, MenuItem item) {
+		switch(item.getItemId())
+		{
+		case MENU_EXIT:
+			finish();
+			return true;
+		default:
+			return super.onMenuItemSelected(featureId, item);
+		}
 	}
 	
 	private void pauseIfPlaying()
