@@ -13,6 +13,7 @@ import com.menny.android.boxeethumbremote.R;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
@@ -67,8 +68,10 @@ public class SettingsActivity extends PreferenceActivity implements
 	protected void onPause() {
 		mSettings.unlisten(this);
 		super.onPause();
+		finish();
+		startActivity(new Intent(getApplicationContext(), RemoteUiActivity.class));
 	}
-
+	
 	@Override
 	protected void onResume() {
 		super.onResume();

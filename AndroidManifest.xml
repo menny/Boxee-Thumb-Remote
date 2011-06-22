@@ -31,8 +31,9 @@
                 </intent-filter> 
         </receiver>
         
-    	<activity android:name=".SettingsActivity" />
+    	<activity android:name=".SettingsActivity" android:exported="false"/>
 		
+		<activity android:name=".HelpUiActivity" android:exported="false"/>
     </application>
     
     <supports-screens

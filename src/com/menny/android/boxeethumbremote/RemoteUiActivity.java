@@ -18,11 +18,13 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -68,7 +70,8 @@ public class RemoteUiActivity extends Activity implements
 	}
 	// Menu items
 	private static final int MENU_SETTINGS = Menu.FIRST;
-	private static final int MENU_EXIT = MENU_SETTINGS+1;
+	private static final int MENU_HELP = MENU_SETTINGS+1;
+	private static final int MENU_EXIT = MENU_HELP+1;
 	
 	// ViewFlipper
 	private static final int PAGE_NOTPLAYING = 0;
@@ -162,8 +165,29 @@ public class RemoteUiActivity extends Activity implements
 		
 		mStatePoller = new ServerStatePoller(mHandler, mRemote, mNowPlaying);
 		mStatePoller.poll();
+		
+		startHelpOnFirstRun();
 	}
 
+	private void startHelpOnFirstRun() {
+		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+		final boolean ranBefore = preferences.getBoolean("has_ran_before", false);
+		if (!ranBefore)
+		{
+			Editor e = preferences.edit();
+			e.putBoolean("has_ran_before", true);
+			e.commit();
+			
+			startHelpActivity();
+		}
+	}
+
+	private void startHelpActivity() {
+		Intent i = new Intent(getApplicationContext(), HelpUiActivity.class);
+		i.setFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS + Intent.FLAG_ACTIVITY_NO_HISTORY);
+		startActivity(i);
+	}
+	
 	@Override
 	protected void onPause() {
 		mThisAcitivityPaused = true;
@@ -220,6 +244,10 @@ public class RemoteUiActivity extends Activity implements
 		menu.add(Menu.NONE, MENU_SETTINGS, 0, R.string.settings).setIcon(
 				android.R.drawable.ic_menu_preferences).setIntent(
 				new Intent(this, SettingsActivity.class));
+		
+		menu.add(Menu.NONE, MENU_HELP, 0, R.string.help).setIcon(
+				android.R.drawable.ic_menu_help);
+		
 		menu.add(Menu.NONE, MENU_EXIT, 0, R.string.exit_app).setIcon(
 				android.R.drawable.ic_menu_close_clear_cancel);
 		return true;
@@ -231,6 +259,9 @@ public class RemoteUiActivity extends Activity implements
 		{
 		case MENU_EXIT:
 			finish();
+			return true;
+		case MENU_HELP:
+			startHelpActivity();
 			return true;
 		default:
 			return super.onMenuItemSelected(featureId, item);
@@ -539,6 +570,7 @@ public class RemoteUiActivity extends Activity implements
 	 * Display a short error via a popup message.
 	 */
 	private void ShowErrorInternal(String s, boolean longDelay) {
+		if (mThisAcitivityPaused) return;
 		//checking for repeating error
 		final long currentTime = System.currentTimeMillis();
 		if ((!s.equals(mLastErrorMessage)) || ((currentTime - mLastErrorMessageTime) > MINIMUM_ms_TIME_BETWEEN_ERRORS))
