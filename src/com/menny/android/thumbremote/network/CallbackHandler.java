@@ -3,13 +3,13 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-package com.menny.android.boxeethumbremote;
+package com.menny.android.thumbremote.network;
 
 /**
  * Callback interface for receiving the result of an asynchronous fetch. This
  * will be called from the HttpRequest thread when the fetch completes.
  */
-interface CallbackHandler {
+public interface CallbackHandler {
 	/**
 	 * Handle the response.
 	 * 

@@ -3,7 +3,7 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-package com.menny.android.boxeethumbremote;
+package com.menny.android.thumbremote.boxee;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -21,6 +21,8 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
+import com.menny.android.thumbremote.Server;
+
 
 import android.content.Context;
 import android.net.DhcpInfo;
@@ -32,7 +34,7 @@ import android.util.Log;
  * broadcast UDP packet over your wifi network to discover the boxee service.
  */
 
-public class DiscovererThread extends Thread {
+public class BoxeeDiscovererThread extends Thread {
 	private static final String TAG = "Discoverer";
 
 	private static final String REMOTE_KEY = "b0xeeRem0tE!";
@@ -45,7 +47,7 @@ public class DiscovererThread extends Thread {
 	private WifiManager mWifi;
 	private boolean mListening = true;
 
-	interface Receiver {
+	public interface Receiver {
 		/**
 		 * Process the list of discovered servers. This is always called once
 		 * after a short timeout.
@@ -53,16 +55,16 @@ public class DiscovererThread extends Thread {
 		 * @param servers
 		 *            list of discovered servers, null on error
 		 */
-		void addAnnouncedServers(ArrayList<BoxeeServer> servers);
+		void addAnnouncedServers(ArrayList<Server> servers);
 	}
 
-	DiscovererThread(Context context, Receiver receiver) {
+	public BoxeeDiscovererThread(Context context, Receiver receiver) {
 		mWifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 		mReceiver = receiver;
 	}
 
 	public void run() {
-		ArrayList<BoxeeServer> servers = null;
+		ArrayList<Server> servers = null;
 		try {
 			DatagramSocket socket = new DatagramSocket(DISCOVERY_PORT);
 			socket.setBroadcast(true);
@@ -72,7 +74,7 @@ public class DiscovererThread extends Thread {
 			servers = listenForResponses(socket);
 			socket.close();
 		} catch (IOException e) {
-			servers = new ArrayList<BoxeeServer>(); // use an empty one
+			servers = new ArrayList<Server>(); // use an empty one
 			Log.e(TAG, "Could not send discovery request", e);
 		}
 		finally
@@ -126,11 +128,11 @@ public class DiscovererThread extends Thread {
 	 * @return list of discovered servers, never null
 	 * @throws IOException
 	 */
-	private ArrayList<BoxeeServer> listenForResponses(DatagramSocket socket)
+	private ArrayList<Server> listenForResponses(DatagramSocket socket)
 			throws IOException {
 		long start = System.currentTimeMillis();
 		byte[] buf = new byte[1024];
-		ArrayList<BoxeeServer> servers = new ArrayList<BoxeeServer>();
+		ArrayList<Server> servers = new ArrayList<Server>();
 
 		// Loop and try to receive responses until the timeout elapses. We'll
 		// get
@@ -143,14 +145,19 @@ public class DiscovererThread extends Thread {
 				socket.receive(packet);
 				String s = new String(packet.getData(), 0, packet.getLength());
 				Log.d(TAG, "Packet received after "+ (System.currentTimeMillis() - start) + " " + s);
-				BoxeeServer server = parseResponse(s,
+				Server server = parseResponse(s,
 						((InetSocketAddress) packet.getSocketAddress())
 								.getAddress());
 				if (server != null)
 					servers.add(server);
 			}
 		} catch (SocketTimeoutException e) {
-			Log.d(TAG, "Receive timed out");
+			Log.w(TAG, "Receive timed out");
+		}
+		catch(Exception e)
+		{
+			Log.w(TAG, "Failed to create a Server object from discovery response! Error: "+e.getMessage());
+			e.printStackTrace();
 		}
 		return servers;
 	}
@@ -163,7 +170,7 @@ public class DiscovererThread extends Thread {
 	 * httpPort="<port_nubmer>" httpAuthRequired="<true|false>"
 	 * signature="<MD5HEX(randomdigits+shared_key)>"/>
 	 */
-	private BoxeeServer parseResponse(String response, InetAddress address) {
+	private Server parseResponse(String response, InetAddress address) {
 
 		HashMap<String, String> values = parseBDP1Xml(response);
 		if (values == null)
@@ -197,7 +204,10 @@ public class DiscovererThread extends Thread {
 			return null;
 		}
 
-		BoxeeServer server = new BoxeeServer(values, address);
+		Server server = new Server("Boxee", 
+				values.get("name"), 
+				"true".equalsIgnoreCase(values.get("httpAuthRequired")),
+				address, Integer.parseInt(values.get("httpPort")));
 		Log.d(TAG, "Discovered server " + server);
 		return server;
 	}

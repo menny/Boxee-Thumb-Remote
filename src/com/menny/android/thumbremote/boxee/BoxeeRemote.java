@@ -3,11 +3,17 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-package com.menny.android.boxeethumbremote;
+package com.menny.android.thumbremote.boxee;
 
 import java.net.MalformedURLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.menny.android.thumbremote.R;
+import com.menny.android.thumbremote.Remote;
+import com.menny.android.thumbremote.Server;
+import com.menny.android.thumbremote.network.CallbackHandler;
+import com.menny.android.thumbremote.network.HttpRequestThread;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -21,7 +27,7 @@ import android.util.Log;
  * @author chatham
  * 
  */
-public class BoxeeRemote {
+public class BoxeeRemote implements Remote {
 
 	/**
 	 * Keycodes, from boxee API
@@ -35,11 +41,6 @@ public class BoxeeRemote {
 	//special key for backspace
 	private final static int CODE_BACKSPACE = 61704;
 	private final static int KEY_ASCII = 0xF100;
-
-	interface ErrorHandler {
-		public void ShowError(int id, boolean longDelay);
-		public void ShowError(String s, boolean longDelay);
-	}
 
 	static public final int BAD_PORT = -1;
 	public final static String TAG = BoxeeRemote.class.toString();
@@ -59,13 +60,10 @@ public class BoxeeRemote {
 		mWifiInfo = wifiInfo;
 	}
 
-	/**
-	 * Tell boxee to change the volume. This involves doing a getVolume request,
-	 * then a setVolume request.
-	 * 
-	 * @param percent
-	 *            percent increase/decrease in volume
+	/* (non-Javadoc)
+	 * @see com.menny.android.thumbremote.boxee.Remote#changeVolume(int)
 	 */
+	@Override
 	public void changeVolume(final int percent) {
 		if (!hasServers())
 			return;
@@ -105,16 +103,19 @@ public class BoxeeRemote {
 		}
 	}
 
-	/**
-	 * Return the HTTP request prefix for sending boxee a command.
-	 * 
-	 * @return URL to send to boxee, up to but not including the boxee command
+	/* (non-Javadoc)
+	 * @see com.menny.android.thumbremote.boxee.Remote#getRequestPrefix()
 	 */
+	@Override
 	public String getRequestPrefix() {
 		return String.format("http://%s:%d/xbmcCmds/xbmcHttp?command=", mHost,
 				mPort);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menny.android.thumbremote.boxee.Remote#getRequestString(java.lang.String)
+	 */
+	@Override
 	public String getRequestString(String command) {
 		return getRequestPrefix() + command;
 	}
@@ -134,60 +135,94 @@ public class BoxeeRemote {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menny.android.thumbremote.boxee.Remote#up()
+	 */
+	@Override
 	public void up() {
 		sendKeyPress(CODE_UP);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menny.android.thumbremote.boxee.Remote#down()
+	 */
+	@Override
 	public void down() {
 		sendKeyPress(CODE_DOWN);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menny.android.thumbremote.boxee.Remote#left()
+	 */
+	@Override
 	public void left() {
 		sendKeyPress(CODE_LEFT);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menny.android.thumbremote.boxee.Remote#right()
+	 */
+	@Override
 	public void right() {
 		sendKeyPress(CODE_RIGHT);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menny.android.thumbremote.boxee.Remote#back()
+	 */
+	@Override
 	public void back() {
 		sendKeyPress(CODE_BACK);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menny.android.thumbremote.boxee.Remote#select()
+	 */
+	@Override
 	public void select() {
 		sendKeyPress(CODE_SELECT);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menny.android.thumbremote.boxee.Remote#sendBackspace()
+	 */
+	@Override
 	public void sendBackspace()
 	{
 		sendKeyPress(CODE_BACKSPACE);
 	}
 	
+	/* (non-Javadoc)
+	 * @see com.menny.android.thumbremote.boxee.Remote#keypress(int)
+	 */
+	@Override
 	public void keypress(int unicode) {
 		sendKeyPress(unicode + KEY_ASCII);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menny.android.thumbremote.boxee.Remote#flipPlayPause()
+	 */
+	@Override
 	public void flipPlayPause() {
 		sendHttpCommand(getRequestPrefix() + "Pause");
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menny.android.thumbremote.boxee.Remote#stop()
+	 */
+	@Override
 	public void stop() {
 		sendHttpCommand(getRequestPrefix() + "Stop");
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menny.android.thumbremote.boxee.Remote#seek(double)
+	 */
+	@Override
 	public void seek(double pct) {
 		sendHttpCommand(getRequestPrefix() + "SeekPercentageRelative(" + pct
 				+ ")");
-	}
-
-	public void goToNowPlaying() {
-		sendHttpCommand(getRequestPrefix()
-				+ "ExecBuiltIn(ActivateWindow(12005))");
-	}
-
-	public void displayMessage(String message) {
-		sendHttpCommand(getRequestPrefix()
-				+ "ExecBuiltIn(Notification(WARNING," + message + "))");
 	}
 
 	private void sendKeyPress(int keycode) {
@@ -212,15 +247,24 @@ public class BoxeeRemote {
 		sendHttpCommand(request);
 	}
 
-	public void setServer(BoxeeServer server) {
+	@Override
+	public void setServer(Server server) {
 		mHost = server.address().getHostAddress();
 		mPort = server.port();
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menny.android.thumbremote.boxee.Remote#setRequireWifi(boolean)
+	 */
+	@Override
 	public void setRequireWifi(boolean requireWifi) {
 		mRequireWifi = requireWifi;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.menny.android.thumbremote.boxee.Remote#hasServers()
+	 */
+	@Override
 	public boolean hasServers() {
 		return !TextUtils.isEmpty(mHost);
 	}

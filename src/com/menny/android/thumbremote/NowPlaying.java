@@ -3,7 +3,7 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-package com.menny.android.boxeethumbremote;
+package com.menny.android.thumbremote;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -20,7 +20,7 @@ import android.util.Log;
  * 
  * ftp://ohnopublishing.net/distfiles/svn-src/xbmc/trunk/xbmc/lib/libGoAhead/XBMChttp.cpp
  */
-final class NowPlaying {
+public final class NowPlaying {
 	private final static String TAG = NowPlaying.class.toString();
 
 	final static Pattern LIST_ITEM = Pattern.compile(
@@ -57,16 +57,16 @@ final class NowPlaying {
 		}
 	}
 
-	boolean isNowPlaying() {
+	public boolean isNowPlaying() {
 		return mEntries.containsKey("Time");
 	}
 
-	boolean isPlaying() {
+	public boolean isPlaying() {
 		String playstatus = mEntries.containsKey("PlayStatus") ? mEntries.get("PlayStatus") : "";
 		return playstatus.equals("Playing");
 	}
 
-	boolean isOnNowPlayingScreen() {
+	public boolean isOnNowPlayingScreen() {
 		String screen = mEntries.containsKey("ActiveWindowName") ? mEntries.get("ActiveWindowName") : "";
 
 		return screen.equals("Fullscreen video");
@@ -80,7 +80,7 @@ final class NowPlaying {
 		return mEntries.containsKey("Thumb") ? mEntries.get("Thumb") : "";
 	}
 
-	String getTitle() {
+	public String getTitle() {
 		String showTitle = mEntries.get("Show Title");
 		String title = mEntries.get("Title");
 		String filename = mEntries.get("Filename");
@@ -104,7 +104,7 @@ final class NowPlaying {
 		return (int)((new Date().getTime() - mCurTime) / 1000) + mElapsedTime;
 	}
 	
-	String getElapsed() {
+	public String getElapsed() {
 		if (isPlaying())
 			return secondsToHms(getElapsedSeconds());
 		else
@@ -113,15 +113,15 @@ final class NowPlaying {
 		
 	}
 
-	String getDuration() {
+	public String getDuration() {
 		return mEntries.containsKey("Duration") ? mEntries.get("Duration") : "";
 	}
 	
-	int getDurationSeconds() {
+	public int getDurationSeconds() {
 		return mDuration;
 	}
 
-	int getPercentage() {
+	public int getPercentage() {
 		int duration = mDuration;
 		
 		if (duration == 0)

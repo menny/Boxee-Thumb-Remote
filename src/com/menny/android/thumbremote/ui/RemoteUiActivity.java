@@ -3,12 +3,20 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-package com.menny.android.boxeethumbremote;
+package com.menny.android.thumbremote.ui;
 
 import java.util.ArrayList;
 
-import com.menny.android.boxeethumbremote.R;
-import com.menny.android.boxeethumbremote.ShakeListener.OnShakeListener;
+import com.menny.android.thumbremote.R;
+import com.menny.android.thumbremote.NowPlaying;
+import com.menny.android.thumbremote.Remote;
+import com.menny.android.thumbremote.Server;
+import com.menny.android.thumbremote.ServerStatePoller;
+import com.menny.android.thumbremote.Settings;
+import com.menny.android.thumbremote.ShakeListener.OnShakeListener;
+import com.menny.android.thumbremote.boxee.BoxeeDiscovererThread;
+import com.menny.android.thumbremote.boxee.BoxeeRemote;
+import com.menny.android.thumbremote.network.HttpRequestBlocking;
 
 import android.app.Activity;
 import android.app.Notification;
@@ -42,8 +50,8 @@ import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 public class RemoteUiActivity extends Activity implements
-		OnSharedPreferenceChangeListener, DiscovererThread.Receiver,
-		BoxeeRemote.ErrorHandler, OnClickListener, OnShakeListener {
+		OnSharedPreferenceChangeListener, BoxeeDiscovererThread.Receiver,
+		Remote.ErrorHandler, OnClickListener, OnShakeListener {
 
 	public final static String TAG = RemoteUiActivity.class.toString();
 
@@ -367,13 +375,10 @@ public class RemoteUiActivity extends Activity implements
 		{
 			mTextTitle.setText("");
 			mNotificationManager.cancel(NOTIFICATION_PLAYING_ID);
-			//in case this activity is in the background, I also want to kill
-			//the poller (if alive)
-			if (mThisAcitivityPaused)
-			{
-				//not playing, and in the background? Die!
-				finish();
-			}
+			//no need to keep this one alive. Right?
+			if (mStatePoller != null)
+				mStatePoller.stop();
+			mStatePoller = null;
 		}
 	}
 	
@@ -565,7 +570,7 @@ public class RemoteUiActivity extends Activity implements
 	private long mLastErrorMessageTime = 0;
 	private static final long MINIMUM_ms_TIME_BETWEEN_ERRORS = 1000;//
 
-	private DiscovererThread mServerDiscoverer;
+	private BoxeeDiscovererThread mServerDiscoverer;
 	/**
 	 * Display a short error via a popup message.
 	 */
@@ -630,7 +635,7 @@ public class RemoteUiActivity extends Activity implements
 				mPleaseWaitDialog.dismiss();
 			
 			mPleaseWaitDialog = ProgressDialog.show(this, "", "Looking for a server...", true);
-			mServerDiscoverer = new DiscovererThread(this, this);
+			mServerDiscoverer = new BoxeeDiscovererThread(this, this);
 			mServerDiscoverer.start();
 		}
 	}
@@ -649,7 +654,7 @@ public class RemoteUiActivity extends Activity implements
 	 * @param servers
 	 *            list of discovered servers
 	 */
-	public void addAnnouncedServers(ArrayList<BoxeeServer> servers) {
+	public void addAnnouncedServers(ArrayList<Server> servers) {
 		
 		if (mPleaseWaitDialog != null)
 			mPleaseWaitDialog.dismiss();
@@ -665,7 +670,7 @@ public class RemoteUiActivity extends Activity implements
 		String preferred = mSettings.getServerName();
 
 		for (int k = 0; k < servers.size(); ++k) {
-			BoxeeServer server = servers.get(k);
+			Server server = servers.get(k);
 			if (server.name().equals(preferred) || TextUtils.isEmpty(preferred)) {
 				if (!server.valid()) {
 					ShowError(String.format("Found '%s' but looks broken", server.name()), false);
@@ -674,7 +679,6 @@ public class RemoteUiActivity extends Activity implements
 					// Yay, found it and it works
 					mRemote.setServer(server);
 					final String serverName = server.name();
-					mRemote.displayMessage("Connected to server "+serverName);
 					runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
@@ -708,10 +712,8 @@ public class RemoteUiActivity extends Activity implements
 	
 	@Override
 	public void onShake() {
-		Log.d(TAG, "Shake detect! Fullscreen? "+mNowPlaying.isOnNowPlayingScreen());
-		mRemote.flipPlayPause();
-		//if (mNowPlaying.isOnNowPlayingScreen())
-			
+		Log.d(TAG, "Shake detect!");
+		pauseIfPlaying();
 	}
 
 }

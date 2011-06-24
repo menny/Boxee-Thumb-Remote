@@ -1,4 +1,6 @@
-package com.menny.android.boxeethumbremote;
+package com.menny.android.thumbremote.receiver;
+
+import com.menny.android.thumbremote.ui.RemoteUiActivity;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

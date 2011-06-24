@@ -3,7 +3,7 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-package com.menny.android.boxeethumbremote;
+package com.menny.android.thumbremote;
 
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;

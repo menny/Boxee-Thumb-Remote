@@ -1,7 +1,8 @@
-package com.menny.android.boxeethumbremote;
+package com.menny.android.thumbremote.ui;
+
+import com.menny.android.thumbremote.R;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
@@ -17,10 +18,10 @@ public class HelpUiActivity extends Activity {
 		finish();
 	}
 	
-	@Override
-	protected void onPause() {
-		super.onPause();
-		finish();
-		startActivity(new Intent(getApplicationContext(), RemoteUiActivity.class));
-	}
+//	@Override
+//	protected void onPause() {
+//		super.onPause();
+//		finish();
+//		startActivity(new Intent(getApplicationContext(), RemoteUiActivity.class));
+//	}
 }

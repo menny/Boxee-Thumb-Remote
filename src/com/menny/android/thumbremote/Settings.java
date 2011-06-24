@@ -3,15 +3,17 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-package com.menny.android.boxeethumbremote;
+package com.menny.android.thumbremote;
 
-import com.menny.android.boxeethumbremote.R;
+import java.net.InetAddress;
+
+import com.menny.android.thumbremote.R;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 import android.util.Log;
 
 public class Settings {
@@ -72,8 +74,17 @@ public class Settings {
 		return mPreferences.getString(SERVER_NAME_KEY, "");
 	}
 	
-	public String getHost() {
-		return mPreferences.getString(HOST_KEY, "");
+	public InetAddress getHost() {
+		String address = mPreferences.getString(HOST_KEY, "");
+		try
+		{
+			if (TextUtils.isEmpty(address)) return null;
+			return InetAddress.getByName(address);
+		}
+		catch(Exception e)
+		{
+			return null;
+		}
 	}
 	
 	public int getPort() {
@@ -104,11 +115,11 @@ public class Settings {
 		return mPreferences.getBoolean(REQUIRE_WIFI_KEY, true);
 	}
 	
-	public BoxeeServer constructServer() {
-		return new BoxeeServer(getServerName(), getHost(), getPort(), isAuthRequired());
+	public Server constructServer() {
+		return new Server("Boxee", getServerName(), isAuthRequired(), getHost(), getPort());
 	}
 	
-	public void putServer(BoxeeServer server, boolean isManual) {
+	public void putServer(Server server, boolean isManual) {
 		putServer(server.address().getHostAddress(), server.port(), server.name(), server.authRequired(), isManual);
 	}
 	

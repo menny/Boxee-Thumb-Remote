@@ -3,17 +3,20 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-package com.menny.android.boxeethumbremote;
+package com.menny.android.thumbremote.ui;
 
 import java.util.ArrayList;
 import java.util.WeakHashMap;
 
-import com.menny.android.boxeethumbremote.R;
+import com.menny.android.thumbremote.R;
+import com.menny.android.thumbremote.Remote;
+import com.menny.android.thumbremote.Server;
+import com.menny.android.thumbremote.Settings;
+import com.menny.android.thumbremote.boxee.BoxeeDiscovererThread;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
@@ -34,19 +37,19 @@ import android.widget.Toast;
  * Handles preference storage for BoxeeRemote.
  */
 public class SettingsActivity extends PreferenceActivity implements
-		DiscovererThread.Receiver, BoxeeRemote.ErrorHandler,
+		BoxeeDiscovererThread.Receiver, Remote.ErrorHandler,
 		OnPreferenceClickListener, OnSharedPreferenceChangeListener {
 	/**
 	 * private constants
 	 */
 	private static final int DIALOG_CUSTOM = 1;
 
-	private WeakHashMap<String, BoxeeServer> mServers;
+	private WeakHashMap<String, Server> mServers;
 	private PreferenceScreen mServersScreen;
 	private Settings mSettings;
 
 	public SettingsActivity() {
-		mServers = new WeakHashMap<String, BoxeeServer>();
+		mServers = new WeakHashMap<String, Server>();
 	}
 
 	@Override
@@ -59,7 +62,7 @@ public class SettingsActivity extends PreferenceActivity implements
 
 		onCreatePreferences();
 
-		DiscovererThread discoverer = new DiscovererThread(this, this);
+		BoxeeDiscovererThread discoverer = new BoxeeDiscovererThread(this, this);
 		setProgress(true);
 		discoverer.start();
 	}
@@ -68,8 +71,8 @@ public class SettingsActivity extends PreferenceActivity implements
 	protected void onPause() {
 		mSettings.unlisten(this);
 		super.onPause();
-		finish();
-		startActivity(new Intent(getApplicationContext(), RemoteUiActivity.class));
+//		finish();
+//		startActivity(new Intent(getApplicationContext(), RemoteUiActivity.class));
 	}
 	
 	@Override
@@ -105,7 +108,7 @@ public class SettingsActivity extends PreferenceActivity implements
 		final View layout = inflater.inflate(R.layout.custom_host,
 				(ViewGroup) findViewById(R.id.layoutCustomHost));
 		((TextView) layout.findViewById(R.id.textAddress)).setText(mSettings
-				.getHost());
+				.getHost().toString());
 		((TextView) layout.findViewById(R.id.textPort)).setText(new Integer(mSettings
 				.getPort()).toString());
 
@@ -135,8 +138,8 @@ public class SettingsActivity extends PreferenceActivity implements
 	}
 
 	@Override
-	public void addAnnouncedServers(ArrayList<BoxeeServer> servers) {
-		for (BoxeeServer server : servers) {
+	public void addAnnouncedServers(ArrayList<Server> servers) {
+		for (Server server : servers) {
 			Preference preference = new Preference(this);
 			preference.setOrder(mServers.size());
 			preference.setTitle(server.name());
@@ -159,7 +162,7 @@ public class SettingsActivity extends PreferenceActivity implements
 
 	@Override
 	public boolean onPreferenceClick(Preference preference) {
-		BoxeeServer server = mServers.get(preference.getTitle());
+		Server server = mServers.get(preference.getTitle());
 
 		if (server == null) {
 			showDialog(DIALOG_CUSTOM);

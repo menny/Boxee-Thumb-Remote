@@ -5,7 +5,7 @@
  * 
  * Revised by Menny Even Danan. Copyright 2011 AnySoftKeyboard
  */
-package com.menny.android.boxeethumbremote;
+package com.menny.android.thumbremote.ui;
 
 import android.content.Context;
 import android.util.AttributeSet;

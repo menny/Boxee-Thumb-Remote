@@ -3,10 +3,12 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-package com.menny.android.boxeethumbremote;
+package com.menny.android.thumbremote;
 
 import java.io.IOException;
 import java.net.URLEncoder;
+
+import com.menny.android.thumbremote.network.HttpRequestBlocking;
 
 import android.graphics.BitmapFactory;
 import android.os.Handler;
@@ -24,14 +26,14 @@ public final class ServerStatePoller {
 	private final Object mWaiter = new Object();
 	private final NowPlaying mPlaying;
 	private final Handler mHandler;
-	private final BoxeeRemote mRemote;
+	private final Remote mRemote;
 	
-	private long mWaitTime = REGULAR_DELAY;
-
+	//private long mWaitTime = REGULAR_DELAY;
+	private boolean mInBackground = false;
 	
 	private boolean mRun;
 
-	public ServerStatePoller(Handler handler, BoxeeRemote remote, NowPlaying playing) {
+	public ServerStatePoller(Handler handler, Remote remote, NowPlaying playing) {
 		mRemote = remote;
 		mHandler = handler;
 		mPlaying = playing;
@@ -70,7 +72,7 @@ public final class ServerStatePoller {
 						synchronized (mWaiter) {
 							//refreshing state every 500 ms
 							try {
-								mWaiter.wait(mWaitTime );
+								mWaiter.wait(mInBackground? BACKGROUND_DELAY : REGULAR_DELAY );
 							} catch (InterruptedException e) {
 								e.printStackTrace();
 								mRun = false;
@@ -85,7 +87,7 @@ public final class ServerStatePoller {
 	
 	public void poll() {
 		mRun = true;
-		mWaitTime = REGULAR_DELAY;
+		mInBackground = false;
 		mPollerThread.start();
 	}
 	
@@ -97,11 +99,11 @@ public final class ServerStatePoller {
 	}
 	
 	public void moveToBackground() {
-		mWaitTime = BACKGROUND_DELAY;
+		mInBackground = true;
 	}
 	
 	public void comeBackToForeground() {
-		mWaitTime = REGULAR_DELAY;
+		mInBackground = false;
 	}
 	
 	

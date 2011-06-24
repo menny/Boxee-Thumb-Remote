@@ -9,13 +9,13 @@
 	
 	<PreferenceCategory android:key="ux_group"
 	android:title="@string/ux_group">
-		<com.menny.android.boxeethumbremote.MySeekBarPreference  
+		<com.menny.android.thumbremote.ui.MySeekBarPreference  
         android:key="sensitivity"
         android:defaultValue="50"
         android:title="@string/preference_sensitivity" 
         />
         
-        <com.menny.android.boxeethumbremote.MySeekBarPreference  
+        <com.menny.android.thumbremote.ui.MySeekBarPreference  
         android:key="@string/volume_step_size_key"
         android:defaultValue="@integer/volume_step_size_default_value"
         android:title="@string/preference_volume_step_size" 

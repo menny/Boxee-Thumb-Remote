@@ -3,7 +3,7 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-package com.menny.android.boxeethumbremote;
+package com.menny.android.thumbremote.network;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -17,7 +17,7 @@ import android.util.Log;
 /**
  * Performs a blocking HTTP get request, without much flexibility.
  */
-class HttpRequestBlocking {
+public class HttpRequestBlocking {
 	private URL mUrl;
 	private boolean mSuccess;
 	private String mResult;
@@ -27,7 +27,7 @@ class HttpRequestBlocking {
 	private static String mPassword;
 	private static String mUser;
 
-	static public void setTimeout(int timeout_ms) {
+	public static void setTimeout(int timeout_ms) {
 		mTimeout = timeout_ms;
 	}
 
@@ -44,21 +44,21 @@ class HttpRequestBlocking {
 	/**
 	 * Returns whether the fetch resulted in a 200.
 	 */
-	boolean success() {
+	public boolean success() {
 		return mSuccess;
 	}
 
 	/**
 	 * Returns the fetched content, or null if the fetch failed.
 	 */
-	String response() {
+	public String response() {
 		return mResult;
 	}
 
 	/**
 	 * Perform the blocking fetch.
 	 */
-	void fetch() {
+	public void fetch() {
 		if (mUrl == null)
 			return;
 

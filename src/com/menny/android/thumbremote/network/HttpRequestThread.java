@@ -3,7 +3,7 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-package com.menny.android.boxeethumbremote;
+package com.menny.android.thumbremote.network;
 
 import java.net.MalformedURLException;
 
@@ -13,7 +13,7 @@ import android.util.Log;
  * A thread object which performs an HTTP get request, which can be used to
  * perform non-blocking fetches.
  */
-class HttpRequestThread extends Thread {
+public class HttpRequestThread extends Thread {
 	static final String TAG = "HttpRequest";
 	final private CallbackHandler mHandler;
 	final private HttpRequestBlocking mReq;
