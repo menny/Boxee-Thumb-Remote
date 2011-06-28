@@ -105,6 +105,9 @@ public class BoxeeConnector implements ServerConnector  {
 			mSeekPercentageRelativeTemplate = mRequestPrefix + "SeekPercentageRelative(%3.5f)";
 			mRequestGetVolume = mRequestPrefix+"getVolume()";
 			mRequestSetVolumeTemplate = mRequestPrefix+"setVolume(%d)";
+			synchronized (mEntries) {
+				mEntries.clear();
+			}
 		}
 	}
 	
@@ -153,6 +156,7 @@ public class BoxeeConnector implements ServerConnector  {
 			else
 			{
 				final boolean isPlaying = isMediaPlaying();
+				final boolean isMediaActive = isMediaActive();
 				final String time = getMediaCurrentTime();
 				final String title = getMediaTitle();
 				clear();
@@ -171,7 +175,7 @@ public class BoxeeConnector implements ServerConnector  {
 				* void onPlayingProgressChanged(ServerState serverState);
 				* void onMetadataChanged(ServerState serverState);
 				 */
-				if (isPlaying != isMediaPlaying())
+				if (isPlaying != isMediaPlaying() || isMediaActive != isMediaActive())
 					mUiView.onPlayingStateChanged(this);
 				if (!time.equals(getMediaCurrentTime()))
 					mUiView.onPlayingProgressChanged(this);
@@ -236,7 +240,7 @@ public class BoxeeConnector implements ServerConnector  {
 	@Override
 	public int getMediaProgressPercent() {
 		String p = getEntryValue("Percentage");
-		if (TextUtils.isDigitsOnly(p))
+		if (!TextUtils.isEmpty(p) && TextUtils.isDigitsOnly(p))
 			return Integer.parseInt(p);
 		else
 			return 0;

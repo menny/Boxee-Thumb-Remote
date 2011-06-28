@@ -85,6 +85,7 @@ public class RemoteUiActivity extends Activity implements
 		{
 			Log.i(TAG, "Got network! Trying to reconnect...");
 			realActivity.mRemote = new BoxeeConnector();
+			realActivity.mRemote.setUiView(realActivity);
 			realActivity.setServer();
 		}
 	}
@@ -169,6 +170,7 @@ public class RemoteUiActivity extends Activity implements
 		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		
 		mRemote = new BoxeeConnector();
+		mRemote.setUiView(this);
 
 		setContentView(R.layout.main);
 
@@ -242,15 +244,16 @@ public class RemoteUiActivity extends Activity implements
 		if (mPleaseWaitDialog != null)
 			mPleaseWaitDialog.dismiss();
 		mPleaseWaitDialog = null;
+		
+		stopPollerIfPossible();
 	}
 	
 	@Override
 	protected void onDestroy() {
 		msActivity = null;
 		mNotificationManager.cancel(NOTIFICATION_PLAYING_ID);
-		if (mStatePoller != null)
-			mStatePoller.stop();
-		mStatePoller = null;
+		mRemote.setServer(null);
+		stopPollerIfPossible();
 		super.onDestroy();
 	}
 
@@ -342,7 +345,7 @@ public class RemoteUiActivity extends Activity implements
 			final int duration = hmsToSeconds(mRemote.getMediaTotalTime());
 			if (duration > 0)
 			{
-				final double howFar = (id == R.id.buttonSmallSkipFwd)? 10f : -10f;
+				final double howFar = (id == R.id.buttonSmallSkipFwd)? 30f : -30f;
 				final double newSeekPosition = howFar * 100f / duration;
 				remoteSeek(newSeekPosition);
 			}
@@ -416,17 +419,22 @@ public class RemoteUiActivity extends Activity implements
 			flipTo(PAGE_NOTPLAYING);
 			
 			mTextTitle.setText("");
+			mImageThumbnail.setImageResource(R.drawable.remote_background);
 			mNotificationManager.cancel(NOTIFICATION_PLAYING_ID);
 			//no need to keep this one alive. Right?
-			if (mThisAcitivityPaused)
-			{
-				if (mStatePoller != null)
-					mStatePoller.stop();
-				mStatePoller = null;
-			}
+			stopPollerIfPossible();
 		}
 	}
 	
+	private void stopPollerIfPossible() {
+		if (mThisAcitivityPaused && !mRemote.isMediaPlaying())
+		{
+			if (mStatePoller != null)
+				mStatePoller.stop();
+			mStatePoller = null;
+		}
+	}
+
 	private void refreshPlayingProgressChanged()
 	{
 		mDuration.setText(mRemote.getMediaTotalTime());
