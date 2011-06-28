@@ -6,24 +6,29 @@
 package com.menny.android.thumbremote.ui;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import com.menny.android.thumbremote.R;
-import com.menny.android.thumbremote.NowPlaying;
-import com.menny.android.thumbremote.Remote;
-import com.menny.android.thumbremote.Server;
+import com.menny.android.thumbremote.ServerAddress;
+import com.menny.android.thumbremote.ServerConnector;
+import com.menny.android.thumbremote.ServerState;
 import com.menny.android.thumbremote.ServerStatePoller;
 import com.menny.android.thumbremote.Settings;
 import com.menny.android.thumbremote.ShakeListener.OnShakeListener;
+import com.menny.android.thumbremote.UiView;
+import com.menny.android.thumbremote.boxee.BoxeeConnector;
 import com.menny.android.thumbremote.boxee.BoxeeDiscovererThread;
-import com.menny.android.thumbremote.boxee.BoxeeRemote;
 import com.menny.android.thumbremote.network.HttpRequestBlocking;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -40,7 +45,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.KeyCharacterMap.KeyData;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -50,11 +54,19 @@ import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 public class RemoteUiActivity extends Activity implements
-		OnSharedPreferenceChangeListener, BoxeeDiscovererThread.Receiver,
-		Remote.ErrorHandler, OnClickListener, OnShakeListener {
+		OnSharedPreferenceChangeListener, BoxeeDiscovererThread.Receiver, OnClickListener, OnShakeListener, UiView {
 
 	public final static String TAG = RemoteUiActivity.class.toString();
 
+	//
+	private final static HashSet<Character> msPunctuation = new HashSet<Character>();
+	static
+	{
+		String punctuation = "!@#$%^&*()[]{}/?|'\",.<>\n ";
+		for(char c : punctuation.toCharArray())
+			msPunctuation.add(c);
+	}
+	
 	private static RemoteUiActivity msActivity = null;
 
 	public static void onExternalImportantEvent(String event) {
@@ -72,10 +84,15 @@ public class RemoteUiActivity extends Activity implements
 		if (realActivity != null && !realActivity.mThisAcitivityPaused)
 		{
 			Log.i(TAG, "Got network! Trying to reconnect...");
-			realActivity.mRemote = new BoxeeRemote(realActivity, realActivity);
+			realActivity.mRemote = new BoxeeConnector();
 			realActivity.setServer();
 		}
 	}
+	
+	private static final int MESSAGE_MEDIA_PLAYING_CHANGED = 97565;
+	private static final int MESSAGE_MEDIA_PLAYING_PROGRESS_CHANGED = MESSAGE_MEDIA_PLAYING_CHANGED + 1;
+	private static final int MESSAGE_MEDIA_METADATA_CHANGED = MESSAGE_MEDIA_PLAYING_PROGRESS_CHANGED + 1;
+	
 	// Menu items
 	private static final int MENU_SETTINGS = Menu.FIRST;
 	private static final int MENU_HELP = MENU_SETTINGS+1;
@@ -95,13 +112,17 @@ public class RemoteUiActivity extends Activity implements
 	ProgressBar mElapsedBar;
 
 	private static final int NOTIFICATION_PLAYING_ID = 1;
+
+	private static final int DIALOG_NO_PASSWORD = 1;
+	
 	private NotificationManager mNotificationManager;
 
-	private boolean mThisAcitivityPaused = true;
+	boolean mThisAcitivityPaused = true;
 	
 	private Settings mSettings;
-	private BoxeeRemote mRemote;
-	private NowPlaying mNowPlaying = new NowPlaying();
+	private ServerConnector mRemote;
+	private BoxeeDiscovererThread mServerDiscoverer;
+	private ServerAddress mServerAddress = null;
 	private ServerStatePoller mStatePoller = null; 
 
 	//Not ready for prime time
@@ -109,22 +130,10 @@ public class RemoteUiActivity extends Activity implements
 	
 	private Point mTouchPoint = new Point();
 	private boolean mDragged = false;
-	private boolean mIsNowPlaying = false;
+	private boolean mIsMediaActive = false;
 	private ProgressDialog mPleaseWaitDialog;
 
-	Handler mHandler = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
-			case ServerStatePoller.MESSAGE_NOW_PLAYING_UPDATED:
-				refreshNowPlaying();
-				break;
-			case ServerStatePoller.MESSAGE_MEDIA_METADATA_UPDATED:
-				refreshMediaMetdata();
-				break;
-			}
-		}
-	};
+	private Handler mHandler;
 
 	private final Runnable mRequestStatusUpdateRunnable = new Runnable() {
 		@Override
@@ -138,9 +147,26 @@ public class RemoteUiActivity extends Activity implements
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		mHandler = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				switch (msg.what) {
+				case MESSAGE_MEDIA_PLAYING_CHANGED:
+					refreshPlayingStateChanged();
+					break;
+				case MESSAGE_MEDIA_PLAYING_PROGRESS_CHANGED:
+					refreshPlayingProgressChanged();
+					break;
+				case MESSAGE_MEDIA_METADATA_CHANGED:
+					refreshMetadataChanged();
+					break;
+				}
+			}
+		};
+		
 		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		
-		mRemote = new BoxeeRemote(this, this);
+		mRemote = new BoxeeConnector();
 
 		setContentView(R.layout.main);
 
@@ -171,7 +197,7 @@ public class RemoteUiActivity extends Activity implements
 		//mShakeDetector.setOnShakeListener(this);
 		msActivity = this;
 		
-		mStatePoller = new ServerStatePoller(mHandler, mRemote, mNowPlaying);
+		mStatePoller = new ServerStatePoller(mRemote);
 		mStatePoller.poll();
 		
 		startHelpOnFirstRun();
@@ -192,7 +218,11 @@ public class RemoteUiActivity extends Activity implements
 
 	private void startHelpActivity() {
 		Intent i = new Intent(getApplicationContext(), HelpUiActivity.class);
-		i.setFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS + Intent.FLAG_ACTIVITY_NO_HISTORY);
+		startActivity(i);
+	}
+	
+	private void startSetupActivity() {
+		Intent i = new Intent(getApplicationContext(), SettingsActivity.class);
 		startActivity(i);
 	}
 	
@@ -229,7 +259,7 @@ public class RemoteUiActivity extends Activity implements
 		
 		mSettings.listen(this);
 		
-		if (!mRemote.hasServers() && !mServerDiscoverer.isLookingForServers())
+		if ((mServerAddress == null || !mServerAddress.valid()) && !mServerDiscoverer.isLookingForServers())
 			setServer();
 		
 		//mShakeDetector.resume();
@@ -238,7 +268,7 @@ public class RemoteUiActivity extends Activity implements
 		
 		if (mStatePoller == null)
 		{
-			mStatePoller = new ServerStatePoller(mHandler, mRemote, mNowPlaying);
+			mStatePoller = new ServerStatePoller(mRemote);
 			mStatePoller.poll();
 		}
 		else
@@ -250,8 +280,7 @@ public class RemoteUiActivity extends Activity implements
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		menu.add(Menu.NONE, MENU_SETTINGS, 0, R.string.settings).setIcon(
-				android.R.drawable.ic_menu_preferences).setIntent(
-				new Intent(this, SettingsActivity.class));
+				android.R.drawable.ic_menu_preferences);
 		
 		menu.add(Menu.NONE, MENU_HELP, 0, R.string.help).setIcon(
 				android.R.drawable.ic_menu_help);
@@ -271,6 +300,9 @@ public class RemoteUiActivity extends Activity implements
 		case MENU_HELP:
 			startHelpActivity();
 			return true;
+		case MENU_SETTINGS:
+			startSetupActivity();
+			return true;
 		default:
 			return super.onMenuItemSelected(featureId, item);
 		}
@@ -278,52 +310,44 @@ public class RemoteUiActivity extends Activity implements
 	
 	private void pauseIfPlaying()
 	{
-		if (mNowPlaying.isPlaying())
-			mRemote.flipPlayPause();
+		if (mRemote.isMediaPlaying())
+		{
+			remoteFlipPlayPause();
+		}
 	}
 
 	@Override
 	public void onClick(View v) {
-		int duration;
-
-		switch (v.getId()) {
+		final int id = v.getId();
+		switch (id) {
 		
 		case R.id.buttonPlayPause:
-			mRemote.flipPlayPause();
-			requestUpdateASAP(100);
+			remoteFlipPlayPause();
 			break;
 
 		case R.id.buttonStop:
-			mRemote.stop();
-			requestUpdateASAP(100);
+			remoteStop();
 			break;
 
 		case R.id.buttonSmallSkipBack:
-			// Seek backwards 10 seconds
-			duration = mNowPlaying.getDurationSeconds();
-			if (duration == 0)
-				break;
-			mRemote.seek(-10 * 100 / duration);
-			requestUpdateASAP(100);
-			break;
-
 		case R.id.buttonSmallSkipFwd:
-			// Seek forwards 30 seconds
-			duration = mNowPlaying.getDurationSeconds();
-			if (duration == 0)
-				break;
-			mRemote.seek(30.0 * 100 / duration);
-			requestUpdateASAP(100);
+			final int duration = hmsToSeconds(mRemote.getMediaTotalTime());
+			if (duration > 0)
+			{
+				final double howFar = (id == R.id.buttonSmallSkipFwd)? 10f : -10f;
+				final double newSeekPosition = howFar * 100f / duration;
+				remoteSeek(newSeekPosition);
+			}
 			break;
 
 		case R.id.back:
-			mRemote.back();
+			remoteBack();
 			break;
 		}
 
 	}
 
-	private void requestUpdateASAP(int delay_ms) {
+	void requestUpdateASAP(int delay_ms) {
 		mHandler.postDelayed(mRequestStatusUpdateRunnable,delay_ms);
 	}
 
@@ -332,63 +356,84 @@ public class RemoteUiActivity extends Activity implements
 			mFlipper.setDisplayedChild(page);
 	}
 
-	private void refreshNowPlaying() {
-		final boolean newNowPlaying = mNowPlaying.isNowPlaying();
-		final boolean nowPlayingChanged = newNowPlaying != mIsNowPlaying;
-		mIsNowPlaying = newNowPlaying;
-
-		flipTo(mNowPlaying.isNowPlaying() ? PAGE_NOWPLAYING : PAGE_NOTPLAYING);
-
-		if (mIsNowPlaying) {
-			mButtonPlayPause.setBackgroundDrawable(getResources().getDrawable(
-					mNowPlaying.isPlaying() ? R.drawable.icon_osd_pause
-							: R.drawable.icon_osd_play));
+	@Override
+	public void onPlayingStateChanged(ServerState serverState) {
+		mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_MEDIA_PLAYING_CHANGED));
+	}
 	
-			final String title = mNowPlaying.getTitle();
+	@Override
+	public void onPlayingProgressChanged(ServerState serverState) {
+		mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_MEDIA_PLAYING_PROGRESS_CHANGED));		
+	}
+	
+	@Override
+	public void onMetadataChanged(ServerState serverState) {
+		mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_MEDIA_METADATA_CHANGED));
+	}
+	
+	private void refreshPlayingStateChanged() {
+		final boolean isPlaying = mRemote.isMediaPlaying();
+		final boolean newIsMediaActive = mRemote.isMediaActive();
+		final boolean mediaActiveChanged = newIsMediaActive != mIsMediaActive;
+		mIsMediaActive = newIsMediaActive;
+
+		if (!mediaActiveChanged) return;
+		
+		if (mIsMediaActive) {
+			mButtonPlayPause.setBackgroundDrawable(getResources().getDrawable(
+					isPlaying ? R.drawable.icon_osd_pause : R.drawable.icon_osd_play));
+	
+			final String title = mRemote.getMediaTitle();
 			mTextTitle.setText(title);
 	
-			mDuration.setText(mNowPlaying.getDuration());
+			refreshPlayingProgressChanged();
 			
-			String elapsed = mNowPlaying.getElapsed();
-			mTextElapsed.setText(elapsed);
+			flipTo(PAGE_NOWPLAYING);
+			Notification notification = new Notification(R.drawable.notification_playing, getString(R.string.server_is_playing, title), System.currentTimeMillis());
 
-			mElapsedBar.setProgress(mNowPlaying.getPercentage());
-			
-			if (nowPlayingChanged)
-			{
-				Notification notification = new Notification(R.drawable.notification_playing, getString(R.string.server_is_playing, title), System.currentTimeMillis());
+			Intent notificationIntent = new Intent(this, RemoteUiActivity.class);
+			PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
-				Intent notificationIntent = new Intent(this, RemoteUiActivity.class);
-				PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-
-				notification.setLatestEventInfo(getApplicationContext(),
-						getText(R.string.app_name), getString(R.string.server_is_playing, title),
-						contentIntent);
-				notification.flags |= Notification.FLAG_ONGOING_EVENT;
-				notification.flags |= Notification.FLAG_NO_CLEAR;
-				//notification.defaults = 0;// no sound, vibrate, etc.
-				// notifying
-				mNotificationManager.notify(NOTIFICATION_PLAYING_ID, notification);
-			}
+			notification.setLatestEventInfo(getApplicationContext(),
+					getText(R.string.app_name), getString(R.string.server_is_playing, title),
+					contentIntent);
+			notification.flags |= Notification.FLAG_ONGOING_EVENT;
+			notification.flags |= Notification.FLAG_NO_CLEAR;
+			//notification.defaults = 0;// no sound, vibrate, etc.
+			// notifying
+			mNotificationManager.notify(NOTIFICATION_PLAYING_ID, notification);
 		}
 		else
 		{
+			flipTo(PAGE_NOTPLAYING);
+			
 			mTextTitle.setText("");
 			mNotificationManager.cancel(NOTIFICATION_PLAYING_ID);
 			//no need to keep this one alive. Right?
-			if (mStatePoller != null)
-				mStatePoller.stop();
-			mStatePoller = null;
+			if (mThisAcitivityPaused)
+			{
+				if (mStatePoller != null)
+					mStatePoller.stop();
+				mStatePoller = null;
+			}
 		}
 	}
 	
-	private void refreshMediaMetdata() {
-		mIsNowPlaying = mNowPlaying.isNowPlaying();
-		if (mIsNowPlaying)
+	private void refreshPlayingProgressChanged()
+	{
+		mDuration.setText(mRemote.getMediaTotalTime());
+		
+		mTextElapsed.setText(mRemote.getMediaCurrentTime());
+
+		mElapsedBar.setProgress(mRemote.getMediaProgressPercent());
+	}
+	
+	private void refreshMetadataChanged() {
+		mIsMediaActive = mRemote.isMediaActive();
+		if (mIsMediaActive)
 		{
-			mImageThumbnail.setImageBitmap(mNowPlaying.getThumbnail());
-			String title = mNowPlaying.getTitle();
-			mTextTitle.setText(title);
+			mImageThumbnail.setImageBitmap(mRemote.getMediaPoster());
+			mTextTitle.setText(mRemote.getMediaTitle());
 		}
 		else
 		{
@@ -401,30 +446,24 @@ public class RemoteUiActivity extends Activity implements
 	 * Handler an android keypress and send it to boxee if appropriate.
 	 */
 	@Override
-	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		int code = event.getKeyCode();
+	public boolean onKeyDown(final int keyCode, final KeyEvent event) {
+		final char unicodeChar = (char)event.getUnicodeChar();
+		
+		Log.d(TAG, "Unicode is " + ((int)unicodeChar));
 
-		KeyData keyData = new KeyData();
-		event.getKeyData(keyData);
-		Log.d(TAG, "Unicode is " + event.getUnicodeChar());
-
-		String punctuation = "!@#$%^&*()[]{}/?|'\",.<>";
-		if (Character.isLetterOrDigit(keyData.displayLabel)
-				|| punctuation.indexOf(keyData.displayLabel) != -1) {
-			mRemote.keypress(event.getUnicodeChar());
+		
+		if (Character.isLetterOrDigit(unicodeChar) || msPunctuation.contains(unicodeChar)) {
+			remoteKeypress(unicodeChar);
+			
 			return true;
 		}
 
-		switch (code) {
-
-		case KeyEvent.KEYCODE_DEL:
-			mRemote.sendBackspace();
-			return true;
+		switch (keyCode) {
 
 		case KeyEvent.KEYCODE_BACK:
 			if (mSettings.getHandleBack())
 			{
-				mRemote.back();
+				remoteBack();
 				return true;
 			}
 			else
@@ -433,39 +472,38 @@ public class RemoteUiActivity extends Activity implements
 			}
 
 		case KeyEvent.KEYCODE_DPAD_CENTER:
-			mRemote.select();
+			remoteSelect();
 			return true;
 
 		case KeyEvent.KEYCODE_DPAD_DOWN:
-			mRemote.down();
+			remoteDown();
 			return true;
 
 		case KeyEvent.KEYCODE_DPAD_UP:
-			mRemote.up();
+			remoteUp();
 			return true;
 
 		case KeyEvent.KEYCODE_DPAD_LEFT:
-			mRemote.left();
+			remoteLeft();
 			return true;
 
 		case KeyEvent.KEYCODE_DPAD_RIGHT:
-			mRemote.right();
+			remoteRight();
 			return true;
 
 		case KeyEvent.KEYCODE_VOLUME_UP:
-			mRemote.changeVolume(mSettings.getVolumeStep());
-			return true;
-
 		case KeyEvent.KEYCODE_VOLUME_DOWN:
-			mRemote.changeVolume((-1)*mSettings.getVolumeStep());
+			final int volumeFactor = (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN)? -1 : 1;
+				new DoServerRemoteAction(this, false) {
+				@Override
+				protected void callRemoteFunction() throws Exception {
+					int volume = mRemote.getVolume();
+					int newVolume = Math.max(0, Math.min(100, volume + (volumeFactor * mSettings.getVolumeStep())));
+					mRemote.setVolume(newVolume);
+				}
+			}.execute();
 			return true;
-
-		case KeyEvent.KEYCODE_SPACE:
-		case KeyEvent.KEYCODE_ENTER:
-			// Some special keycodes we can translate from ASCII
-			mRemote.keypress(event.getUnicodeChar());
-			return true;
-
+			
 		default:
 			return super.onKeyDown(keyCode, event);
 		}
@@ -481,7 +519,7 @@ public class RemoteUiActivity extends Activity implements
 
 		case MotionEvent.ACTION_UP:
 			if (!mDragged) {
-				mRemote.select();
+				remoteSelect();
 				return true;
 			}
 			break;
@@ -494,25 +532,25 @@ public class RemoteUiActivity extends Activity implements
 
 		case MotionEvent.ACTION_MOVE:
 			if (x - mTouchPoint.x > sensitivity) {
-				mRemote.right();
+				remoteRight();
 				mTouchPoint.x += sensitivity;
 				mTouchPoint.y = y;
 				mDragged = true;
 				return true;
 			} else if (mTouchPoint.x - x > sensitivity) {
-				mRemote.left();
+				remoteLeft();
 				mTouchPoint.x -= sensitivity;
 				mTouchPoint.y = y;
 				mDragged = true;
 				return true;
 			} else if (y - mTouchPoint.y > sensitivity) {
-				mRemote.down();
+				remoteDown();
 				mTouchPoint.y += sensitivity;
 				mTouchPoint.x = x;
 				mDragged = true;
 				return true;
 			} else if (mTouchPoint.y - y > sensitivity) {
-				mRemote.up();
+				remoteUp();
 				mTouchPoint.y -= sensitivity;
 				mTouchPoint.x = x;
 				mDragged = true;
@@ -540,60 +578,7 @@ public class RemoteUiActivity extends Activity implements
 		button.setTag(new Integer(keyCode));
 		button.setOnClickListener(this);
 	}
-
-	/**
-	 * Wrapper-function taking a KeyCode. A complete KeyStroke is DOWN and UP
-	 * Action on a key!
-	 */
-	/*
-	private void simulateKeystroke(int keyCode) {
-		onKeyDown(keyCode, new KeyEvent(KeyEvent.ACTION_DOWN, keyCode));
-		onKeyUp(keyCode, new KeyEvent(KeyEvent.ACTION_UP, keyCode));
-	}
-	 */
-	/**
-	 * Display an error from R.strings, may be called from any thread
-	 * 
-	 * @param id
-	 *            an id from R.strings
-	 */
-	public void ShowError(int id, boolean longDelay) {
-		ShowError(getString(id), longDelay);
-	}
-
-	/**
-	 * sometimes, when there is no network, or stuff, I get lots of Toast windows
-	 * which do not disapear for a long time. I say, if the same error happens too often
-	 * there is no need to show it.
-	 */
-	private String mLastErrorMessage = null;
-	private long mLastErrorMessageTime = 0;
-	private static final long MINIMUM_ms_TIME_BETWEEN_ERRORS = 1000;//
-
-	private BoxeeDiscovererThread mServerDiscoverer;
-	/**
-	 * Display a short error via a popup message.
-	 */
-	private void ShowErrorInternal(String s, boolean longDelay) {
-		if (mThisAcitivityPaused) return;
-		//checking for repeating error
-		final long currentTime = System.currentTimeMillis();
-		if ((!s.equals(mLastErrorMessage)) || ((currentTime - mLastErrorMessageTime) > MINIMUM_ms_TIME_BETWEEN_ERRORS))
-			Toast.makeText(this, s, longDelay? Toast.LENGTH_LONG : Toast.LENGTH_SHORT).show();//we can show the error.
-		mLastErrorMessage = s;
-		mLastErrorMessageTime = currentTime;
-	}
-	/**
-	 * Show an error, may be called from any thread
-	 */
-	public void ShowError(final String s, final boolean longDelay) {
-		runOnUiThread(new Runnable() {
-			public void run() {
-				ShowErrorInternal(s, longDelay);
-			}
-		});
-	}
-
+	
 	/**
 	 * Set the state of the application based on prefs. This should be called
 	 * after every preference change or when starting up.
@@ -604,10 +589,6 @@ public class RemoteUiActivity extends Activity implements
 
 		// Setup the proper pageflipper page:
 		flipTo(PAGE_NOTPLAYING);
-
-		// Read the "require wifi" setting.
-		boolean requireWifi = mSettings.requiresWifi();
-		mRemote.setRequireWifi(requireWifi);
 		
 		// Setup the HTTP timeout.
 		int timeout_ms = mSettings.getTimeout();
@@ -640,6 +621,34 @@ public class RemoteUiActivity extends Activity implements
 		}
 	}
 
+	@Override
+	protected Dialog onCreateDialog(int id) {
+		switch(id)
+		{
+		case DIALOG_NO_PASSWORD:
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder
+				.setTitle("Credentials required")
+				.setMessage("The server "+mServerAddress.name()+" requires username and password in order to be controlled.\nWould you like to enter them now?")
+			       .setCancelable(true)
+			       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+			           public void onClick(DialogInterface dialog, int id) {
+			        	   startSetupActivity();
+			        	   dialog.dismiss();
+			           }
+			       })
+			       .setNegativeButton("No", new DialogInterface.OnClickListener() {
+			           public void onClick(DialogInterface dialog, int id) {
+			                dialog.cancel();
+			           }
+			       });
+			AlertDialog alert = builder.create();
+			
+			return alert;
+		}
+		return super.onCreateDialog(id);
+	}
+
 	/**
 	 * Callback when user alters preferences.
 	 */
@@ -654,7 +663,7 @@ public class RemoteUiActivity extends Activity implements
 	 * @param servers
 	 *            list of discovered servers
 	 */
-	public void addAnnouncedServers(ArrayList<Server> servers) {
+	public void addAnnouncedServers(ArrayList<ServerAddress> servers) {
 		
 		if (mPleaseWaitDialog != null)
 			mPleaseWaitDialog.dismiss();
@@ -670,14 +679,16 @@ public class RemoteUiActivity extends Activity implements
 		String preferred = mSettings.getServerName();
 
 		for (int k = 0; k < servers.size(); ++k) {
-			Server server = servers.get(k);
+			ServerAddress server = servers.get(k);
 			if (server.name().equals(preferred) || TextUtils.isEmpty(preferred)) {
 				if (!server.valid()) {
-					ShowError(String.format("Found '%s' but looks broken", server.name()), false);
+					Toast.makeText(getApplicationContext(), 
+							String.format("Found '%s' but looks broken", server.name()),
+							Toast.LENGTH_SHORT).show();
 					continue;
 				} else {
-					// Yay, found it and it works
-					mRemote.setServer(server);
+					mServerAddress = server;
+					mRemote.setServer(mServerAddress);
 					final String serverName = server.name();
 					runOnUiThread(new Runnable() {
 						@Override
@@ -686,28 +697,32 @@ public class RemoteUiActivity extends Activity implements
 						}
 					});
 					
-					requestUpdateASAP(100);
+
 					if (server.authRequired())
-						passwordCheck();
+					{
+						if (!HttpRequestBlocking.hasCredentials())
+						{
+							showDialog(DIALOG_NO_PASSWORD);
+						}
+					}
+					
+					requestUpdateASAP(100);
 					return;
 				}
 			}
 		}
 
+		mServerAddress = null;
+		
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
 				setTitle(getString(R.string.app_name));
 			}
 		});
-		ShowError("Could not find any servers. Try specifying it in the Settings (press MENU)", true);
-	}
-
-	private void passwordCheck() {
-		// TODO: open a dialog box here instead
-		String password = HttpRequestBlocking.password();
-		if (password == null || password.length() == 0)
-			ShowError("Server requires password. Set one in preferences.", true);
+		Toast.makeText(getApplicationContext(), 
+				"Could not find any servers. Try specifying it in the Settings (press MENU)",
+				Toast.LENGTH_LONG).show();
 	}
 	
 	@Override
@@ -715,5 +730,115 @@ public class RemoteUiActivity extends Activity implements
 		Log.d(TAG, "Shake detect!");
 		pauseIfPlaying();
 	}
+		
+	private void remoteFlipPlayPause() {
+		new DoServerRemoteAction(this, false) {
+			@Override
+			protected void callRemoteFunction() throws Exception {
+				mRemote.flipPlayPause();
+			}
+		}.execute();
+	}
 
+	private void remoteBack() {
+		new DoServerRemoteAction(this, false) {
+			@Override
+			protected void callRemoteFunction() throws Exception {
+				mRemote.back();
+			}
+		}.execute();
+	}
+
+	private void remoteSeek(final double newSeekPosition) {
+		new DoServerRemoteAction(this, false) {
+			@Override
+			protected void callRemoteFunction() throws Exception {
+				mRemote.seekRelative(newSeekPosition);
+			}
+		}.execute();
+	}
+
+	private void remoteStop() {
+		new DoServerRemoteAction(this, false) {
+			@Override
+			protected void callRemoteFunction() throws Exception {
+				mRemote.stop();
+			}
+		}.execute();
+	}
+
+	private void remoteLeft() {
+		new DoServerRemoteAction(this, false) {
+			@Override
+			protected void callRemoteFunction() throws Exception {
+				mRemote.left();
+			}
+		}.execute();
+	}
+
+	private void remoteRight() {
+		new DoServerRemoteAction(this, false) {
+			@Override
+			protected void callRemoteFunction() throws Exception {
+				mRemote.right();
+			}
+		}.execute();
+	}
+
+	private void remoteUp() {
+		new DoServerRemoteAction(this, false) {
+			@Override
+			protected void callRemoteFunction() throws Exception {
+				mRemote.up();
+			}
+		}.execute();
+	}
+
+	private void remoteDown() {
+		new DoServerRemoteAction(this, false) {
+			@Override
+			protected void callRemoteFunction() throws Exception {
+				mRemote.down();
+			}
+		}.execute();
+	}
+
+	private void remoteSelect() {
+		new DoServerRemoteAction(this, false) {
+			@Override
+			protected void callRemoteFunction() throws Exception {
+				mRemote.select();
+			}
+		}.execute();
+	}
+
+	private void remoteKeypress(final char unicodeChar) {
+		new DoServerRemoteAction(this, false) {
+			@Override
+			protected void callRemoteFunction() throws Exception {
+				mRemote.keypress(unicodeChar);
+			}
+		}.execute();
+	}
+
+	private static int hmsToSeconds(String hms) {
+		if (TextUtils.isEmpty(hms))
+			return 0;
+
+		int seconds = 0;
+		String[] times = hms.split(":");
+
+		// seconds
+		seconds += Integer.parseInt(times[times.length - 1]);
+
+		// minutes
+		if (times.length >= 2)
+			seconds += Integer.parseInt(times[times.length - 2]) * 60;
+
+		// hours
+		if (times.length >= 3)
+			seconds += Integer.parseInt(times[times.length - 3]) * 3600;
+
+		return seconds;
+	}
 }

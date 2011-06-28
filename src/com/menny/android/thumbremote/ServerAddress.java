@@ -8,17 +8,17 @@ package com.menny.android.thumbremote;
 import java.net.InetAddress;
 
 /**
- * Holds information about a Boxee server which announced itself in response to
+ * Holds information about a media server which announced itself in response to
  * a discovery request.
  */
-public class Server {
+public final class ServerAddress {
 	private String mType;
 	private String mName;
 	private boolean mAuthRequired;
 	private int mPort;
 	private InetAddress mAddr;
 
-	public Server(String type, String name, boolean authRequired, InetAddress address, int port) {
+	public ServerAddress(String type, String name, boolean authRequired, InetAddress address, int port) {
 		mAddr = address;
 		mPort = port;
 		mType = type;

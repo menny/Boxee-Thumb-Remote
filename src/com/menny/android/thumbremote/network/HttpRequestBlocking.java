@@ -12,15 +12,41 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import android.text.TextUtils;
 import android.util.Log;
 
 /**
  * Performs a blocking HTTP get request, without much flexibility.
  */
 public class HttpRequestBlocking {
+	public static class Response
+	{
+		private final boolean mSuccess;
+		private final String mResponse;
+		
+		Response(boolean success, String response)
+		{
+			mSuccess = success;
+			mResponse = response;
+		}
+		
+		/**
+		 * Returns whether the fetch resulted in a 200.
+		 */
+		public boolean success() {
+			return mSuccess;
+		}
+
+		/**
+		 * Returns the fetched content, or null if the fetch failed.
+		 */
+		public String response() {
+			return mResponse;
+		}
+	}
+	
+	private static final String TAG = "HttpRequestBlocking";
 	private URL mUrl;
-	private boolean mSuccess;
-	private String mResult;
 
 	// We set these for all requests.
 	private static int mTimeout = 2000;
@@ -31,37 +57,46 @@ public class HttpRequestBlocking {
 		mTimeout = timeout_ms;
 	}
 
+	public static void setUserPassword(String user, String password) {
+		mUser = user;
+		mPassword = password;
+	}
+	
+	public static boolean hasCredentials()
+	{
+		return !TextUtils.isEmpty(mUser) && !TextUtils.isEmpty(mPassword);
+	}
+
+	public static Response getHttpResponse(final String url)
+	{
+		HttpRequestBlocking requester = new HttpRequestBlocking(url);
+		return requester.fetch();
+	}
+	
 	/**
 	 * Constructor.
 	 */
-	public HttpRequestBlocking(String url) {
+	private HttpRequestBlocking(String url) {
 		try {
 			mUrl = new URL(url);
 		} catch (MalformedURLException e) {
+			mUrl = null;
+			Log.e(TAG, "MalformedURLException: "+url);
+			e.printStackTrace();
 		}
 	}
 
-	/**
-	 * Returns whether the fetch resulted in a 200.
-	 */
-	public boolean success() {
-		return mSuccess;
-	}
-
-	/**
-	 * Returns the fetched content, or null if the fetch failed.
-	 */
-	public String response() {
-		return mResult;
-	}
+	
 
 	/**
 	 * Perform the blocking fetch.
 	 */
-	public void fetch() {
+	public Response fetch() {
 		if (mUrl == null)
-			return;
+			return new Response(false, null);
 
+		Log.d(TAG, "Fetching " + mUrl.toString());
+		
 		try {
 			HttpURLConnection connection = (HttpURLConnection) mUrl
 					.openConnection();
@@ -79,13 +114,14 @@ public class HttpRequestBlocking {
 			os.flush();
 			os.close();
 			is.close();
-			Log.d(HttpRequestThread.TAG, String.format(
+			Log.d(TAG, String.format(
 					"finished request(size=%d, remote=%s)", os.size(), mUrl
 							.toString()));
-			mResult = os.toString();
-			mSuccess = connection.getResponseCode() == 200;
+			String result = os.toString();
+			boolean success = connection.getResponseCode() == 200;
+			return new Response(success, result);
 		} catch (IOException e) {
-			mSuccess = false;
+			return new Response(false, null);
 		}
 	}
 
@@ -94,14 +130,5 @@ public class HttpRequestBlocking {
 			byte[] enc = iharder.base64.Base64.encodeBytesToBytes((mUser + ":" + mPassword).getBytes());
 			conn.setRequestProperty("Authorization", "Basic " + new String(enc));
 		}
-	}
-
-	public static void setUserPassword(String user, String password) {
-		mUser = user;
-		mPassword = password;
-	}
-
-	public static String password() {
-		return mPassword;
 	}
 }

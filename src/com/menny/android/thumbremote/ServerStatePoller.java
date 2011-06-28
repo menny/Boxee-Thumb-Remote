@@ -5,38 +5,28 @@
  */
 package com.menny.android.thumbremote;
 
-import java.io.IOException;
-import java.net.URLEncoder;
-
 import com.menny.android.thumbremote.network.HttpRequestBlocking;
 
-import android.graphics.BitmapFactory;
-import android.os.Handler;
 import android.util.Log;
 
 public final class ServerStatePoller {
 	private static final String TAG = ServerStatePoller.class.toString();
 	
-	public static final int MESSAGE_NOW_PLAYING_UPDATED = 1;
-	public static final int MESSAGE_MEDIA_METADATA_UPDATED = 2;
-
-	public static final long REGULAR_DELAY = 500;
-	public static final long BACKGROUND_DELAY = REGULAR_DELAY * 3;
+	private static final int MAX_NETWORK_ERRORS = 3;
+	
+	private static final long REGULAR_DELAY = 500;
+	private static final long BACKGROUND_DELAY = REGULAR_DELAY * 3;
 	
 	private final Object mWaiter = new Object();
-	private final NowPlaying mPlaying;
-	private final Handler mHandler;
-	private final Remote mRemote;
+	private final ServerStateUrlsProvider mUrlsProvider;
 	
-	//private long mWaitTime = REGULAR_DELAY;
 	private boolean mInBackground = false;
+	private int mErrorsAllowedLeft = MAX_NETWORK_ERRORS;
 	
 	private boolean mRun;
 
-	public ServerStatePoller(Handler handler, Remote remote, NowPlaying playing) {
-		mRemote = remote;
-		mHandler = handler;
-		mPlaying = playing;
+	public ServerStatePoller(ServerStateUrlsProvider provider) {
+		mUrlsProvider = provider;
 		
 		mRun = true;
 	}
@@ -45,23 +35,26 @@ public final class ServerStatePoller {
 		
 		public void run() {
 			Log.d(TAG, "Starting ServerStatePoller.");
-			String currentlyRunningTitle = "";
 			while(mRun)
 			{
 				try
 				{
-					if (getCurrentlyPlayingStatus())
+					mUrlsProvider.startOver();
+					while(mUrlsProvider.requiresServerStateData())
 					{
-						//GUI! Update!
-						mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_NOW_PLAYING_UPDATED));
-						//now we check for thumb. If needed (a new title, or no title)
-						if (!currentlyRunningTitle.equals(mPlaying.getTitle()))
+						String[] responses = getResponsesFromServer(mUrlsProvider.getServerStateUrls());
+						if (responses != null)
 						{
-							currentlyRunningTitle = mPlaying.getTitle();
-							if (currentlyRunningTitle == null) currentlyRunningTitle = "";
-							getThumbnail();
-							
-							mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_MEDIA_METADATA_UPDATED));
+							mErrorsAllowedLeft = MAX_NETWORK_ERRORS;
+							mUrlsProvider.onServerStateResponsesAvailable(responses);
+						}
+						else
+						{
+							mErrorsAllowedLeft--;
+							if (mErrorsAllowedLeft == 0)
+							{
+								mUrlsProvider.onServerStateRetrievalError();
+							}
 						}
 					}
 				}
@@ -114,50 +107,17 @@ public final class ServerStatePoller {
 		}
 	}
 	
-	private boolean getCurrentlyPlayingStatus() {
-
-		HttpRequestBlocking r = new HttpRequestBlocking(mRemote.getRequestString("getcurrentlyplaying()"));
-		r.fetch();
-		
-		if (!r.success())
-			return false;
-		//I'm clearing AFTER, so I wont clear on network errors
-		mPlaying.clear();
-		mPlaying.addEntriesFrom(r.response());
-
-		r = new HttpRequestBlocking(mRemote.getRequestString("getguistatus()"));
-		r.fetch();
-		
-		if (!r.success())
-			return false;
-
-		mPlaying.addEntriesFrom(r.response());
-		
-		return true;
-	}
-
-	private boolean getThumbnail() {
-		final String request = mRemote.getRequestPrefix()
-				+ String.format("getthumbnail(%s)", URLEncoder.encode(mPlaying.getThumbnailUrl()));
-		HttpRequestBlocking r;
-		r = new HttpRequestBlocking(request);
-		r.fetch();
-		if (!r.success()) {
-			return false;
+	private String[] getResponsesFromServer(String[] urls) {
+		String[] responses = new String[urls.length];
+		for(int i=0; i<urls.length; i++)
+		{
+			final String url = urls[i];
+			HttpRequestBlocking.Response r = HttpRequestBlocking.getHttpResponse(url);
+			if (!r.success())
+				return null;
+			responses[i] = r.response();
 		}
-		String shorter = r.response().replaceAll("<html>", "").replaceAll(
-				"</html>", "");
-		byte[] thumb;
-		try {
-			thumb = iharder.base64.Base64.decode(shorter.getBytes());
-		} catch (IOException e) {
-			thumb = null;
-			e.printStackTrace();
-		}
-		if (thumb != null)
-			mPlaying.setThumbnail(BitmapFactory.decodeByteArray(thumb, 0, thumb.length));
-		else
-			mPlaying.setThumbnail(null);
-		return true;
+		
+		return responses;
 	}
 }

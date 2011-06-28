@@ -21,7 +21,7 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
-import com.menny.android.thumbremote.Server;
+import com.menny.android.thumbremote.ServerAddress;
 
 
 import android.content.Context;
@@ -55,7 +55,7 @@ public class BoxeeDiscovererThread extends Thread {
 		 * @param servers
 		 *            list of discovered servers, null on error
 		 */
-		void addAnnouncedServers(ArrayList<Server> servers);
+		void addAnnouncedServers(ArrayList<ServerAddress> servers);
 	}
 
 	public BoxeeDiscovererThread(Context context, Receiver receiver) {
@@ -64,7 +64,7 @@ public class BoxeeDiscovererThread extends Thread {
 	}
 
 	public void run() {
-		ArrayList<Server> servers = null;
+		ArrayList<ServerAddress> servers = null;
 		try {
 			DatagramSocket socket = new DatagramSocket(DISCOVERY_PORT);
 			socket.setBroadcast(true);
@@ -74,7 +74,7 @@ public class BoxeeDiscovererThread extends Thread {
 			servers = listenForResponses(socket);
 			socket.close();
 		} catch (IOException e) {
-			servers = new ArrayList<Server>(); // use an empty one
+			servers = new ArrayList<ServerAddress>(); // use an empty one
 			Log.e(TAG, "Could not send discovery request", e);
 		}
 		finally
@@ -128,11 +128,11 @@ public class BoxeeDiscovererThread extends Thread {
 	 * @return list of discovered servers, never null
 	 * @throws IOException
 	 */
-	private ArrayList<Server> listenForResponses(DatagramSocket socket)
+	private ArrayList<ServerAddress> listenForResponses(DatagramSocket socket)
 			throws IOException {
 		long start = System.currentTimeMillis();
 		byte[] buf = new byte[1024];
-		ArrayList<Server> servers = new ArrayList<Server>();
+		ArrayList<ServerAddress> servers = new ArrayList<ServerAddress>();
 
 		// Loop and try to receive responses until the timeout elapses. We'll
 		// get
@@ -145,7 +145,7 @@ public class BoxeeDiscovererThread extends Thread {
 				socket.receive(packet);
 				String s = new String(packet.getData(), 0, packet.getLength());
 				Log.d(TAG, "Packet received after "+ (System.currentTimeMillis() - start) + " " + s);
-				Server server = parseResponse(s,
+				ServerAddress server = parseResponse(s,
 						((InetSocketAddress) packet.getSocketAddress())
 								.getAddress());
 				if (server != null)
@@ -170,7 +170,7 @@ public class BoxeeDiscovererThread extends Thread {
 	 * httpPort="<port_nubmer>" httpAuthRequired="<true|false>"
 	 * signature="<MD5HEX(randomdigits+shared_key)>"/>
 	 */
-	private Server parseResponse(String response, InetAddress address) {
+	private ServerAddress parseResponse(String response, InetAddress address) {
 
 		HashMap<String, String> values = parseBDP1Xml(response);
 		if (values == null)
@@ -204,7 +204,7 @@ public class BoxeeDiscovererThread extends Thread {
 			return null;
 		}
 
-		Server server = new Server("Boxee", 
+		ServerAddress server = new ServerAddress("Boxee", 
 				values.get("name"), 
 				"true".equalsIgnoreCase(values.get("httpAuthRequired")),
 				address, Integer.parseInt(values.get("httpPort")));

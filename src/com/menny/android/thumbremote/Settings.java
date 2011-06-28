@@ -115,11 +115,11 @@ public class Settings {
 		return mPreferences.getBoolean(REQUIRE_WIFI_KEY, true);
 	}
 	
-	public Server constructServer() {
-		return new Server("Boxee", getServerName(), isAuthRequired(), getHost(), getPort());
+	public ServerAddress constructServer() {
+		return new ServerAddress("Boxee", getServerName(), isAuthRequired(), getHost(), getPort());
 	}
 	
-	public void putServer(Server server, boolean isManual) {
+	public void putServer(ServerAddress server, boolean isManual) {
 		putServer(server.address().getHostAddress(), server.port(), server.name(), server.authRequired(), isManual);
 	}
 	

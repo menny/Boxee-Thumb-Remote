@@ -17,11 +17,4 @@ public class HelpUiActivity extends Activity {
 	public void onCloseClicked(View view) {
 		finish();
 	}
-	
-//	@Override
-//	protected void onPause() {
-//		super.onPause();
-//		finish();
-//		startActivity(new Intent(getApplicationContext(), RemoteUiActivity.class));
-//	}
 }

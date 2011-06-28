@@ -9,8 +9,7 @@ import java.util.ArrayList;
 import java.util.WeakHashMap;
 
 import com.menny.android.thumbremote.R;
-import com.menny.android.thumbremote.Remote;
-import com.menny.android.thumbremote.Server;
+import com.menny.android.thumbremote.ServerAddress;
 import com.menny.android.thumbremote.Settings;
 import com.menny.android.thumbremote.boxee.BoxeeDiscovererThread;
 
@@ -37,19 +36,20 @@ import android.widget.Toast;
  * Handles preference storage for BoxeeRemote.
  */
 public class SettingsActivity extends PreferenceActivity implements
-		BoxeeDiscovererThread.Receiver, Remote.ErrorHandler,
-		OnPreferenceClickListener, OnSharedPreferenceChangeListener {
+		BoxeeDiscovererThread.Receiver,
+		OnPreferenceClickListener, 
+		OnSharedPreferenceChangeListener {
 	/**
 	 * private constants
 	 */
 	private static final int DIALOG_CUSTOM = 1;
 
-	private WeakHashMap<String, Server> mServers;
+	private WeakHashMap<String, ServerAddress> mServers;
 	private PreferenceScreen mServersScreen;
 	private Settings mSettings;
 
 	public SettingsActivity() {
-		mServers = new WeakHashMap<String, Server>();
+		mServers = new WeakHashMap<String, ServerAddress>();
 	}
 
 	@Override
@@ -71,8 +71,6 @@ public class SettingsActivity extends PreferenceActivity implements
 	protected void onPause() {
 		mSettings.unlisten(this);
 		super.onPause();
-//		finish();
-//		startActivity(new Intent(getApplicationContext(), RemoteUiActivity.class));
 	}
 	
 	@Override
@@ -138,8 +136,8 @@ public class SettingsActivity extends PreferenceActivity implements
 	}
 
 	@Override
-	public void addAnnouncedServers(ArrayList<Server> servers) {
-		for (Server server : servers) {
+	public void addAnnouncedServers(ArrayList<ServerAddress> servers) {
+		for (ServerAddress server : servers) {
 			Preference preference = new Preference(this);
 			preference.setOrder(mServers.size());
 			preference.setTitle(server.name());
@@ -151,18 +149,8 @@ public class SettingsActivity extends PreferenceActivity implements
 	}
 
 	@Override
-	public void ShowError(int id, boolean longDelay) {
-	}
-
-	@Override
-	public void ShowError(String s, boolean longDelay) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
 	public boolean onPreferenceClick(Preference preference) {
-		Server server = mServers.get(preference.getTitle());
+		ServerAddress server = mServers.get(preference.getTitle());
 
 		if (server == null) {
 			showDialog(DIALOG_CUSTOM);
