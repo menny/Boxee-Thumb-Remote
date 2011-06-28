@@ -10,7 +10,7 @@ import com.menny.android.thumbremote.network.HttpRequestBlocking;
 import android.util.Log;
 
 public final class ServerStatePoller {
-	private static final String TAG = ServerStatePoller.class.toString();
+	private static final String TAG = "ServerStatePoller";
 	
 	private static final int MAX_NETWORK_ERRORS = 3;
 	

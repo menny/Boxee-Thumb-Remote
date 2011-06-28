@@ -112,7 +112,8 @@ public class BoxeeConnector implements ServerConnector  {
 	public void startOver() {
 		mInMoreDataState = false;
 		mUrlsToDo.clear();
-		mUrlsToDo.add(mCurrentPlayingUrls);
+		if (mCurrentPlayingUrls != null)
+			mUrlsToDo.add(mCurrentPlayingUrls);
 	}
 
 	@Override

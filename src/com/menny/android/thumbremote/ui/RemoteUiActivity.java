@@ -96,7 +96,8 @@ public class RemoteUiActivity extends Activity implements
 	// Menu items
 	private static final int MENU_SETTINGS = Menu.FIRST;
 	private static final int MENU_HELP = MENU_SETTINGS+1;
-	private static final int MENU_EXIT = MENU_HELP+1;
+	private static final int MENU_RESCAN = MENU_HELP+1;
+	private static final int MENU_EXIT = MENU_RESCAN+1;
 	
 	// ViewFlipper
 	private static final int PAGE_NOTPLAYING = 0;
@@ -114,6 +115,7 @@ public class RemoteUiActivity extends Activity implements
 	private static final int NOTIFICATION_PLAYING_ID = 1;
 
 	private static final int DIALOG_NO_PASSWORD = 1;
+	private static final int DIALOG_NO_SERVER = 2;
 	
 	private NotificationManager mNotificationManager;
 
@@ -285,6 +287,9 @@ public class RemoteUiActivity extends Activity implements
 		menu.add(Menu.NONE, MENU_HELP, 0, R.string.help).setIcon(
 				android.R.drawable.ic_menu_help);
 		
+		menu.add(Menu.NONE, MENU_RESCAN, 0, R.string.rescan_servers).setIcon(
+				android.R.drawable.ic_menu_search);
+		
 		menu.add(Menu.NONE, MENU_EXIT, 0, R.string.exit_app).setIcon(
 				android.R.drawable.ic_menu_close_clear_cancel);
 		return true;
@@ -302,6 +307,9 @@ public class RemoteUiActivity extends Activity implements
 			return true;
 		case MENU_SETTINGS:
 			startSetupActivity();
+			return true;
+		case MENU_RESCAN:
+			setServer();
 			return true;
 		default:
 			return super.onMenuItemSelected(featureId, item);
@@ -626,27 +634,61 @@ public class RemoteUiActivity extends Activity implements
 		switch(id)
 		{
 		case DIALOG_NO_PASSWORD:
-			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder
-				.setTitle("Credentials required")
-				.setMessage("The server "+mServerAddress.name()+" requires username and password in order to be controlled.\nWould you like to enter them now?")
-			       .setCancelable(true)
-			       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-			           public void onClick(DialogInterface dialog, int id) {
-			        	   startSetupActivity();
-			        	   dialog.dismiss();
-			           }
-			       })
-			       .setNegativeButton("No", new DialogInterface.OnClickListener() {
+			return createCredentialsRequiredDialog();
+		case DIALOG_NO_SERVER:
+			return createNoServerDialog();
+		}
+		return super.onCreateDialog(id);
+	}
+
+	private Dialog createCredentialsRequiredDialog() {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder
+			.setTitle("Credentials required")
+			.setMessage("The server "+mServerAddress.name()+" requires username and password in order to be controlled.\nWould you like to enter them now?")
+		       .setCancelable(true)
+		       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+		           public void onClick(DialogInterface dialog, int id) {
+		        	   startSetupActivity();
+		        	   dialog.dismiss();
+		           }
+		       })
+		       .setNegativeButton("No", new DialogInterface.OnClickListener() {
+		           public void onClick(DialogInterface dialog, int id) {
+		                dialog.cancel();
+		           }
+		       });
+		AlertDialog alert = builder.create();
+		
+		return alert;
+	}
+
+	private Dialog createNoServerDialog() {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder
+			.setTitle("No server found")
+			.setMessage("I was unable to find a Boxee server in your network.\n\nWould you like to manually set an IP address? Or maybe have me rescan again?")
+		       .setCancelable(true)
+		       .setPositiveButton("Manual", new DialogInterface.OnClickListener() {
+		           public void onClick(DialogInterface dialog, int id) {
+		        	   startSetupActivity();
+		        	   dialog.dismiss();
+		           }
+		       })
+		       .setNeutralButton("Rescan", new DialogInterface.OnClickListener() {
+		           public void onClick(DialogInterface dialog, int id) {
+		        	   setServer();
+		        	   dialog.dismiss();
+		           }
+		       })
+				.setNegativeButton("Neither", new DialogInterface.OnClickListener() {
 			           public void onClick(DialogInterface dialog, int id) {
 			                dialog.cancel();
 			           }
 			       });
-			AlertDialog alert = builder.create();
-			
-			return alert;
-		}
-		return super.onCreateDialog(id);
+		AlertDialog alert = builder.create();
+		
+		return alert;
 	}
 
 	/**
@@ -679,12 +721,17 @@ public class RemoteUiActivity extends Activity implements
 		String preferred = mSettings.getServerName();
 
 		for (int k = 0; k < servers.size(); ++k) {
-			ServerAddress server = servers.get(k);
+			final ServerAddress server = servers.get(k);
 			if (server.name().equals(preferred) || TextUtils.isEmpty(preferred)) {
 				if (!server.valid()) {
-					Toast.makeText(getApplicationContext(), 
-							String.format("Found '%s' but looks broken", server.name()),
-							Toast.LENGTH_SHORT).show();
+					runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+						Toast.makeText(getApplicationContext(), 
+								String.format("Found '%s' but looks broken", server.name()),
+								Toast.LENGTH_SHORT).show();
+						}
+					});
 					continue;
 				} else {
 					mServerAddress = server;
@@ -702,7 +749,12 @@ public class RemoteUiActivity extends Activity implements
 					{
 						if (!HttpRequestBlocking.hasCredentials())
 						{
-							showDialog(DIALOG_NO_PASSWORD);
+							runOnUiThread(new Runnable() {
+								@Override
+								public void run() {
+									showDialog(DIALOG_NO_PASSWORD);
+								}
+							});
 						}
 					}
 					
@@ -718,11 +770,9 @@ public class RemoteUiActivity extends Activity implements
 			@Override
 			public void run() {
 				setTitle(getString(R.string.app_name));
+				showDialog(DIALOG_NO_SERVER);
 			}
 		});
-		Toast.makeText(getApplicationContext(), 
-				"Could not find any servers. Try specifying it in the Settings (press MENU)",
-				Toast.LENGTH_LONG).show();
 	}
 	
 	@Override

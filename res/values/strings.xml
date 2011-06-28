@@ -7,6 +7,7 @@
 	
 	<string name="exit_app">Exit</string>
 	<string name="settings">Settings</string>
+	<string name="rescan_servers">Rescan for servers</string>
 	<string name="host_title">Host</string>
 	<string name="host_summary">Hostname of the server. Leave blank for Boxee autodiscovery.</string>
 	<string name="port_title">Port</string>
