@@ -1,17 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<string name="volume_step_size_key">volume_step_size_key</string>
-	<string name="screen_orientation_key">screen_orientation_key</string>
-	
-	<string-array name="screen_orientation_types_values">
-        <item>auto</item>
-        <item>portrait</item>
-        <item>landscape</item>
+    <!-- manual server -->
+    
+    
+	<string name="settings_key_swipe_sensitivity">settings_key_swipe_sensitivity</string>
+	<!-- this is the percentage of the screen width -->
+	<string name="settings_key_swipe_sensitivity_default_value">25</string>
+	<string-array name="settings_key_swipe_sensitivity_values">
+    	<item>10</item>
+        <item>15</item>
+        <item>25</item>
+        <item>40</item>
+        <item>55</item>
     </string-array>
     
-	<string name="screen_orientation_default_value">portrait</string>
-	
-	<string name="keep_screen_on_key">keep_screen_on_key</string>
-	
-	<string name="handle_back_hard_key">handle_back_hard_key</string>
+	<string name="settings_key_volume_step_size">settings_key_volume_step_size</string>
+	<string name="settings_key_volume_step_size_default_value">10</string>
+	<string-array name="settings_key_volume_step_size_values">
+    	<item>2</item>
+        <item>5</item>
+        <item>10</item>
+        <item>15</item>
+        <item>20</item>
+    </string-array>
+    
+    <string name="settings_key_handle_back_hard_key">settings_key_handle_back_hard_key</string>
+    <bool name="settings_key_handle_back_hard_default">true</bool>
+    
+    <string name="settings_key_keep_screen_on_key">settings_key_keep_screen_on_key</string>
+    <bool name="settings_key_keep_screen_on_default">false</bool>
+    
+    <string name="settings_key_network_timeout">settings_key_network_timeout</string>
 </resources>

@@ -12,6 +12,7 @@ import com.menny.android.thumbremote.R;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.content.res.Resources;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
@@ -19,21 +20,8 @@ import android.util.Log;
 public class Settings {
 	private static final String TAG = Settings.class.toString();
 	
-	/**
-	 * Current page (i.e. gesture or dpad)
-	 */
-	public static final String SERVER_NAME_KEY = "name";
-	public static final String IS_MANUAL_KEY = "is_manual";
-	public static final String HOST_KEY = "host";
-	public static final String PORT_KEY = "port";
-	public static final String AUTH_REQUIRED_KEY = "auth";
-	public static final String USER_KEY = "user";
-	public static final String PASSWORD_KEY = "password";
-	public static final String SENSITIVITY_KEY = "sensitivity";
-	public static final String REQUIRE_WIFI_KEY = "require_wifi";
-	public static final String TIMEOUT_KEY = "timeout";
 	private final String VOLUME_STEP_SIZE_KEY;
-	private final int VOLUME_STEP_SIZE_DEFAULT_VALUE;
+	private final String VOLUME_STEP_SIZE_DEFAULT_VALUE;
 	private final String HANDLE_HARD_BACK_KEY;
 	private final boolean HANDLE_HARD_BACK_DEFAULT;
 	private final String KEEP_SCREEN_ON_KEY;
@@ -47,19 +35,21 @@ public class Settings {
 		
 		// Attempt to set default values if they have not yet been set
 		PreferenceManager.setDefaultValues(context, R.layout.preferences, false);
+		Resources res = context.getResources();
 		
-		VOLUME_STEP_SIZE_KEY = context.getString(R.string.volume_step_size_key);
-		VOLUME_STEP_SIZE_DEFAULT_VALUE = context.getResources().getInteger(R.integer.volume_step_size_default_value);
+		VOLUME_STEP_SIZE_KEY = res.getString(R.string.settings_key_volume_step_size);
+		VOLUME_STEP_SIZE_DEFAULT_VALUE = res.getString(R.string.settings_key_volume_step_size_default_value);
 		
-		HANDLE_HARD_BACK_KEY = context.getString(R.string.handle_back_hard_key);
-		HANDLE_HARD_BACK_DEFAULT = context.getResources().getBoolean(R.bool.handle_back_hard_default);
+		HANDLE_HARD_BACK_KEY = res.getString(R.string.settings_key_handle_back_hard_key);
+		HANDLE_HARD_BACK_DEFAULT = res.getBoolean(R.bool.settings_key_handle_back_hard_default);
 		
-		KEEP_SCREEN_ON_KEY = context.getString(R.string.keep_screen_on_key);
-		KEEP_SCREEN_ON_DEFAULT = context.getResources().getBoolean(R.bool.keep_screen_on_default);
+		KEEP_SCREEN_ON_KEY = res.getString(R.string.settings_key_keep_screen_on_key);
+		KEEP_SCREEN_ON_DEFAULT = res.getBoolean(R.bool.settings_key_keep_screen_on_default);
 	}
 
 	public int getVolumeStep() {
-		return mPreferences.getInt(VOLUME_STEP_SIZE_KEY, VOLUME_STEP_SIZE_DEFAULT_VALUE);
+		String volumeStep = mPreferences.getString(VOLUME_STEP_SIZE_KEY, VOLUME_STEP_SIZE_DEFAULT_VALUE);
+		return Integer.parseInt(volumeStep);
 	}
 	
 	public boolean getHandleBack() {
@@ -109,10 +99,6 @@ public class Settings {
 	
 	public boolean isAuthRequired() {
 		return mPreferences.getBoolean(AUTH_REQUIRED_KEY, false);
-	}
-	
-	public boolean requiresWifi() {
-		return mPreferences.getBoolean(REQUIRE_WIFI_KEY, true);
 	}
 	
 	public ServerAddress constructServer() {

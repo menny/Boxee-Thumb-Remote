@@ -5,17 +5,64 @@
 	
 	<string name="server_is_playing">Playing: <xliff:g id="title">%s</xliff:g></string>
 	
+	
+	<!-- settings -->
+	<string name="ux_group">UX Settings</string>
+	
+	<string name="preference_sensitivity">Swipe sensitivity</string>
+	<string name="preference_sensitivity_summary">How sensitive is the swipe gesture to induce a navigation</string>
+	<string-array name="settings_key_swipe_sensitivity_texts">
+    	<item>Very high</item>
+        <item>High</item>
+        <item>Medium</item>
+        <item>Low</item>
+        <item>Very low</item>
+    </string-array>
+    
+    <string name="preference_volume_step">Volume step</string>
+	<string name="preference_volume_step_summary">How big is the volume change on volume key press</string>
+	<string-array name="settings_key_volume_step_size_texts">
+    	<item>2%</item>
+        <item>5%</item>
+        <item>10%</item>
+        <item>15%</item>
+        <item>20%</item>
+    </string-array>
+    
+    <string name="preference_handle_back_hard">Use physical BACK</string>
+    <string name="preference_handle_back_hard_on">Pressing BACK will send it to the server</string>
+    <string name="preference_handle_back_hard_off">Pressing BACK will be passed to Android</string>
+    
+    <string name="keep_screen_on_title">Keep screen on</string>
+    <string name="keep_screen_on_yes">Screen will no go to sleep (drains battery!)</string>
+    <string name="keep_screen_on_no">Screen will go to sleep on inactivity</string>
+    
+    <string name="network_group">Network Settings</string>
+    
+    <string name="network_timeout_title">Network timeout</string>
+    <string name="network_timeout_summary">Timeout for HTTP requests in milliseconds</string>
+    
+    
+    
+    <!-- help -->
+    <string name="welcome_to_remote">Welcome to Boxee Thumb Remote!</string>
+    <string name="quick_overview">This is the simplest WiFi remote for Boxee you\'ll find!\nWith only your thumb, you can control your Boxee. You don\'t even have to look at the remove UI!</string>
+    <string name="swipe_help_overview">Navigation with this remote is done by swipe gestures: swipe your thumb up, to navigate up in Boxee. Swipe down to navigate down, etc. Tap to select an item in Boxee.\nSimple, ah?</string>
+    <string name="other_features_overview">There are other features too:\n * Auto detection of a Boxee server.\n * Physical BACK button is mapped to Boxee\'s BACK.\n * Android soft-keyboard will send keys to Boxee, e.g., when there is a text-box open in Boxee.\n * Automatically pauses a playing video upon a phone call!\n * And more!</string>
+    <string name="how_to_get_to_help">There are some settings (and a link to this help) from the MENU.</string>
+    <string name="close_button">Close</string>
+    
+    
+    <!-- remote menu -->
 	<string name="exit_app">Exit</string>
 	<string name="settings">Settings</string>
 	<string name="rescan_servers">Rescan for servers</string>
+	
+	
 	<string name="host_title">Host</string>
 	<string name="host_summary">Hostname of the server. Leave blank for Boxee autodiscovery.</string>
 	<string name="port_title">Port</string>
 	<string name="port_summary">Port of the boxee service, 8800 by default. Unused in autodiscovery.</string>
-	<string name="no_wifi">Wifi unavailable, cannot access local boxee host. Connect to wifi or disable this check in settings</string>
-	<string name="require_wifi_title">Require Wifi Connection</string>
-	<string name="require_wifi_yes">Wifi must be active</string>
-	<string name="require_wifi_no">Allow connection over mobile internet</string>
 	<string name="scan">Scan for Boxees</string>
 	<string name="help">Help</string>
 	<string name="none_found">Found no Boxee servers</string>
@@ -23,8 +70,6 @@
 	<string name="summary_discovery">Discover server automatically</string>
 	<string name="discovered_name">Name of discovered server</string>
 	<string name="discovered_summary">To set, run a scan from the main menu.</string>
-	<string name="timeout_summary">Timeout for HTTP requests in milliseconds</string>
-	<string name="timeout_title">Timeout</string>
 	<string name="user_title">Username</string>
 	<string name="user_summary">Webserver username, default "xbox"</string>
 	<string name="password_title">Password</string>
@@ -32,7 +77,6 @@
 	<string name="password_summary">Only needed if you set a password on your server</string>
 	<string name="progress_scanning">scanning...</string>
 	<string name="title_servers">Servers</string>
-	<string name="preference_sensitivity">Sensitivity</string>
 	<string name="custom_server">Custom server...</string>
 	
 	<string name="preference_volume_step_size">Volume step</string>
@@ -45,22 +89,7 @@
         <item>Landscape</item>
     </string-array>
     
-    <string name="keep_screen_on_title">Keep screen on</string>
-    <string name="keep_screen_on_yes">Screen will no go to sleep (drains battery!)</string>
-    <string name="keep_screen_on_no">Screen will go to sleep on inactivity</string>
     
-    <string name="handle_back_hard">Use physical BACK</string>
-    <string name="handle_back_hard_on">Pressing BACK will send it to the server</string>
-    <string name="handle_back_hard_off">Pressing BACK will be passed to Android</string>
     
-    <string name="ux_group">UX Settings</string>
-    <string name="network_group">Network Settings</string>
     
-    <!-- help -->
-    <string name="welcome_to_remote">Welcome to Boxee Thumb Remote!</string>
-    <string name="quick_overview">This is the simplest WiFi remote for Boxee you\'ll find!\nWith only your thumb, you can control your Boxee. You don\'t even have to look at the remove UI!</string>
-    <string name="swipe_help_overview">Navigation with this remote is done by swipe gestures: swipe your thumb up, to navigate up in Boxee. Swipe down to navigate down, etc. Tap to select an item in Boxee.\nSimple, ah?</string>
-    <string name="other_features_overview">There are other features too:\n * Auto detection of a Boxee server.\n * Physical BACK button is mapped to Boxee\'s BACK.\n * Android soft-keyboard will send keys to Boxee, e.g., when there is a text-box open in Boxee.\n * Automatically pauses a playing video upon a phone call!\n * And more!</string>
-    <string name="how_to_get_to_help">There are some settings (and a link to this help) from the MENU.</string>
-    <string name="close_button">Close</string>
 </resources>
