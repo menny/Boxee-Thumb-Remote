@@ -5,13 +5,13 @@
  */
 package com.menny.android.thumbremote.ui;
 
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.menny.android.thumbremote.R;
 import com.menny.android.thumbremote.RemoteApplication;
 import com.menny.android.thumbremote.ServerAddress;
-import com.menny.android.thumbremote.Settings;
 import com.menny.android.thumbremote.boxee.BoxeeDiscovererThread;
 
 import android.app.AlertDialog;
@@ -66,7 +66,6 @@ public class SettingsActivity extends PreferenceActivity implements
 
 	private HashMap<String, ServerAddress> mServers;
 	private PreferenceScreen mServersScreen;
-	private Settings mSettings;
 
 	public SettingsActivity() {
 		mServers = new HashMap<String, ServerAddress>();
@@ -80,7 +79,7 @@ public class SettingsActivity extends PreferenceActivity implements
 
 		mServersScreen = (PreferenceScreen) getPreferenceScreen().findPreference(getText(R.string.settings_key_servers_screen));
 		
-		mServersScreen.setSummary(mSettings.getServerName());
+		mServersScreen.setSummary(RemoteApplication.getConfig().getServerName());
 		
 		Preference preference = new Preference(this);
 		preference.setTitle(getText(R.string.custom_server));
@@ -96,14 +95,14 @@ public class SettingsActivity extends PreferenceActivity implements
 
 	@Override
 	protected void onPause() {
-		mSettings.unlisten(this);
+		RemoteApplication.getConfig().unlisten(this);
 		super.onPause();
 	}
 	
 	@Override
 	protected void onResume() {
 		super.onResume();
-		mSettings.listen(this);
+		RemoteApplication.getConfig().listen(this);
 	}
 	
 	@Override
@@ -114,10 +113,10 @@ public class SettingsActivity extends PreferenceActivity implements
 		LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
 		final View layout = inflater.inflate(R.layout.custom_host,
 				(ViewGroup) findViewById(R.id.layoutCustomHost));
-		((TextView) layout.findViewById(R.id.textAddress)).setText(mSettings
-				.getHost().toString());
-		((TextView) layout.findViewById(R.id.textPort)).setText(new Integer(mSettings
-				.getPort()).toString());
+		InetAddress hostname = RemoteApplication.getConfig().getHost();
+		if (hostname != null)
+			((TextView) layout.findViewById(R.id.textAddress)).setText(hostname.toString());
+		((TextView) layout.findViewById(R.id.textPort)).setText(new Integer(RemoteApplication.getConfig().getPort()).toString());
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setView(layout);
@@ -132,7 +131,7 @@ public class SettingsActivity extends PreferenceActivity implements
 								.findViewById(R.id.textPort)).getText()
 								.toString());
 
-						mSettings.putServer(address, port, "custom", false, true);
+						RemoteApplication.getConfig().putServer(address, port, "custom", false, true);
 						mServersScreen.getDialog().dismiss();
 					}
 				});
@@ -165,7 +164,7 @@ public class SettingsActivity extends PreferenceActivity implements
 			return true;
 		}
 
-		mSettings.putServer(server, false);
+		RemoteApplication.getConfig().putServer(server, false);
 		mServersScreen.getDialog().dismiss();
 
 		return true;
@@ -175,8 +174,8 @@ public class SettingsActivity extends PreferenceActivity implements
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
 			String key) {
 		if (key.equals(RemoteApplication.getConfig().SERVER_NAME_KEY)) {
-			String value = mSettings.getServerName();
-			Toast.makeText(this, "preference changed: " + value, 5000);
+			String value = RemoteApplication.getConfig().getServerName();
+			Toast.makeText(this.getApplicationContext(), "New server "+value, Toast.LENGTH_SHORT);
 			mServersScreen.setSummary(value);
 		}
 	}
