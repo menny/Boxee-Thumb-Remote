@@ -9,11 +9,11 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 import com.menny.android.thumbremote.R;
+import com.menny.android.thumbremote.RemoteApplication;
 import com.menny.android.thumbremote.ServerAddress;
 import com.menny.android.thumbremote.ServerConnector;
 import com.menny.android.thumbremote.ServerState;
 import com.menny.android.thumbremote.ServerStatePoller;
-import com.menny.android.thumbremote.Settings;
 import com.menny.android.thumbremote.ShakeListener.OnShakeListener;
 import com.menny.android.thumbremote.UiView;
 import com.menny.android.thumbremote.boxee.BoxeeConnector;
@@ -122,7 +122,6 @@ public class RemoteUiActivity extends Activity implements
 
 	boolean mThisAcitivityPaused = true;
 	
-	private Settings mSettings;
 	private ServerConnector mRemote;
 	private BoxeeDiscovererThread mServerDiscoverer;
 	private ServerAddress mServerAddress = null;
@@ -187,8 +186,6 @@ public class RemoteUiActivity extends Activity implements
 		mDuration = (TextView) findViewById(R.id.textDuration);
 		mElapsedBar = (ProgressBar) findViewById(R.id.progressTimeBar);
 
-		mSettings = new Settings(this);
-
 		loadPreferences();
 
 		setButtonAction(R.id.back, KeyEvent.KEYCODE_BACK);
@@ -234,7 +231,7 @@ public class RemoteUiActivity extends Activity implements
 	protected void onPause() {
 		mThisAcitivityPaused = true;
 		//mShakeDetector.pause();
-		mSettings.unlisten(this);
+		RemoteApplication.getConfig().unlisten(this);
 		mHandler.removeCallbacks(mRequestStatusUpdateRunnable);
 		
 		super.onPause();
@@ -262,14 +259,14 @@ public class RemoteUiActivity extends Activity implements
 		super.onResume();
 		mThisAcitivityPaused = false;
 		
-		mSettings.listen(this);
+		RemoteApplication.getConfig().listen(this);
 		
 		if ((mServerAddress == null || !mServerAddress.valid()) && !mServerDiscoverer.isLookingForServers())
 			setServer();
 		
 		//mShakeDetector.resume();
 		
-		mImageThumbnail.setKeepScreenOn(mSettings.getKeepScreenOn());
+		mImageThumbnail.setKeepScreenOn(RemoteApplication.getConfig().getKeepScreenOn());
 		
 		if (mStatePoller == null)
 		{
@@ -477,7 +474,7 @@ public class RemoteUiActivity extends Activity implements
 		switch (keyCode) {
 
 		case KeyEvent.KEYCODE_BACK:
-			if (mSettings.getHandleBack())
+			if (RemoteApplication.getConfig().getHandleBack())
 			{
 				remoteBack();
 				return true;
@@ -514,7 +511,7 @@ public class RemoteUiActivity extends Activity implements
 				@Override
 				protected void callRemoteFunction() throws Exception {
 					int volume = mRemote.getVolume();
-					int newVolume = Math.max(0, Math.min(100, volume + (volumeFactor * mSettings.getVolumeStep())));
+					int newVolume = Math.max(0, Math.min(100, volume + (volumeFactor * RemoteApplication.getConfig().getVolumeStep())));
 					mRemote.setVolume(newVolume);
 				}
 			}.execute();
@@ -607,12 +604,12 @@ public class RemoteUiActivity extends Activity implements
 		flipTo(PAGE_NOTPLAYING);
 		
 		// Setup the HTTP timeout.
-		int timeout_ms = mSettings.getTimeout();
+		int timeout_ms = RemoteApplication.getConfig().getTimeout();
 		HttpRequestBlocking.setTimeout(timeout_ms);
 
 		// Parse the credentials, if needed.
-		String user = mSettings.getUser();
-		String password = mSettings.getPassword();
+		String user = RemoteApplication.getConfig().getUser();
+		String password = RemoteApplication.getConfig().getPassword();
 		if (!TextUtils.isEmpty(password)) {
 			HttpRequestBlocking.setUserPassword(user, password);
 		}
@@ -623,8 +620,8 @@ public class RemoteUiActivity extends Activity implements
 	private void setServer() {
 		// Only set the host if manual. Otherwise we'll auto-detect it with
 		// Discoverer -> addAnnouncedServers
-		if (mSettings.isManual()) {
-			mRemote.setServer(mSettings.constructServer());
+		if (RemoteApplication.getConfig().isManuallySetServer()) {
+			mRemote.setServer(RemoteApplication.getConfig().constructServer());
 			requestUpdateASAP(100);
 		}
 		else {
@@ -721,12 +718,12 @@ public class RemoteUiActivity extends Activity implements
 		
 		
 		// This condition shouldn't ever be true.
-		if (mSettings.isManual()) {
+		if (RemoteApplication.getConfig().isManuallySetServer()) {
 			Log.d(TAG, "Skipping announced servers. Set manually");
 			return;
 		}
 
-		String preferred = mSettings.getServerName();
+		String preferred = RemoteApplication.getConfig().getServerName();
 
 		for (int k = 0; k < servers.size(); ++k) {
 			final ServerAddress server = servers.get(k);

@@ -5,6 +5,7 @@
  */
 package com.menny.android.thumbremote;
 
+
 import java.net.InetAddress;
 
 import com.menny.android.thumbremote.R;
@@ -18,7 +19,16 @@ import android.text.TextUtils;
 import android.util.Log;
 
 public class Settings {
-	private static final String TAG = Settings.class.toString();
+	private static final String TAG = "Settings";
+	
+	public final String SERVER_NAME_KEY;
+	private final String SERVER_HOST_KEY;
+	private final String SERVER_PORT_KEY;
+	private final String SERVER_PORT_DEFAULT_VALUE;
+	private final String SERVER_CREDS_REQUIRED_KEY;
+	private final String SERVER_USERNAME_KEY;
+	private final String SERVER_PASSWORD_KEY;
+	private final String SERVER_MANUALLY_SET_KEY;
 	
 	private final String VOLUME_STEP_SIZE_KEY;
 	private final String VOLUME_STEP_SIZE_DEFAULT_VALUE;
@@ -27,10 +37,12 @@ public class Settings {
 	private final String KEEP_SCREEN_ON_KEY;
 	private final boolean KEEP_SCREEN_ON_DEFAULT;
 	
+	private final String NETWORK_TIMEOUT_KEY;
+	private final String NETWORK_TIMEOUT_DEFAULT_VALUE;
 	
 	private SharedPreferences mPreferences;
 
-	public Settings(Context context) {
+	Settings(Context context) {
 		mPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 		
 		// Attempt to set default values if they have not yet been set
@@ -45,6 +57,18 @@ public class Settings {
 		
 		KEEP_SCREEN_ON_KEY = res.getString(R.string.settings_key_keep_screen_on_key);
 		KEEP_SCREEN_ON_DEFAULT = res.getBoolean(R.bool.settings_key_keep_screen_on_default);
+		
+		SERVER_NAME_KEY = res.getString(R.string.settings_key_server_name_key);
+		SERVER_HOST_KEY = res.getString(R.string.settings_key_server_host_key);
+		SERVER_PORT_KEY = res.getString(R.string.settings_key_server_port_on_key);
+		SERVER_PORT_DEFAULT_VALUE = res.getString(R.string.settings_key_server_port_on_default_value);
+		SERVER_CREDS_REQUIRED_KEY = res.getString(R.string.settings_key_server_creds_required_key);
+		SERVER_USERNAME_KEY = res.getString(R.string.settings_key_server_username_key);
+		SERVER_PASSWORD_KEY = res.getString(R.string.settings_key_server_password_key);
+		SERVER_MANUALLY_SET_KEY = res.getString(R.string.settings_key_server_manually_set_key);
+		
+		NETWORK_TIMEOUT_KEY = res.getString(R.string.settings_key_network_timeout_key);
+		NETWORK_TIMEOUT_DEFAULT_VALUE = res.getString(R.string.settings_key_network_timeout_default_value);
 	}
 
 	public int getVolumeStep() {
@@ -65,7 +89,7 @@ public class Settings {
 	}
 	
 	public InetAddress getHost() {
-		String address = mPreferences.getString(HOST_KEY, "");
+		String address = mPreferences.getString(SERVER_HOST_KEY, "");
 		try
 		{
 			if (TextUtils.isEmpty(address)) return null;
@@ -78,27 +102,27 @@ public class Settings {
 	}
 	
 	public int getPort() {
-		return mPreferences.getInt(PORT_KEY, 8800);
+		return Integer.parseInt(mPreferences.getString(SERVER_PORT_KEY, SERVER_PORT_DEFAULT_VALUE));
 	}
 	
 	public String getUser() {
-		return mPreferences.getString(USER_KEY, "");
+		return mPreferences.getString(SERVER_USERNAME_KEY, "");
 	}
 	
 	public String getPassword() {
-		return mPreferences.getString(PASSWORD_KEY, "");
+		return mPreferences.getString(SERVER_PASSWORD_KEY, "");
 	}
 	
-	public boolean isManual() {
-		return mPreferences.getBoolean(IS_MANUAL_KEY, false);
+	public boolean isManuallySetServer() {
+		return mPreferences.getBoolean(SERVER_MANUALLY_SET_KEY, false);
 	}
 	
 	public int getTimeout() {
-		return Integer.parseInt(mPreferences.getString(TIMEOUT_KEY, "1000"));
+		return Integer.parseInt(mPreferences.getString(NETWORK_TIMEOUT_KEY, NETWORK_TIMEOUT_DEFAULT_VALUE));
 	}
 	
 	public boolean isAuthRequired() {
-		return mPreferences.getBoolean(AUTH_REQUIRED_KEY, false);
+		return !TextUtils.isEmpty(getUser());
 	}
 	
 	public ServerAddress constructServer() {
@@ -112,14 +136,14 @@ public class Settings {
 	public void putServer(String address, int port, String name, boolean auth, boolean isManual) {
 		Log.i(TAG, "Storing server as: " + name + ", manual: " + isManual);
 		SharedPreferences.Editor editor = mPreferences.edit();
-		editor.putString(HOST_KEY, address);
-		editor.putInt(PORT_KEY, port);
+		editor.putString(SERVER_HOST_KEY, address);
+		editor.putInt(SERVER_PORT_KEY, port);
 		editor.putString(SERVER_NAME_KEY, name);
-		editor.putBoolean(AUTH_REQUIRED_KEY, auth);
-		editor.putBoolean(IS_MANUAL_KEY, isManual);
+		editor.putBoolean(SERVER_CREDS_REQUIRED_KEY, auth);
+		editor.putBoolean(SERVER_MANUALLY_SET_KEY, isManual);
 		editor.commit();	
 	}
-
+	
 	public void listen(OnSharedPreferenceChangeListener listener) {
 		mPreferences.registerOnSharedPreferenceChangeListener(listener);
 	}

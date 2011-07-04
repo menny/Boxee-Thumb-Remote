@@ -9,7 +9,7 @@
   	>
   
 	<TextView 
-		android:text="Address" 
+		android:text="@string/host_title" 
 		android:layout_width="wrap_content" 
 		android:layout_height="wrap_content"
 		/>
@@ -22,15 +22,16 @@
 		/>
 	  
 	<TextView 
-		android:text="Port"
+		android:text="@string/port_title"
 		android:layout_width="wrap_content" 
 		android:layout_height="wrap_content"
 		/>
 		
 	<EditText 
 		android:id="@+id/textPort" 
-		android:text="8800" 
+		android:text="@string/settings_key_server_port_on_default_value" 
 		android:layout_width="fill_parent" 
-		android:layout_height="wrap_content" 
+		android:layout_height="wrap_content"
+		android:numeric="integer"
 		/>			
 </LinearLayout>

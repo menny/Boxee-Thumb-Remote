@@ -1,8 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+	<string name="settings_key_servers_screen">settings_key_servers_screen</string>
     <!-- manual server -->
+    <string name="settings_key_server_name_key">settings_key_server_name_key</string>
+    <string name="settings_key_server_host_key">settings_key_server_host_key</string>
+    <string name="settings_key_server_port_on_key">settings_key_server_port_on_key</string>
+    <string name="settings_key_server_port_on_default_value">8800</string>
+    <string name="settings_key_server_creds_required_key">settings_key_server_creds_required_key</string>
+    <string name="settings_key_server_username_key">settings_key_server_username_key</string>
+    <string name="settings_key_server_password_key">settings_key_server_password_key</string>
+    <string name="settings_key_server_manually_set_key">settings_key_server_manually_set_key</string>
     
-    
+    <!-- UX -->
 	<string name="settings_key_swipe_sensitivity">settings_key_swipe_sensitivity</string>
 	<!-- this is the percentage of the screen width -->
 	<string name="settings_key_swipe_sensitivity_default_value">25</string>
@@ -30,5 +39,8 @@
     <string name="settings_key_keep_screen_on_key">settings_key_keep_screen_on_key</string>
     <bool name="settings_key_keep_screen_on_default">false</bool>
     
-    <string name="settings_key_network_timeout">settings_key_network_timeout</string>
+    <!-- network -->
+    <string name="settings_key_network_timeout_key">settings_key_network_timeout_key</string>
+    <string name="settings_key_network_timeout_default_value">750</string>
+    
 </resources>

@@ -3,7 +3,7 @@
 	xmlns:android="http://schemas.android.com/apk/res/android">
 			
     <PreferenceScreen
-        android:key="servers_screen"
+        android:key="@string/settings_key_servers_screen"
         android:title="Boxee Server"
         />
 	
@@ -48,10 +48,10 @@
 	<PreferenceCategory android:key="network_group"
 	android:title="@string/network_group">
 		<EditTextPreference 
-		android:key="@string/settings_key_network_timeout" 
+		android:key="@string/settings_key_network_timeout_key" 
 		android:title="@string/network_timeout_title"
 		android:summary="@string/network_timeout_summary"
-		android:defaultValue="2000"
+		android:defaultValue="@string/settings_key_network_timeout_default_value"
 		/>
 	</PreferenceCategory>
 

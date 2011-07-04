@@ -7,6 +7,10 @@
 	
 	
 	<!-- settings -->
+	<string name="custom_server">Custom server...</string>
+	<string name="host_title">Host</string>
+	<string name="port_title">Port</string>
+	
 	<string name="ux_group">UX Settings</string>
 	
 	<string name="preference_sensitivity">Swipe sensitivity</string>
@@ -41,7 +45,7 @@
     
     <string name="network_timeout_title">Network timeout</string>
     <string name="network_timeout_summary">Timeout for HTTP requests in milliseconds</string>
-    
+    <string name="is_an_invalid_number"><xliff:g id="new_text">%s</xliff:g> is an invalid number</string>
     
     
     <!-- help -->
@@ -57,14 +61,12 @@
 	<string name="exit_app">Exit</string>
 	<string name="settings">Settings</string>
 	<string name="rescan_servers">Rescan for servers</string>
+	<string name="help">Help</string>
 	
-	
-	<string name="host_title">Host</string>
+	<!-- 
 	<string name="host_summary">Hostname of the server. Leave blank for Boxee autodiscovery.</string>
-	<string name="port_title">Port</string>
 	<string name="port_summary">Port of the boxee service, 8800 by default. Unused in autodiscovery.</string>
 	<string name="scan">Scan for Boxees</string>
-	<string name="help">Help</string>
 	<string name="none_found">Found no Boxee servers</string>
 	<string name="title_discovery">Automatic Discovery</string>
 	<string name="summary_discovery">Discover server automatically</string>
@@ -77,8 +79,8 @@
 	<string name="password_summary">Only needed if you set a password on your server</string>
 	<string name="progress_scanning">scanning...</string>
 	<string name="title_servers">Servers</string>
-	<string name="custom_server">Custom server...</string>
-	
+	 -->
+	 
 	<string name="preference_volume_step_size">Volume step</string>
 	
 	<string name="screen_orientation_title">Screen orientation</string>

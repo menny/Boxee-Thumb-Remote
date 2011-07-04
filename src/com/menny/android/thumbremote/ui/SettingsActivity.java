@@ -6,9 +6,10 @@
 package com.menny.android.thumbremote.ui;
 
 import java.util.ArrayList;
-import java.util.WeakHashMap;
+import java.util.HashMap;
 
 import com.menny.android.thumbremote.R;
+import com.menny.android.thumbremote.RemoteApplication;
 import com.menny.android.thumbremote.ServerAddress;
 import com.menny.android.thumbremote.Settings;
 import com.menny.android.thumbremote.boxee.BoxeeDiscovererThread;
@@ -39,31 +40,57 @@ public class SettingsActivity extends PreferenceActivity implements
 		BoxeeDiscovererThread.Receiver,
 		OnPreferenceClickListener, 
 		OnSharedPreferenceChangeListener {
+	
+	private final Preference.OnPreferenceChangeListener numberCheckListener = new Preference.OnPreferenceChangeListener() {
+
+	    @Override
+	    public boolean onPreferenceChange(Preference preference, Object newValue) {
+	        //Check that the string is an integer.
+	        return numberCheck(newValue);
+	    }
+	    
+		private boolean numberCheck(Object newValue) {
+		    if( !newValue.toString().equals("")  &&  newValue.toString().matches("\\d*") ) {
+		        return true;
+		    }
+		    else {
+		        Toast.makeText(SettingsActivity.this.getApplicationContext(), getResources().getString(R.string.is_an_invalid_number, newValue), Toast.LENGTH_SHORT).show();
+		        return false;
+		    }
+		}
+	};
 	/**
 	 * private constants
 	 */
 	private static final int DIALOG_CUSTOM = 1;
 
-	private WeakHashMap<String, ServerAddress> mServers;
+	private HashMap<String, ServerAddress> mServers;
 	private PreferenceScreen mServersScreen;
 	private Settings mSettings;
 
 	public SettingsActivity() {
-		mServers = new WeakHashMap<String, ServerAddress>();
+		mServers = new HashMap<String, ServerAddress>();
 	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		mSettings = new Settings(this);
-
 		addPreferencesFromResource(R.layout.preferences);
 
-		onCreatePreferences();
+		mServersScreen = (PreferenceScreen) getPreferenceScreen().findPreference(getText(R.string.settings_key_servers_screen));
+		
+		mServersScreen.setSummary(mSettings.getServerName());
+		
+		Preference preference = new Preference(this);
+		preference.setTitle(getText(R.string.custom_server));
+		preference.setOrder(1000);
+		preference.setOnPreferenceClickListener(this);
+		mServersScreen.addPreference(preference);
 
+		getPreferenceScreen().findPreference(getText(R.string.settings_key_network_timeout_key)).setOnPreferenceChangeListener(numberCheckListener);
+		
 		BoxeeDiscovererThread discoverer = new BoxeeDiscovererThread(this, this);
-		setProgress(true);
 		discoverer.start();
 	}
 
@@ -78,25 +105,7 @@ public class SettingsActivity extends PreferenceActivity implements
 		super.onResume();
 		mSettings.listen(this);
 	}
-
-	private void setProgress(boolean b) {
-		// TODO Auto-generated method stub
-
-	}
-
-	private void onCreatePreferences() {
-		mServersScreen = (PreferenceScreen) getPreferenceScreen()
-				.findPreference(Settings.SERVER_NAME_KEY);
-
-		mServersScreen.setSummary(mSettings.getServerName());
-
-		Preference preference = new Preference(this);
-		preference.setTitle(getText(R.string.custom_server));
-		preference.setOrder(1000);
-		preference.setOnPreferenceClickListener(this);
-		mServersScreen.addPreference(preference);
-	}
-
+	
 	@Override
 	protected Dialog onCreateDialog(int id) {
 		if (id != DIALOG_CUSTOM)
@@ -145,7 +154,6 @@ public class SettingsActivity extends PreferenceActivity implements
 			mServersScreen.addPreference(preference);
 			mServers.put(server.name(), server);
 		}
-		setProgress(false);
 	}
 
 	@Override
@@ -166,7 +174,7 @@ public class SettingsActivity extends PreferenceActivity implements
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
 			String key) {
-		if (key.equals(Settings.SERVER_NAME_KEY)) {
+		if (key.equals(RemoteApplication.getConfig().SERVER_NAME_KEY)) {
 			String value = mSettings.getServerName();
 			Toast.makeText(this, "preference changed: " + value, 5000);
 			mServersScreen.setSummary(value);
