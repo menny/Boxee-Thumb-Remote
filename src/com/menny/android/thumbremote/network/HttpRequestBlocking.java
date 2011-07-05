@@ -98,8 +98,7 @@ public class HttpRequestBlocking {
 		Log.d(TAG, "Fetching " + mUrl.toString());
 		
 		try {
-			HttpURLConnection connection = (HttpURLConnection) mUrl
-					.openConnection();
+			HttpURLConnection connection = (HttpURLConnection) mUrl.openConnection();
 			connection.setConnectTimeout(mTimeout);
 			connection.setReadTimeout(mTimeout);
 			maybeAddAuthentication(connection);

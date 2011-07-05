@@ -21,6 +21,7 @@ import com.menny.android.thumbremote.network.HttpRequestBlocking;
 /*
  * ftp://ohnopublishing.net/distfiles/svn-src/xbmc/trunk/xbmc/lib/libGoAhead/XBMChttp.cpp
  * http://wiki.xbmc.org/index.php?title=Web_Server_HTTP_API
+ * http://developer.boxee.tv/Remote_Control_Interface#Remote_Control_Interface
  */
 public class BoxeeConnector implements ServerConnector  {
 	public static final String BOXEE_SERVER_TYPE = "Boxee";
@@ -359,6 +360,13 @@ public class BoxeeConnector implements ServerConnector  {
 		String request = String.format(mSeekPercentageRelativeTemplate, pct);
 
 		sendHttpCommand(request);
+	}
+	
+	/*to be implemented*/
+	public String getOnScreenTextboxText()
+	{
+		//http://host:port/xbmcCmds/xbmcHttp?command=getKeyboardText()
+		return null;
 	}
 
 }
