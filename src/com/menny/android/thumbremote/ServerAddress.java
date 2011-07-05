@@ -12,14 +12,16 @@ import java.net.InetAddress;
  * a discovery request.
  */
 public final class ServerAddress {
-	private String mType;
-	private String mName;
-	private boolean mAuthRequired;
-	private int mPort;
-	private InetAddress mAddr;
+	private final String mType;
+	private final String mVersion;
+	private final String mName;
+	private final boolean mAuthRequired;
+	private final int mPort;
+	private final InetAddress mAddr;
 
-	public ServerAddress(String type, String name, boolean authRequired, InetAddress address, int port) {
+	public ServerAddress(String type, String version, String name, boolean authRequired, InetAddress address, int port) {
 		mAddr = address;
+		mVersion = version;
 		mPort = port;
 		mType = type;
 		mName = name;
@@ -32,6 +34,10 @@ public final class ServerAddress {
 
 	public String type() {
 		return mType;
+	}
+	
+	public String version(){
+		return mVersion;
 	}
 
 	public String name() {

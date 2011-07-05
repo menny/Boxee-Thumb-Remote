@@ -9,6 +9,7 @@ package com.menny.android.thumbremote;
 import java.net.InetAddress;
 
 import com.menny.android.thumbremote.R;
+import com.menny.android.thumbremote.boxee.BoxeeConnector;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -22,6 +23,8 @@ public class Settings {
 	private static final String TAG = "Settings";
 	
 	public final String SERVER_NAME_KEY;
+	private final String SERVER_VERSION_KEY;
+	private final String SERVER_TYPE_KEY;
 	private final String SERVER_HOST_KEY;
 	private final String SERVER_PORT_KEY;
 	private final String SERVER_PORT_DEFAULT_VALUE;
@@ -64,6 +67,8 @@ public class Settings {
 		KEEP_SCREEN_ON_DEFAULT = res.getBoolean(R.bool.settings_key_keep_screen_on_default);
 		
 		SERVER_NAME_KEY = res.getString(R.string.settings_key_server_name_key);
+		SERVER_TYPE_KEY = res.getString(R.string.settings_key_server_type_key);
+		SERVER_VERSION_KEY = res.getString(R.string.settings_key_server_version_key);
 		SERVER_HOST_KEY = res.getString(R.string.settings_key_server_host_key);
 		SERVER_PORT_KEY = res.getString(R.string.settings_key_server_port_on_key);
 		SERVER_PORT_DEFAULT_VALUE = res.getString(R.string.settings_key_server_port_on_default_value);
@@ -156,17 +161,22 @@ public class Settings {
 	}
 	
 	public ServerAddress constructServer() {
-		return new ServerAddress("Boxee", getServerName(), isAuthRequired(), getHost(), getPort());
+		return new ServerAddress(
+				mPreferences.getString(SERVER_TYPE_KEY, BoxeeConnector.BOXEE_SERVER_TYPE),
+				mPreferences.getString(SERVER_VERSION_KEY, BoxeeConnector.BOXEE_SERVER_VERSION_OLD), 
+				getServerName(), isAuthRequired(), getHost(), getPort());
 	}
 	
 	public void putServer(ServerAddress server, boolean isManual) {
-		putServer(server.address().getHostAddress(), server.port(), server.name(), server.authRequired(), isManual);
+		putServer(server.type(), server.version(), server.address().getHostAddress(), server.port(), server.name(), server.authRequired(), isManual);
 	}
 	
-	public void putServer(String address, int port, String name, boolean auth, boolean isManual) {
+	public void putServer(String type, String version, String address, int port, String name, boolean auth, boolean isManual) {
 		Log.i(TAG, "Storing server as: " + name + ", manual: " + isManual);
 		SharedPreferences.Editor editor = mPreferences.edit();
 		editor.putString(SERVER_HOST_KEY, address);
+		editor.putString(SERVER_TYPE_KEY, type);
+		editor.putString(SERVER_VERSION_KEY, version);
 		editor.putInt(SERVER_PORT_KEY, port);
 		editor.putString(SERVER_NAME_KEY, name);
 		editor.putBoolean(SERVER_CREDS_REQUIRED_KEY, auth);

@@ -23,6 +23,10 @@ import com.menny.android.thumbremote.network.HttpRequestBlocking;
  * http://wiki.xbmc.org/index.php?title=Web_Server_HTTP_API
  */
 public class BoxeeConnector implements ServerConnector  {
+	public static final String BOXEE_SERVER_TYPE = "Boxee";
+	public static final String BOXEE_SERVER_VERSION_OLD = "0.9";
+	public static final String BOXEE_SERVER_VERSION_NEW = "1.1";
+	
 	private static final String TAG = "BoxeeConnector";
 	
 	private final Queue<String[]> mUrlsToDo = new LinkedList<String[]>();

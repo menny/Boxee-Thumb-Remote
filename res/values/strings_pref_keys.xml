@@ -3,6 +3,8 @@
 	<string name="settings_key_servers_screen">settings_key_servers_screen</string>
     <!-- manual server -->
     <string name="settings_key_server_name_key">settings_key_server_name_key</string>
+    <string name="settings_key_server_type_key">settings_key_server_type_key</string>
+    <string name="settings_key_server_version_key">settings_key_server_version_key</string>
     <string name="settings_key_server_host_key">settings_key_server_host_key</string>
     <string name="settings_key_server_port_on_key">settings_key_server_port_on_key</string>
     <string name="settings_key_server_port_on_default_value">8800</string>

@@ -205,7 +205,7 @@ public class BoxeeDiscovererThread extends Thread {
 		}
 
 		ServerAddress server = new ServerAddress("Boxee", 
-				values.get("name"), 
+				values.get("name"),  values.get("version"),
 				"true".equalsIgnoreCase(values.get("httpAuthRequired")),
 				address, Integer.parseInt(values.get("httpPort")));
 		Log.d(TAG, "Discovered server " + server);
