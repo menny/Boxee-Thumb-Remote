@@ -32,6 +32,8 @@ public class Settings {
 	
 	private final String VOLUME_STEP_SIZE_KEY;
 	private final String VOLUME_STEP_SIZE_DEFAULT_VALUE;
+	private final String SWIPE_SENSITIVITY_KEY;
+	private final String SWIPE_SENSITIVITY_DEFAULT_VALUE;
 	private final String HANDLE_HARD_BACK_KEY;
 	private final boolean HANDLE_HARD_BACK_DEFAULT;
 	private final String KEEP_SCREEN_ON_KEY;
@@ -51,6 +53,9 @@ public class Settings {
 		
 		VOLUME_STEP_SIZE_KEY = res.getString(R.string.settings_key_volume_step_size);
 		VOLUME_STEP_SIZE_DEFAULT_VALUE = res.getString(R.string.settings_key_volume_step_size_default_value);
+		
+		SWIPE_SENSITIVITY_KEY = res.getString(R.string.settings_key_swipe_sensitivity_key);
+		SWIPE_SENSITIVITY_DEFAULT_VALUE = res.getString(R.string.settings_key_swipe_sensitivity_default_value);
 		
 		HANDLE_HARD_BACK_KEY = res.getString(R.string.settings_key_handle_back_hard_key);
 		HANDLE_HARD_BACK_DEFAULT = res.getBoolean(R.bool.settings_key_handle_back_hard_default);
@@ -74,6 +79,31 @@ public class Settings {
 	public int getVolumeStep() {
 		String volumeStep = mPreferences.getString(VOLUME_STEP_SIZE_KEY, VOLUME_STEP_SIZE_DEFAULT_VALUE);
 		return Integer.parseInt(volumeStep);
+	}
+	
+	public int getSwipeStepSize(Context appContext) {
+		Resources res = appContext.getResources();
+		String swipeStep = mPreferences.getString(SWIPE_SENSITIVITY_KEY, SWIPE_SENSITIVITY_DEFAULT_VALUE);
+		if (swipeStep.equals("10dp"))
+		{
+			return res.getDimensionPixelSize(R.dimen.settings_key_swipe_sensitivity_value_10dp);
+		}
+		else if (swipeStep.equals("15dp"))
+		{
+			return res.getDimensionPixelSize(R.dimen.settings_key_swipe_sensitivity_value_15dp);
+		}
+		else if (swipeStep.equals("25dp"))
+		{
+			return res.getDimensionPixelSize(R.dimen.settings_key_swipe_sensitivity_value_25dp);
+		}
+		else if (swipeStep.equals("40dp"))
+		{
+			return res.getDimensionPixelSize(R.dimen.settings_key_swipe_sensitivity_value_40dp);
+		}
+		else 
+		{
+			return res.getDimensionPixelSize(R.dimen.settings_key_swipe_sensitivity_value_55dp);
+		}
 	}
 	
 	public boolean getHandleBack() {

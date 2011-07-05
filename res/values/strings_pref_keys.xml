@@ -12,16 +12,21 @@
     <string name="settings_key_server_manually_set_key">settings_key_server_manually_set_key</string>
     
     <!-- UX -->
-	<string name="settings_key_swipe_sensitivity">settings_key_swipe_sensitivity</string>
+	<string name="settings_key_swipe_sensitivity_key">settings_key_swipe_sensitivity</string>
 	<!-- this is the percentage of the screen width -->
-	<string name="settings_key_swipe_sensitivity_default_value">25</string>
+	<string name="settings_key_swipe_sensitivity_default_value">25dp</string>
 	<string-array name="settings_key_swipe_sensitivity_values">
-    	<item>10</item>
-        <item>15</item>
-        <item>25</item>
-        <item>40</item>
-        <item>55</item>
+    	<item>10dp</item>
+        <item>15dp</item>
+        <item>25dp</item>
+        <item>40dp</item>
+        <item>55dp</item>
     </string-array>
+    <dimen name="settings_key_swipe_sensitivity_value_10dp">10dp</dimen>
+    <dimen name="settings_key_swipe_sensitivity_value_15dp">15dp</dimen>
+    <dimen name="settings_key_swipe_sensitivity_value_25dp">25dp</dimen>
+    <dimen name="settings_key_swipe_sensitivity_value_40dp">40dp</dimen>
+    <dimen name="settings_key_swipe_sensitivity_value_55dp">55dp</dimen>
     
 	<string name="settings_key_volume_step_size">settings_key_volume_step_size</string>
 	<string name="settings_key_volume_step_size_default_value">10</string>

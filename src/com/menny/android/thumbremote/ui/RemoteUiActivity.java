@@ -229,6 +229,7 @@ public class RemoteUiActivity extends Activity implements
 	
 	@Override
 	protected void onPause() {
+		mSwipeStepSize = -1;
 		mThisAcitivityPaused = true;
 		//mShakeDetector.pause();
 		RemoteApplication.getConfig().unlisten(this);
@@ -522,14 +523,15 @@ public class RemoteUiActivity extends Activity implements
 		}
 	}
 
+	private int mSwipeStepSize = -1;
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		
 		int x = (int) event.getX();
 		int y = (int) event.getY();
-		int sensitivity = 30;
+		if (mSwipeStepSize < 1)
+			mSwipeStepSize = RemoteApplication.getConfig().getSwipeStepSize(getApplicationContext());
 		switch (event.getAction()) {
-
 		case MotionEvent.ACTION_UP:
 			if (!mDragged) {
 				remoteSelect();
@@ -544,27 +546,27 @@ public class RemoteUiActivity extends Activity implements
 			return true;
 
 		case MotionEvent.ACTION_MOVE:
-			if (x - mTouchPoint.x > sensitivity) {
+			if (x - mTouchPoint.x > mSwipeStepSize) {
 				remoteRight();
-				mTouchPoint.x += sensitivity;
+				mTouchPoint.x += mSwipeStepSize;
 				mTouchPoint.y = y;
 				mDragged = true;
 				return true;
-			} else if (mTouchPoint.x - x > sensitivity) {
+			} else if (mTouchPoint.x - x > mSwipeStepSize) {
 				remoteLeft();
-				mTouchPoint.x -= sensitivity;
+				mTouchPoint.x -= mSwipeStepSize;
 				mTouchPoint.y = y;
 				mDragged = true;
 				return true;
-			} else if (y - mTouchPoint.y > sensitivity) {
+			} else if (y - mTouchPoint.y > mSwipeStepSize) {
 				remoteDown();
-				mTouchPoint.y += sensitivity;
+				mTouchPoint.y += mSwipeStepSize;
 				mTouchPoint.x = x;
 				mDragged = true;
 				return true;
-			} else if (mTouchPoint.y - y > sensitivity) {
+			} else if (mTouchPoint.y - y > mSwipeStepSize) {
 				remoteUp();
-				mTouchPoint.y -= sensitivity;
+				mTouchPoint.y -= mSwipeStepSize;
 				mTouchPoint.x = x;
 				mDragged = true;
 				return true;
@@ -599,7 +601,7 @@ public class RemoteUiActivity extends Activity implements
 	 * @param prefs
 	 */
 	private void loadPreferences() {
-
+		mSwipeStepSize = RemoteApplication.getConfig().getSwipeStepSize(getApplicationContext());
 		// Setup the proper pageflipper page:
 		flipTo(PAGE_NOTPLAYING);
 		
