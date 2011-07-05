@@ -67,61 +67,50 @@ public class HttpRequestBlocking {
 		return !TextUtils.isEmpty(mUser) && !TextUtils.isEmpty(mPassword);
 	}
 
-	public static Response getHttpResponse(final String url)
+	public static Response getHttpResponse(final String url) throws IOException
 	{
 		HttpRequestBlocking requester = new HttpRequestBlocking(url);
 		return requester.fetch();
 	}
 	
-	/**
-	 * Constructor.
-	 */
-	private HttpRequestBlocking(String url) {
-		try {
-			mUrl = new URL(url);
-		} catch (MalformedURLException e) {
-			mUrl = null;
-			Log.e(TAG, "MalformedURLException: "+url);
-			e.printStackTrace();
-		}
+	private HttpRequestBlocking(String url) throws MalformedURLException {
+		mUrl = new URL(url);
 	}
 
 	
 
 	/**
 	 * Perform the blocking fetch.
+	 * @throws IOException 
 	 */
-	public Response fetch() {
+	public Response fetch() throws IOException {
 		if (mUrl == null)
 			return new Response(false, null);
 
 		Log.d(TAG, "Fetching " + mUrl.toString());
 		
-		try {
-			HttpURLConnection connection = (HttpURLConnection) mUrl.openConnection();
-			connection.setConnectTimeout(mTimeout);
-			connection.setReadTimeout(mTimeout);
-			maybeAddAuthentication(connection);
-			connection.connect();
-			InputStream is = connection.getInputStream();
-			ByteArrayOutputStream os = new ByteArrayOutputStream();
-			int bytesRead;
-			byte[] buffer = new byte[1024];
-			while ((bytesRead = is.read(buffer)) != -1) {
-				os.write(buffer, 0, bytesRead);
-			}
-			os.flush();
-			os.close();
-			is.close();
-			Log.d(TAG, String.format(
-					"finished request(size=%d, remote=%s)", os.size(), mUrl
-							.toString()));
-			String result = os.toString();
-			boolean success = connection.getResponseCode() == 200;
-			return new Response(success, result);
-		} catch (IOException e) {
-			return new Response(false, null);
+		HttpURLConnection connection = (HttpURLConnection) mUrl.openConnection();
+		connection.setConnectTimeout(mTimeout);
+		connection.setReadTimeout(mTimeout);
+		maybeAddAuthentication(connection);
+		connection.connect();
+		InputStream is = connection.getInputStream();
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		os.flush();
+		
+		int bytesRead;
+		byte[] buffer = new byte[1024];
+		while ((bytesRead = is.read(buffer)) != -1) {
+			os.write(buffer, 0, bytesRead);
 		}
+		os.close();
+		is.close();
+		Log.d(TAG, String.format(
+				"finished request(size=%d, remote=%s)", os.size(), mUrl
+						.toString()));
+		String result = os.toString();
+		boolean success = connection.getResponseCode() == 200;
+		return new Response(success, result);
 	}
 
 	private void maybeAddAuthentication(HttpURLConnection conn) {

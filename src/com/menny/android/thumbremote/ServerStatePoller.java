@@ -5,6 +5,8 @@
  */
 package com.menny.android.thumbremote;
 
+import java.io.IOException;
+
 import com.menny.android.thumbremote.network.HttpRequestBlocking;
 
 import android.util.Log;
@@ -112,10 +114,18 @@ public final class ServerStatePoller {
 		for(int i=0; i<urls.length; i++)
 		{
 			final String url = urls[i];
-			HttpRequestBlocking.Response r = HttpRequestBlocking.getHttpResponse(url);
-			if (!r.success())
+			try
+			{
+				HttpRequestBlocking.Response r = HttpRequestBlocking.getHttpResponse(url);
+				if (!r.success())
+					return null;
+				responses[i] = r.response();
+			}
+			catch(IOException e)
+			{
+				e.printStackTrace();
 				return null;
-			responses[i] = r.response();
+			}
 		}
 		
 		return responses;
