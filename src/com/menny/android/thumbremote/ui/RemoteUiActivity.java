@@ -244,6 +244,9 @@ public class RemoteUiActivity extends Activity implements
 		mPleaseWaitDialog = null;
 		
 		stopPollerIfPossible();
+		
+		mServerDiscoverer.setReceiver(null);
+		mServerDiscoverer = null;
 	}
 	
 	@Override
@@ -262,7 +265,7 @@ public class RemoteUiActivity extends Activity implements
 		
 		RemoteApplication.getConfig().listen(this);
 		
-		if ((mServerAddress == null || !mServerAddress.valid()) && !mServerDiscoverer.isLookingForServers())
+		if ((mServerAddress == null || !mServerAddress.valid()) &&  ((mServerDiscoverer == null) || !mServerDiscoverer.isDiscoverying()))
 			setServer();
 		
 		//mShakeDetector.resume();
@@ -631,6 +634,10 @@ public class RemoteUiActivity extends Activity implements
 				mPleaseWaitDialog.dismiss();
 			
 			mPleaseWaitDialog = ProgressDialog.show(this, "", "Looking for a server...", true);
+			
+			if (mServerDiscoverer != null)
+				mServerDiscoverer.setReceiver(null);
+			
 			mServerDiscoverer = new BoxeeDiscovererThread(this, this);
 			mServerDiscoverer.start();
 		}

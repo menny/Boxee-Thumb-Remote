@@ -46,6 +46,8 @@ public abstract class DoServerRemoteAction extends AsyncTask<Void, Void, Excepti
 		}
 		if (mActivity.mThisAcitivityPaused) return;
 		String errorMessage = result.getMessage();
+		if (errorMessage == null) errorMessage = "";
+		
 		//checking for repeating error
 		final long currentTime = System.currentTimeMillis();
 		if ((!errorMessage.equals(msLastErrorMessage)) || ((currentTime - msLastErrorMessageTime) > MINIMUM_ms_TIME_BETWEEN_ERRORS))

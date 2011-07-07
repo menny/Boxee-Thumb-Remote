@@ -62,6 +62,11 @@ public class BoxeeDiscovererThread extends Thread {
 		mWifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 		mReceiver = receiver;
 	}
+	
+	public void setReceiver(Receiver r)
+	{
+		mReceiver = r;
+	}
 
 	public void run() {
 		ArrayList<ServerAddress> servers = null;
@@ -79,7 +84,9 @@ public class BoxeeDiscovererThread extends Thread {
 		}
 		finally
 		{
-			mReceiver.addAnnouncedServers(servers);
+			Receiver r = mReceiver;
+			if (r != null)
+				r.addAnnouncedServers(servers);
 			mListening = false;
 		}
 	}
@@ -275,7 +282,7 @@ public class BoxeeDiscovererThread extends Thread {
 		return hexString.toString();
 	}
 
-	public boolean isLookingForServers() {
-		return mListening;
+	public boolean isDiscoverying() {
+		return mListening && mReceiver != null;
 	}
 }
