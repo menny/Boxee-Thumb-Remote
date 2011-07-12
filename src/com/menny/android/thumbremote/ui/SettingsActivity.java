@@ -90,9 +90,6 @@ public class SettingsActivity extends PreferenceActivity implements
 		mServersScreen.addPreference(preference);
 
 		getPreferenceScreen().findPreference(getText(R.string.settings_key_network_timeout_key)).setOnPreferenceChangeListener(numberCheckListener);
-		
-		BoxeeDiscovererThread discoverer = new BoxeeDiscovererThread(this, this);
-		discoverer.start();
 	}
 
 	@Override

@@ -47,6 +47,8 @@ public class BoxeeDiscovererThread extends Thread {
 	private WifiManager mWifi;
 	private boolean mListening = true;
 
+	private DatagramSocket mSocket;
+
 	public interface Receiver {
 		/**
 		 * Process the list of discovered servers. This is always called once
@@ -66,18 +68,21 @@ public class BoxeeDiscovererThread extends Thread {
 	public void setReceiver(Receiver r)
 	{
 		mReceiver = r;
+		if (mReceiver == null && mSocket != null) mSocket.close();
 	}
 
 	public void run() {
 		ArrayList<ServerAddress> servers = null;
+		mSocket = null;
 		try {
-			DatagramSocket socket = new DatagramSocket(DISCOVERY_PORT);
-			socket.setBroadcast(true);
-			socket.setSoTimeout(TIMEOUT_MS);
+			mSocket = new DatagramSocket(DISCOVERY_PORT);
+			//we could have two or more discoverers at the same time.
+			mSocket.setReuseAddress(true);
+			mSocket.setBroadcast(true);
+			mSocket.setSoTimeout(TIMEOUT_MS);
 
-			sendDiscoveryRequest(socket);
-			servers = listenForResponses(socket);
-			socket.close();
+			sendDiscoveryRequest(mSocket);
+			servers = listenForResponses(mSocket);
 		} catch (IOException e) {
 			servers = new ArrayList<ServerAddress>(); // use an empty one
 			Log.e(TAG, "Could not send discovery request", e);
@@ -88,6 +93,7 @@ public class BoxeeDiscovererThread extends Thread {
 			if (r != null)
 				r.addAnnouncedServers(servers);
 			mListening = false;
+			if (mSocket != null) mSocket.close();
 		}
 	}
 
@@ -138,7 +144,7 @@ public class BoxeeDiscovererThread extends Thread {
 	private ArrayList<ServerAddress> listenForResponses(DatagramSocket socket)
 			throws IOException {
 		long start = System.currentTimeMillis();
-		byte[] buf = new byte[1024];
+		byte[] buf = new byte[10240];
 		ArrayList<ServerAddress> servers = new ArrayList<ServerAddress>();
 
 		// Loop and try to receive responses until the timeout elapses. We'll
@@ -147,14 +153,17 @@ public class BoxeeDiscovererThread extends Thread {
 		// we'll
 		// discard it in parseResponse because the cmd is wrong.
 		try {
-			while (true) {
+			while (mReceiver != null) {
 				DatagramPacket packet = new DatagramPacket(buf, buf.length);
+				Log.d(TAG, "Waiting for discovery response...");
 				socket.receive(packet);
-				String s = new String(packet.getData(), 0, packet.getLength());
+				String s = new String(packet.getData(), packet.getOffset(), packet.getLength());
 				Log.d(TAG, "Packet received after "+ (System.currentTimeMillis() - start) + " " + s);
-				ServerAddress server = parseResponse(s,
-						((InetSocketAddress) packet.getSocketAddress())
-								.getAddress());
+				InetAddress sourceAddress = packet.getAddress();
+				Log.d(TAG, "Parsing response...");
+				ServerAddress server = parseResponse(s, sourceAddress
+						/*((InetSocketAddress) packet.getSocketAddress())
+								.getAddress()*/);
 				if (server != null)
 					servers.add(server);
 			}
@@ -221,7 +230,6 @@ public class BoxeeDiscovererThread extends Thread {
 
 	private HashMap<String, String> parseBDP1Xml(String xml) {
 		final HashMap<String, String> values = new HashMap<String, String>();
-
 		try {
 			XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
 			factory.setNamespaceAware(true);
@@ -237,8 +245,11 @@ public class BoxeeDiscovererThread extends Thread {
 					for (int i = 0; i < xpp.getAttributeCount(); i++) {
 						String key = xpp.getAttributeName(i);
 						String value = xpp.getAttributeValue(i);
+						Log.d(TAG, String.format("BDP1 k: '%s', v: '%s'", key, value));
 						values.put(key, value);
 					}
+					
+					return values;
 				}
 
 				eventType = xpp.next();

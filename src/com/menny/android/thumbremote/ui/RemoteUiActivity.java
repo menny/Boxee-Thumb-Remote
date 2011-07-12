@@ -245,7 +245,7 @@ public class RemoteUiActivity extends Activity implements
 		
 		stopPollerIfPossible();
 		
-		mServerDiscoverer.setReceiver(null);
+		if (mServerDiscoverer != null) mServerDiscoverer.setReceiver(null);
 		mServerDiscoverer = null;
 	}
 	
@@ -265,8 +265,8 @@ public class RemoteUiActivity extends Activity implements
 		
 		RemoteApplication.getConfig().listen(this);
 		
-		if ((mServerAddress == null || !mServerAddress.valid()) &&  ((mServerDiscoverer == null) || !mServerDiscoverer.isDiscoverying()))
-			setServer();
+//		if ((mServerAddress == null || !mServerAddress.valid()) &&  ((mServerDiscoverer == null) || !mServerDiscoverer.isDiscoverying()))
+//			setServer();
 		
 		//mShakeDetector.resume();
 		
