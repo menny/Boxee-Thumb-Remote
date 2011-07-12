@@ -96,11 +96,10 @@ public class HttpRequestBlocking {
 		connection.connect();
 		InputStream is = connection.getInputStream();
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
-		os.flush();
 		
 		int bytesRead;
 		byte[] buffer = new byte[1024];
-		while ((bytesRead = is.read(buffer)) != -1) {
+		while ((bytesRead = is.read(buffer)) > 0) {
 			os.write(buffer, 0, bytesRead);
 		}
 		os.close();
