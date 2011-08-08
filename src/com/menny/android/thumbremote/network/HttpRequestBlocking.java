@@ -1,6 +1,6 @@
-/* The following code was written by Menny Even Danan
+/* The following code was re-written by Menny Even Danan, from code taken from Supware (http://code.google.com/p/boxeeremote/source/browse/branches/net.supware.boxee/src/net/supware/boxee/HttpRequestBlocking.java)
  * and is released under the APACHE 2.0 license
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 package com.menny.android.thumbremote.network;
@@ -12,72 +12,24 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import android.text.TextUtils;
 import android.util.Log;
 
 /**
  * Performs a blocking HTTP get request, without much flexibility.
  */
-public class HttpRequestBlocking {
-	public static class Response
-	{
-		private final boolean mSuccess;
-		private final String mResponse;
-		
-		Response(boolean success, String response)
-		{
-			mSuccess = success;
-			mResponse = response;
-		}
-		
-		/**
-		 * Returns whether the fetch resulted in a 200.
-		 */
-		public boolean success() {
-			return mSuccess;
-		}
-
-		/**
-		 * Returns the fetched content, or null if the fetch failed.
-		 */
-		public String response() {
-			return mResponse;
-		}
-	}
-	
+class HttpRequestBlocking implements HttpBlocking {
 	private static final String TAG = "HttpRequestBlocking";
-	private URL mUrl;
-
-	// We set these for all requests.
-	private static int mTimeout = 2000;
-	private static String mPassword;
-	private static String mUser;
-
-	public static void setTimeout(int timeout_ms) {
-		mTimeout = timeout_ms;
-	}
-
-	public static void setUserPassword(String user, String password) {
+	private final URL mUrl;
+	private final String mUser;
+	private final String mPassword;
+	private final int mTimeout;
+	
+	HttpRequestBlocking(String url, int timeout, String user, String password) throws MalformedURLException {
+		mUrl = new URL(url);
 		mUser = user;
 		mPassword = password;
+		mTimeout = timeout;
 	}
-	
-	public static boolean hasCredentials()
-	{
-		return !TextUtils.isEmpty(mUser) && !TextUtils.isEmpty(mPassword);
-	}
-
-	public static Response getHttpResponse(final String url) throws IOException
-	{
-		HttpRequestBlocking requester = new HttpRequestBlocking(url);
-		return requester.fetch();
-	}
-	
-	private HttpRequestBlocking(String url) throws MalformedURLException {
-		mUrl = new URL(url);
-	}
-
-	
 
 	/**
 	 * Perform the blocking fetch.

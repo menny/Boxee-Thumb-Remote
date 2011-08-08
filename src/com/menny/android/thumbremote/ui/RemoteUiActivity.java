@@ -18,7 +18,7 @@ import com.menny.android.thumbremote.ShakeListener.OnShakeListener;
 import com.menny.android.thumbremote.UiView;
 import com.menny.android.thumbremote.boxee.BoxeeConnector;
 import com.menny.android.thumbremote.boxee.BoxeeDiscovererThread;
-import com.menny.android.thumbremote.network.HttpRequestBlocking;
+import com.menny.android.thumbremote.network.HttpRequest;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -610,15 +610,16 @@ public class RemoteUiActivity extends Activity implements
 		
 		// Setup the HTTP timeout.
 		int timeout_ms = RemoteApplication.getConfig().getTimeout();
-		HttpRequestBlocking.setTimeout(timeout_ms);
+		HttpRequest.setTimeout(timeout_ms);
 
 		// Parse the credentials, if needed.
 		String user = RemoteApplication.getConfig().getUser();
 		String password = RemoteApplication.getConfig().getPassword();
-		if (!TextUtils.isEmpty(password)) {
-			HttpRequestBlocking.setUserPassword(user, password);
-		}
-
+		if (!TextUtils.isEmpty(password))
+			HttpRequest.setUserPassword(user, password);
+		else
+			HttpRequest.setUserPassword(null, null);
+		
 		setServer();
 	}
 
@@ -761,7 +762,7 @@ public class RemoteUiActivity extends Activity implements
 
 					if (server.authRequired())
 					{
-						if (!HttpRequestBlocking.hasCredentials())
+						if (!HttpRequest.hasCredentials())
 						{
 							runOnUiThread(new Runnable() {
 								@Override

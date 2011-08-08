@@ -16,7 +16,8 @@ import android.util.Log;
 import com.menny.android.thumbremote.ServerAddress;
 import com.menny.android.thumbremote.ServerConnector;
 import com.menny.android.thumbremote.UiView;
-import com.menny.android.thumbremote.network.HttpRequestBlocking;
+import com.menny.android.thumbremote.network.HttpRequest;
+import com.menny.android.thumbremote.network.Response;
 
 /*
  * ftp://ohnopublishing.net/distfiles/svn-src/xbmc/trunk/xbmc/lib/libGoAhead/XBMChttp.cpp
@@ -270,8 +271,8 @@ public class BoxeeConnector implements ServerConnector  {
 	
 	/*CONTROL*/
 
-	private HttpRequestBlocking.Response sendHttpCommand(final String request) throws IOException {
-		HttpRequestBlocking.Response response = HttpRequestBlocking.getHttpResponse(request);
+	private Response sendHttpCommand(final String request) throws IOException {
+		Response response = HttpRequest.getHttpResponse(request);
 		if (!response.success())
 		{
 			throw new IOException("Problem fetching URL " + request);
@@ -287,7 +288,7 @@ public class BoxeeConnector implements ServerConnector  {
 	
 	@Override
 	public int getVolume() throws IOException {
-		HttpRequestBlocking.Response response = sendHttpCommand(mRequestGetVolume);
+		Response response = sendHttpCommand(mRequestGetVolume);
 		Matcher m = SINGLE_ITEM.matcher(response.response());
 		if (m != null && m.find()) {
 			final int currentVolume = Integer.parseInt(m.group(1));
