@@ -3,12 +3,12 @@
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	android:id="@+id/nowplayinginfo"
 	android:orientation="vertical"
-	android:layout_height="fill_parent"
+	android:layout_height="wrap_content"
 	android:focusable="false"
-	android:layout_width="fill_parent">
+	android:layout_width="wrap_content">
 		
 	<LinearLayout android:layout_height="wrap_content" 
-	android:layout_width="fill_parent"
+	android:layout_width="wrap_content"
 	android:orientation="horizontal">
 		<Button 
 			android:id="@+id/buttonSmallSkipBack"

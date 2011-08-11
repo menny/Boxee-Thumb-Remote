@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@android:color/black">
+    <TextView
+		android:id="@+id/textNowPlayingTitle"
+		android:text=""
+		android:layout_height="wrap_content"
+		android:layout_width="fill_parent" 
+		android:gravity="center"
+		android:maxLines="1"
+   		android:marqueeRepeatLimit="marquee_forever"
+   		android:ellipsize="marquee"
+   		android:textSize="18sp"
+   		android:layout_alignParentTop="true"
+   		android:textColor="@android:color/white"
+		/>
+		
+	<LinearLayout android:id="@+id/controls_layout"
+    	android:layout_below="@id/textNowPlayingTitle"
+    	android:layout_alignParentBottom="true" 
+		android:layout_alignParentLeft="true"
+    	android:layout_height="fill_parent" android:layout_width="wrap_content" android:orientation="horizontal">
+    		
+		<Button 
+			android:id="@+id/back" 
+			android:background="@drawable/back"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content" 
+			android:layout_margin="10dp" 
+			android:layout_gravity="bottom"
+			/>
+			
+		<ViewFlipper
+			android:layout_gravity="bottom"
+	        android:id="@+id/now_playing_flipper"
+	        android:layout_width="wrap_content" 
+	        android:layout_height="wrap_content"
+	        >
+	    	<include layout="@layout/notplaying" />
+	        <include layout="@layout/nowplaying" />
+		</ViewFlipper>
+	</LinearLayout>
+	
+	<ImageView
+		android:id="@+id/thumbnail"
+		android:src="@drawable/remote_background"
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent"
+		android:layout_below="@id/textNowPlayingTitle"
+		android:layout_alignParentBottom="true"
+		android:layout_alignParentRight="true"
+		android:layout_toRightOf="@id/controls_layout"
+		android:layout_margin="4dp"
+		/>
+		
+    
+		
+</RelativeLayout>
+    
