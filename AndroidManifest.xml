@@ -33,7 +33,7 @@
         </receiver>
         
     	<activity android:name=".ui.SettingsActivity" android:exported="false" android:excludeFromRecents="true" android:noHistory="true"/>
-    	<activity android:name=".ui.HelpUiActivity" android:label="@string/welcome_to_remote" android:theme="@android:style/Theme.Dialog" android:exported="false" android:excludeFromRecents="true" android:noHistory="true"/>
+    	<activity android:name=".ui.HelpUiActivity" android:theme="@style/Popup" android:exported="false" android:excludeFromRecents="true" android:noHistory="true"/>
     </application>
     
     <supports-screens
