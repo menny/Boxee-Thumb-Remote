@@ -5,9 +5,14 @@
  */
 package com.menny.android.thumbremote;
 
+import java.util.Random;
+
 import com.menny.android.thumbremote.network.HttpRequest;
 import com.menny.android.thumbremote.network.Response;
 
+import android.content.Context;
+import android.net.wifi.WifiManager;
+import android.net.wifi.WifiManager.WifiLock;
 import android.util.Log;
 
 public final class ServerStatePoller {
@@ -20,24 +25,30 @@ public final class ServerStatePoller {
 	
 	private final Object mWaiter = new Object();
 	private final ServerStateUrlsProvider mUrlsProvider;
+	private final WifiManager mWifi;
 	
 	private boolean mInBackground = false;
 	private int mErrorsAllowedLeft = MAX_NETWORK_ERRORS;
 	
 	private boolean mRun;
 
-	public ServerStatePoller(ServerStateUrlsProvider provider) {
+	public ServerStatePoller(ServerStateUrlsProvider provider, Context context) {
 		mUrlsProvider = provider;
-		
+		mWifi =  (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 		mRun = true;
 	}
 	private final Thread mPollerThread = new Thread()
 	{	
 		
+		private WifiLock mWifiLock = null;
+
 		public void run() {
 			Log.d(TAG, "Starting ServerStatePoller.");
+			mWifiLock  = mWifi.createWifiLock(WifiManager.WIFI_MODE_FULL, "ThumbRemote"+(new Random()).nextInt());
+			mWifiLock.acquire();
 			while(mRun)
 			{
+				
 				try
 				{
 					mUrlsProvider.startOver();
@@ -75,6 +86,7 @@ public final class ServerStatePoller {
 					}
 				}
 			}
+			mWifiLock.release();
 			Log.d(TAG, "ServerStatePoller ended.");
 		}
 	};

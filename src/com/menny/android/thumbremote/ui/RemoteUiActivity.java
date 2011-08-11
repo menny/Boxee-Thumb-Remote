@@ -8,18 +8,6 @@ package com.menny.android.thumbremote.ui;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import com.menny.android.thumbremote.R;
-import com.menny.android.thumbremote.RemoteApplication;
-import com.menny.android.thumbremote.ServerAddress;
-import com.menny.android.thumbremote.ServerConnector;
-import com.menny.android.thumbremote.ServerState;
-import com.menny.android.thumbremote.ServerStatePoller;
-import com.menny.android.thumbremote.ShakeListener.OnShakeListener;
-import com.menny.android.thumbremote.UiView;
-import com.menny.android.thumbremote.boxee.BoxeeConnector;
-import com.menny.android.thumbremote.boxee.BoxeeDiscovererThread;
-import com.menny.android.thumbremote.network.HttpRequest;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -52,6 +40,18 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
+
+import com.menny.android.thumbremote.R;
+import com.menny.android.thumbremote.RemoteApplication;
+import com.menny.android.thumbremote.ServerAddress;
+import com.menny.android.thumbremote.ServerConnector;
+import com.menny.android.thumbremote.ServerState;
+import com.menny.android.thumbremote.ServerStatePoller;
+import com.menny.android.thumbremote.ShakeListener.OnShakeListener;
+import com.menny.android.thumbremote.UiView;
+import com.menny.android.thumbremote.boxee.BoxeeConnector;
+import com.menny.android.thumbremote.boxee.BoxeeDiscovererThread;
+import com.menny.android.thumbremote.network.HttpRequest;
 
 public class RemoteUiActivity extends Activity implements
 		OnSharedPreferenceChangeListener, BoxeeDiscovererThread.Receiver, OnClickListener, OnShakeListener, UiView {
@@ -198,7 +198,7 @@ public class RemoteUiActivity extends Activity implements
 		//mShakeDetector.setOnShakeListener(this);
 		msActivity = this;
 		
-		mStatePoller = new ServerStatePoller(mRemote);
+		mStatePoller = new ServerStatePoller(mRemote, getApplicationContext());
 		mStatePoller.poll();
 		
 		startHelpOnFirstRun();
@@ -274,7 +274,7 @@ public class RemoteUiActivity extends Activity implements
 		
 		if (mStatePoller == null)
 		{
-			mStatePoller = new ServerStatePoller(mRemote);
+			mStatePoller = new ServerStatePoller(mRemote, getApplicationContext());
 			mStatePoller.poll();
 		}
 		else
