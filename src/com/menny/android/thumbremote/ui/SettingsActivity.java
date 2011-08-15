@@ -28,7 +28,6 @@ import android.preference.Preference.OnPreferenceClickListener;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -129,10 +128,9 @@ public class SettingsActivity extends PreferenceActivity implements
 						int port = Integer.parseInt(((TextView) layout
 								.findViewById(R.id.textPort)).getText()
 								.toString());
-						boolean boxeeBox = ((CheckBox) layout.findViewById(R.id.checkboxBoxeeBox)).isChecked();
 						
 						RemoteApplication.getConfig().putServer(BoxeeConnector.BOXEE_SERVER_TYPE, 
-								boxeeBox? BoxeeConnector.BOXEE_SERVER_VERSION_NEW :  BoxeeConnector.BOXEE_SERVER_VERSION_OLD, address, port, "custom", false, true);
+								BoxeeConnector.BOXEE_SERVER_VERSION_OLD, address, port, "custom", false, true);
 						mServersScreen.getDialog().dismiss();
 					}
 				});

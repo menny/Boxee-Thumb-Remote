@@ -10,7 +10,6 @@
 	<string name="custom_server">Custom server...</string>
 	<string name="host_title">Host</string>
 	<string name="port_title">Port</string>
-	<string name="custom_server_is_boxee_box">D-Link BoxeeBox</string>
 	
 	<string name="ux_group">UX Settings</string>
 	
@@ -63,24 +62,6 @@
 	<string name="settings">Settings</string>
 	<string name="rescan_servers">Rescan for servers</string>
 	<string name="help">Help</string>
-	
-	<!-- 
-	<string name="host_summary">Hostname of the server. Leave blank for Boxee autodiscovery.</string>
-	<string name="port_summary">Port of the boxee service, 8800 by default. Unused in autodiscovery.</string>
-	<string name="scan">Scan for Boxees</string>
-	<string name="none_found">Found no Boxee servers</string>
-	<string name="title_discovery">Automatic Discovery</string>
-	<string name="summary_discovery">Discover server automatically</string>
-	<string name="discovered_name">Name of discovered server</string>
-	<string name="discovered_summary">To set, run a scan from the main menu.</string>
-	<string name="user_title">Username</string>
-	<string name="user_summary">Webserver username, default "xbox"</string>
-	<string name="password_title">Password</string>
-	<string name="network_section">Network</string>
-	<string name="password_summary">Only needed if you set a password on your server</string>
-	<string name="progress_scanning">scanning...</string>
-	<string name="title_servers">Servers</string>
-	 -->
 	 
 	<string name="preference_volume_step_size">Volume step</string>
 	
@@ -92,7 +73,6 @@
         <item>Landscape</item>
     </string-array>
     
-    
-    
+    <string name="new_volume_toast">Volume: <xliff:g id="new_volume">%d</xliff:g></string>
     
 </resources>

@@ -519,12 +519,18 @@ public class RemoteUiActivity extends Activity implements
 		case KeyEvent.KEYCODE_VOLUME_DOWN:
 			final int volumeFactor = (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN)? -1 : 1;
 				new DoServerRemoteAction(this, false) {
+					private int mNewVolume = 0;
 				@Override
 				protected void callRemoteFunction() throws Exception {
 					int volume = mRemote.getVolume();
-					int newVolume = Math.max(0, Math.min(100, volume + (volumeFactor * RemoteApplication.getConfig().getVolumeStep())));
-					mRemote.setVolume(newVolume);
+					mNewVolume = Math.max(0, Math.min(100, volume + (volumeFactor * RemoteApplication.getConfig().getVolumeStep())));
+					mRemote.setVolume(mNewVolume);
 				}
+				@Override
+					protected void onPostExecute(Exception result) {
+						Toast.makeText(getApplicationContext(), getString(R.string.new_volume_toast, mNewVolume), Toast.LENGTH_SHORT).show();
+						super.onPostExecute(result);
+					}
 			}.execute();
 			return true;
 			
