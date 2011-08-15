@@ -272,6 +272,11 @@ public class RemoteUiActivity extends Activity implements
 		
 		mImageThumbnail.setKeepScreenOn(RemoteApplication.getConfig().getKeepScreenOn());
 		
+		//updating UI
+		refreshMetadataChanged();
+		refreshPlayingProgressChanged();
+		refreshPlayingStateChanged();
+		
 		if (mStatePoller == null)
 		{
 			mStatePoller = new ServerStatePoller(mRemote, getApplicationContext());
