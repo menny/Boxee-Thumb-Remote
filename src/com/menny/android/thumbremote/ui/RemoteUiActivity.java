@@ -17,6 +17,7 @@ import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -134,7 +135,8 @@ public class RemoteUiActivity extends Activity implements
 	private boolean mDragged = false;
 	private boolean mIsMediaActive = false;
 	private ProgressDialog mPleaseWaitDialog;
-
+	private int mDialogToDismiss = -1;
+	
 	private Handler mHandler;
 
 	private final Runnable mRequestStatusUpdateRunnable = new Runnable() {
@@ -636,6 +638,9 @@ public class RemoteUiActivity extends Activity implements
 			requestUpdateASAP(100);
 		}
 		else {
+			if (mDialogToDismiss > 0)
+				dismissDialog(mDialogToDismiss);
+			
 			if (mPleaseWaitDialog != null)
 				mPleaseWaitDialog.dismiss();
 			
@@ -651,14 +656,28 @@ public class RemoteUiActivity extends Activity implements
 
 	@Override
 	protected Dialog onCreateDialog(int id) {
+		Dialog d = null;
 		switch(id)
 		{
 		case DIALOG_NO_PASSWORD:
-			return createCredentialsRequiredDialog();
+			mDialogToDismiss = DIALOG_NO_PASSWORD;
+			d = createCredentialsRequiredDialog();
 		case DIALOG_NO_SERVER:
-			return createNoServerDialog();
+			mDialogToDismiss = DIALOG_NO_SERVER;
+			d =  createNoServerDialog();
 		}
-		return super.onCreateDialog(id);
+		if (d != null)
+		{
+			d.setOnDismissListener(new OnDismissListener() {
+				@Override
+				public void onDismiss(DialogInterface dialog) {
+					mDialogToDismiss = -1;
+				}
+			});
+			return d;
+		}
+		else
+			return super.onCreateDialog(id);
 	}
 
 	private Dialog createCredentialsRequiredDialog() {
