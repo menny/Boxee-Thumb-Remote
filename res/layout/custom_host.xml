@@ -34,11 +34,11 @@
 		android:layout_height="wrap_content"
 		android:numeric="integer"
 		/>
-	
+	<!-- 
 	<CheckBox android:id="@+id/checkboxBoxeeBox" 
 		android:checked="false"
 		android:text="@string/custom_server_is_boxee_box"
 		android:layout_width="fill_parent" 
 		android:layout_height="wrap_content"/>
-		
+		 -->
 </LinearLayout>
