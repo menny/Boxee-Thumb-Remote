@@ -275,7 +275,7 @@ public class BoxeeConnector implements ServerConnector  {
 		Response response = HttpRequest.getHttpResponse(request);
 		if (!response.success())
 		{
-			throw new IOException("Problem fetching URL " + request);
+			throw new IOException("Could not send command to Boxee!");
 		}
 		return response;
 	}

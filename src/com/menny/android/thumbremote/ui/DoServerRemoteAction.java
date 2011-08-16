@@ -1,7 +1,6 @@
 package com.menny.android.thumbremote.ui;
 
 import android.os.AsyncTask;
-import android.widget.Toast;
 
 public abstract class DoServerRemoteAction extends AsyncTask<Void, Void, Exception>
 {	/**
@@ -13,13 +12,13 @@ public abstract class DoServerRemoteAction extends AsyncTask<Void, Void, Excepti
 	private static long msLastErrorMessageTime = 0;
 	private static final long MINIMUM_ms_TIME_BETWEEN_ERRORS = 1000;
 	
-	private final boolean mErrorMessageDelay;
+	private final boolean mLongErrorMessageDelay;
 	private final RemoteUiActivity mActivity;
 	
 	protected DoServerRemoteAction(RemoteUiActivity activity, boolean longDelayOfErrorMessage)
 	{
 		mActivity = activity;
-		mErrorMessageDelay = longDelayOfErrorMessage;
+		mLongErrorMessageDelay = longDelayOfErrorMessage;
 	}
 	
 	@Override
@@ -52,7 +51,7 @@ public abstract class DoServerRemoteAction extends AsyncTask<Void, Void, Excepti
 		final long currentTime = System.currentTimeMillis();
 		if ((!errorMessage.equals(msLastErrorMessage)) || ((currentTime - msLastErrorMessageTime) > MINIMUM_ms_TIME_BETWEEN_ERRORS))
 		{
-			Toast.makeText(mActivity.getApplicationContext(), errorMessage, mErrorMessageDelay? Toast.LENGTH_LONG : Toast.LENGTH_SHORT).show();//we can show the error.
+			mActivity.showMessage(errorMessage, mLongErrorMessageDelay? 2500 : 1250);
 		}
 		msLastErrorMessage = errorMessage;
 		msLastErrorMessageTime = currentTime;

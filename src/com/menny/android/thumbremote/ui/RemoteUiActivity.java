@@ -35,11 +35,13 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 import com.menny.android.thumbremote.R;
@@ -110,6 +112,8 @@ public class RemoteUiActivity extends Activity implements
 	ImageView mImageThumbnail;
 	Button mButtonPlayPause;
 	TextView mTextTitle;
+	TextView mUserMessage;
+	String mUserMessageString = "";
 	TextView mTextElapsed;
 	TextView mDuration;
 	ProgressBar mElapsedBar;
@@ -147,6 +151,10 @@ public class RemoteUiActivity extends Activity implements
 		}
 	};
 
+	private Animation mInAnimation;
+
+	private Animation mOutAnimation;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -168,6 +176,19 @@ public class RemoteUiActivity extends Activity implements
 			}
 		};
 		
+		mInAnimation = AnimationUtils.loadAnimation(getApplicationContext(), android.R.anim.slide_in_left);
+		mOutAnimation = AnimationUtils.loadAnimation(getApplicationContext(), android.R.anim.slide_out_right);
+		mOutAnimation.setAnimationListener(new AnimationListener() {
+			@Override
+			public void onAnimationStart(Animation animation) {}
+			
+			@Override
+			public void onAnimationRepeat(Animation animation) {}
+			
+			@Override
+			public void onAnimationEnd(Animation animation) {mUserMessage.setText("");}
+		});
+		
 		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		
 		mRemote = new BoxeeConnector();
@@ -184,6 +205,7 @@ public class RemoteUiActivity extends Activity implements
 		mImageThumbnail = (ImageView) findViewById(R.id.thumbnail);
 		mButtonPlayPause = (Button) findViewById(R.id.buttonPlayPause);
 		mTextTitle = (TextView) findViewById(R.id.textNowPlayingTitle);
+		mUserMessage = (TextView)findViewById(R.id.textMessages);
 		mTextElapsed = (TextView) findViewById(R.id.textElapsed);
 		mDuration = (TextView) findViewById(R.id.textDuration);
 		mElapsedBar = (ProgressBar) findViewById(R.id.progressTimeBar);
@@ -528,7 +550,7 @@ public class RemoteUiActivity extends Activity implements
 				}
 				@Override
 					protected void onPostExecute(Exception result) {
-						Toast.makeText(getApplicationContext(), getString(R.string.new_volume_toast, mNewVolume), Toast.LENGTH_SHORT).show();
+						showMessage(getString(R.string.new_volume_toast, mNewVolume), 500);
 						super.onPostExecute(result);
 					}
 			}.execute();
@@ -537,6 +559,29 @@ public class RemoteUiActivity extends Activity implements
 		default:
 			return super.onKeyDown(keyCode, event);
 		}
+	}
+
+	private Runnable mClearUserMessageRunnable = new Runnable() {
+		@Override
+		public void run() {
+			mUserMessage.startAnimation(mOutAnimation);
+		}
+	};
+
+	private Runnable mSetUserMessageRunnable = new Runnable() {
+		@Override
+		public void run() {
+			mUserMessage.setText(mUserMessageString);
+			mUserMessage.startAnimation(mInAnimation);
+		}
+	};
+	
+	void showMessage(final String userMessage, final int messageTime) {
+		mUserMessageString = userMessage;
+		mHandler.removeCallbacks(mClearUserMessageRunnable);
+		mHandler.removeCallbacks(mSetUserMessageRunnable);
+		mHandler.postAtFrontOfQueue(mSetUserMessageRunnable);
+		mHandler.postDelayed(mClearUserMessageRunnable, messageTime);
 	}
 
 	private int mSwipeStepSize = -1;
@@ -772,9 +817,7 @@ public class RemoteUiActivity extends Activity implements
 					runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-						Toast.makeText(getApplicationContext(), 
-								String.format("Found '%s' but looks broken", server.name()),
-								Toast.LENGTH_SHORT).show();
+							showMessage(String.format("Found '%s' but looks broken", server.name()), 3000);
 						}
 					});
 					continue;
