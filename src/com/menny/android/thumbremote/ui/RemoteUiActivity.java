@@ -186,7 +186,7 @@ public class RemoteUiActivity extends Activity implements
 			public void onAnimationRepeat(Animation animation) {}
 			
 			@Override
-			public void onAnimationEnd(Animation animation) {mUserMessage.setText("");}
+			public void onAnimationEnd(Animation animation) {mUserMessage.setText(""); mUserMessage.setVisibility(View.INVISIBLE);}
 		});
 		
 		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -572,6 +572,7 @@ public class RemoteUiActivity extends Activity implements
 		@Override
 		public void run() {
 			mUserMessage.setText(mUserMessageString);
+			mUserMessage.setVisibility(View.VISIBLE);
 			mUserMessage.startAnimation(mInAnimation);
 		}
 	};

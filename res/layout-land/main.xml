@@ -17,22 +17,9 @@
    		android:layout_alignParentTop="true"
    		android:textColor="@android:color/white"
 		/>
-	<TextView
-		android:id="@+id/textMessages"
-		android:text=""
-		android:layout_height="wrap_content"
-		android:layout_width="fill_parent" 
-		android:gravity="center"
-		android:maxLines="1"
-   		android:marqueeRepeatLimit="marquee_forever"
-   		android:ellipsize="marquee"
-   		android:textSize="14sp"
-   		android:layout_below="@id/textNowPlayingTitle"
-   		android:textColor="@android:color/white"
-		/>
 		
 	<LinearLayout android:id="@+id/controls_layout"
-    	android:layout_below="@id/textMessages"
+    	android:layout_below="@id/textNowPlayingTitle"
     	android:layout_alignParentBottom="true" 
 		android:layout_alignParentLeft="true"
     	android:layout_height="fill_parent" android:layout_width="wrap_content" android:orientation="horizontal">
@@ -67,6 +54,25 @@
 		android:layout_alignParentRight="true"
 		android:layout_toRightOf="@id/controls_layout"
 		android:layout_margin="4dp"
+		/>
+		
+		
+		
+	<TextView
+		android:id="@+id/textMessages"
+		android:text=""
+		android:layout_height="wrap_content"
+		android:layout_width="fill_parent" 
+		android:gravity="center"
+		android:maxLines="1"
+   		android:marqueeRepeatLimit="marquee_forever"
+   		android:ellipsize="marquee"
+   		android:textSize="14sp"
+   		android:layout_centerInParent="true"
+   		android:textColor="@android:color/white"
+   		android:background="@drawable/message_background"
+   		android:padding="8dp"
+   		android:visibility="invisible"
 		/>
 </RelativeLayout>
     
