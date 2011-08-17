@@ -164,7 +164,7 @@ public class RemoteUiActivity extends Activity implements
 			public void handleMessage(Message msg) {
 				switch (msg.what) {
 				case MESSAGE_MEDIA_PLAYING_CHANGED:
-					refreshPlayingStateChanged();
+					refreshPlayingStateChanged(false);
 					break;
 				case MESSAGE_MEDIA_PLAYING_PROGRESS_CHANGED:
 					refreshPlayingProgressChanged();
@@ -297,9 +297,8 @@ public class RemoteUiActivity extends Activity implements
 		mImageThumbnail.setKeepScreenOn(RemoteApplication.getConfig().getKeepScreenOn());
 		
 		//updating UI
+		refreshPlayingStateChanged(true);
 		refreshMetadataChanged();
-		refreshPlayingProgressChanged();
-		refreshPlayingStateChanged();
 		
 		if (mStatePoller == null)
 		{
@@ -412,10 +411,10 @@ public class RemoteUiActivity extends Activity implements
 		mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_MEDIA_METADATA_CHANGED));
 	}
 	
-	private void refreshPlayingStateChanged() {
+	private void refreshPlayingStateChanged(boolean forceChanged) {
 		final boolean isPlaying = mRemote.isMediaPlaying();
 		final boolean newIsMediaActive = mRemote.isMediaActive();
-		final boolean mediaActiveChanged = newIsMediaActive != mIsMediaActive;
+		final boolean mediaActiveChanged = forceChanged || (newIsMediaActive != mIsMediaActive);
 		mIsMediaActive = newIsMediaActive;
 
 		if (!mediaActiveChanged) return;
