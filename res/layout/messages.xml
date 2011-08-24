@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/textMessages"
+	android:text=""
+	android:layout_height="wrap_content"
+	android:layout_width="wrap_content" 
+	android:gravity="center"
+	android:maxLines="1"
+	android:marqueeRepeatLimit="marquee_forever"
+	android:ellipsize="marquee"
+	android:textSize="13sp"
+	android:layout_centerInParent="true"
+	android:textColor="@android:color/white"
+	android:background="@drawable/message_background"
+	android:padding="8dp"
+	android:visibility="invisible"/>
