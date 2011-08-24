@@ -17,62 +17,48 @@
    		android:layout_alignParentTop="true"
    		android:textColor="@android:color/white"
 		/>
+	
+	<ImageView
+		android:id="@+id/thumbnail"
+		android:src="@drawable/remote_background"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:scaleType="centerInside"
+		android:adjustViewBounds="true"
+		android:layout_below="@id/textNowPlayingTitle"
+		android:layout_alignParentBottom="true"
+		android:layout_alignParentRight="true"
+		android:layout_margin="4dp"/>
 		
 	<LinearLayout android:id="@+id/controls_layout"
     	android:layout_below="@id/textNowPlayingTitle"
     	android:layout_alignParentBottom="true" 
 		android:layout_alignParentLeft="true"
-    	android:layout_height="fill_parent" android:layout_width="wrap_content" android:orientation="horizontal">
-    		
-		<Button 
-			android:id="@+id/back" 
-			android:background="@drawable/back"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content" 
-			android:layout_margin="10dp" 
-			android:layout_gravity="bottom"
-			/>
-			
-		<ViewFlipper
-			android:layout_gravity="bottom"
-	        android:id="@+id/now_playing_flipper"
-	        android:layout_width="wrap_content" 
-	        android:layout_height="wrap_content"
-	        >
-	    	<include layout="@layout/notplaying" />
-	        <include layout="@layout/nowplaying" />
-		</ViewFlipper>
+		android:layout_toLeftOf="@id/thumbnail"
+		android:weightSum="1"
+    	android:layout_height="fill_parent" android:layout_width="wrap_content" android:orientation="vertical">
+    	
+    	<ScrollView 
+    		android:layout_height="0px"
+			android:layout_weight="1"
+			android:layout_width="fill_parent">
+			<TextView
+				android:id="@+id/textMediaDetails"
+				android:text=""
+				android:layout_height="fill_parent"
+				android:layout_width="fill_parent"
+		   		android:textSize="14sp"
+		   		android:textColor="@android:color/white"
+				/>
+   		</ScrollView>
+	   	<include layout="@layout/media_control_buttons"
+			android:layout_height="wrap_content" android:layout_width="fill_parent"/>
 	</LinearLayout>
-	
-	<ImageView
-		android:id="@+id/thumbnail"
-		android:src="@drawable/remote_background"
-		android:layout_width="fill_parent"
-		android:layout_height="fill_parent"
-		android:layout_below="@id/textMessages"
-		android:layout_alignParentBottom="true"
-		android:layout_alignParentRight="true"
-		android:layout_toRightOf="@id/controls_layout"
-		android:layout_margin="4dp"
-		/>
 		
 		
-		
-	<TextView
-		android:id="@+id/textMessages"
-		android:text=""
-		android:layout_height="wrap_content"
-		android:layout_width="fill_parent" 
-		android:gravity="center"
-		android:maxLines="1"
-   		android:marqueeRepeatLimit="marquee_forever"
-   		android:ellipsize="marquee"
-   		android:textSize="14sp"
+	<include layout="@layout/messages"
    		android:layout_centerInParent="true"
-   		android:textColor="@android:color/white"
-   		android:background="@drawable/message_background"
-   		android:padding="8dp"
-   		android:visibility="invisible"
-		/>
+		android:layout_height="wrap_content"
+		android:layout_width="fill_parent" />
 </RelativeLayout>
     

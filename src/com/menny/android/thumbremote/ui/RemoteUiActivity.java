@@ -117,7 +117,8 @@ public class RemoteUiActivity extends Activity implements
 	TextView mTextElapsed;
 	TextView mDuration;
 	ProgressBar mElapsedBar;
-
+	TextView mMediaDetails = null;
+	
 	private static final int NOTIFICATION_PLAYING_ID = 1;
 
 	private static final int DIALOG_NO_PASSWORD = 1;
@@ -209,7 +210,8 @@ public class RemoteUiActivity extends Activity implements
 		mTextElapsed = (TextView) findViewById(R.id.textElapsed);
 		mDuration = (TextView) findViewById(R.id.textDuration);
 		mElapsedBar = (ProgressBar) findViewById(R.id.progressTimeBar);
-
+		mMediaDetails = (TextView)findViewById(R.id.textMediaDetails);
+		
 		loadPreferences();
 
 		setButtonAction(R.id.back, KeyEvent.KEYCODE_BACK);
@@ -424,7 +426,7 @@ public class RemoteUiActivity extends Activity implements
 	
 			final String title = mRemote.getMediaTitle();
 			mTextTitle.setText(title);
-	
+			if (mMediaDetails != null) mMediaDetails.setText(mRemote.getMediaPlot());
 			refreshPlayingProgressChanged();
 			
 			flipTo(PAGE_NOWPLAYING);
@@ -447,6 +449,7 @@ public class RemoteUiActivity extends Activity implements
 			flipTo(PAGE_NOTPLAYING);
 			
 			mTextTitle.setText("");
+			if (mMediaDetails != null) mMediaDetails.setText("");
 			mImageThumbnail.setImageResource(R.drawable.remote_background);
 			mNotificationManager.cancel(NOTIFICATION_PLAYING_ID);
 			//no need to keep this one alive. Right?
@@ -478,11 +481,13 @@ public class RemoteUiActivity extends Activity implements
 		{
 			mImageThumbnail.setImageBitmap(mRemote.getMediaPoster());
 			mTextTitle.setText(mRemote.getMediaTitle());
+			if (mMediaDetails != null) mMediaDetails.setText(mRemote.getMediaPlot());
 		}
 		else
 		{
 			mImageThumbnail.setImageResource(R.drawable.remote_background);
 			mTextTitle.setText("");
+			if (mMediaDetails != null) mMediaDetails.setText("");
 		}
 	}
 

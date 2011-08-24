@@ -234,6 +234,15 @@ public class BoxeeConnector implements ServerConnector  {
 		}
 	}
 
+	@Override
+	public String getMediaPlot() {
+		return getEntryValue("Plot");
+	}
+	
+	@Override
+	public String getMediaType() {
+		return getEntryValue("Type");
+	}
 	
 	@Override
 	public String getMediaTotalTime() {
