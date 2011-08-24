@@ -289,25 +289,24 @@ public class RemoteUiActivity extends Activity implements
 		
 		RemoteApplication.getConfig().listen(this);
 		
-//		if ((mServerAddress == null || !mServerAddress.valid()) &&  ((mServerDiscoverer == null) || !mServerDiscoverer.isDiscoverying()))
-//			setServer();
-		
 		//mShakeDetector.resume();
 		
 		mImageThumbnail.setKeepScreenOn(RemoteApplication.getConfig().getKeepScreenOn());
-		
-		//updating UI
-		refreshPlayingStateChanged(true);
-		refreshMetadataChanged();
 		
 		if (mStatePoller == null)
 		{
 			mStatePoller = new ServerStatePoller(mRemote, getApplicationContext());
 			mStatePoller.poll();
 		}
-		else
+		
+		mStatePoller.comeBackToForeground();
+		
+		if (mServerDiscoverer == null || !mServerDiscoverer.isDiscoverying())
 		{
-			mStatePoller.comeBackToForeground();
+			if (mServerAddress == null || !mServerAddress.valid())
+			{
+				setServer();
+			}
 		}
 	}
 
@@ -677,8 +676,6 @@ public class RemoteUiActivity extends Activity implements
 			HttpRequest.setUserPassword(user, password);
 		else
 			HttpRequest.setUserPassword(null, null);
-		
-		setServer();
 	}
 
 	private void setServer() {
@@ -786,6 +783,7 @@ public class RemoteUiActivity extends Activity implements
 	 */
 	public void onSharedPreferenceChanged(SharedPreferences prefs, String pref) {
 		loadPreferences();
+		setServer();
 	}
 
 	/**

@@ -157,7 +157,9 @@ public class BoxeeConnector implements ServerConnector  {
 					mUiView.onMetadataChanged(this);
 				}
 				else
+				{
 					mThumbnail = null;
+				}
 			}
 			else
 			{
