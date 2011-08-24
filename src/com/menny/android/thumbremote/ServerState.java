@@ -3,8 +3,12 @@ package com.menny.android.thumbremote;
 import android.graphics.Bitmap;
 
 public interface ServerState {
+	String getMediaFilename();
 	String getMediaType();
 	String getMediaTitle();
+	String getShowTitle();
+	String getShowSeason();
+	String getShowEpisode();
 	String getMediaPlot();
 	
 	String getMediaTotalTime();

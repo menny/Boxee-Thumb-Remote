@@ -166,7 +166,7 @@ public class BoxeeConnector implements ServerConnector  {
 				final boolean isPlaying = isMediaPlaying();
 				final boolean isMediaActive = isMediaActive();
 				final String time = getMediaCurrentTime();
-				final String title = getMediaTitle();
+				final String filename = getMediaFilename();
 				clear();
 				if (responses != null)//it can be null if there are lots of network errors.
 				{
@@ -187,7 +187,7 @@ public class BoxeeConnector implements ServerConnector  {
 					mUiView.onPlayingStateChanged(this);
 				if (!time.equals(getMediaCurrentTime()))
 					mUiView.onPlayingProgressChanged(this);
-				if (!title.equals(getMediaTitle()))
+				if (!filename.equals(getMediaFilename()))
 				{
 					String thumbUrl = getEntryValue("Thumb");
 					if (!TextUtils.isEmpty(thumbUrl))
@@ -215,23 +215,28 @@ public class BoxeeConnector implements ServerConnector  {
 	/*Media information*/
 	
 	@Override
+	public String getMediaFilename() {
+		return getEntryValue("Filename");
+	};
+	
+	@Override
 	public String getMediaTitle() {
-		synchronized (mEntries) {
-			String showTitle = mEntries.get("Show Title");
-			String title = mEntries.get("Title");
-			String filename = mEntries.get("Filename");
+		return getEntryValue("Title");
+	}
 	
-			if (!TextUtils.isEmpty(showTitle) && !TextUtils.isEmpty(title))
-				return showTitle + " - " + title;
+	@Override
+	public String getShowTitle() {
+		return getEntryValue("Show Title");
+	}
 	
-			if (!TextUtils.isEmpty(title))
-				return title;
+	@Override
+	public String getShowSeason() {
+		return getEntryValue("Season");
+	}
 	
-			if (!TextUtils.isEmpty(filename))
-				return filename;
-	
-			return "";
-		}
+	@Override
+	public String getShowEpisode() {
+		return getEntryValue("Episode");
 	}
 
 	@Override

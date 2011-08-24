@@ -424,7 +424,7 @@ public class RemoteUiActivity extends Activity implements
 			mButtonPlayPause.setBackgroundDrawable(getResources().getDrawable(
 					isPlaying ? R.drawable.icon_osd_pause : R.drawable.icon_osd_play));
 	
-			final String title = mRemote.getMediaTitle();
+			final String title = getMediaTitle();
 			mTextTitle.setText(title);
 			if (mMediaDetails != null) mMediaDetails.setText(mRemote.getMediaPlot());
 			refreshPlayingProgressChanged();
@@ -480,7 +480,7 @@ public class RemoteUiActivity extends Activity implements
 		if (mIsMediaActive)
 		{
 			mImageThumbnail.setImageBitmap(mRemote.getMediaPoster());
-			mTextTitle.setText(mRemote.getMediaTitle());
+			mTextTitle.setText(getMediaTitle());
 			if (mMediaDetails != null) mMediaDetails.setText(mRemote.getMediaPlot());
 		}
 		else
@@ -489,6 +489,35 @@ public class RemoteUiActivity extends Activity implements
 			mTextTitle.setText("");
 			if (mMediaDetails != null) mMediaDetails.setText("");
 		}
+	}
+
+	private String getMediaTitle() {
+		String showTitle = mRemote.getShowTitle();
+		String title = mRemote.getMediaTitle();
+		String filename = mRemote.getMediaFilename();
+		String season = mRemote.getShowSeason();
+		String episode = mRemote.getShowEpisode();
+		String mediaTitle = "";
+		if (!TextUtils.isEmpty(showTitle))
+		{
+			mediaTitle = showTitle;
+			if (!TextUtils.isEmpty(season)) mediaTitle += " S"+season;
+			if (!TextUtils.isEmpty(episode)) mediaTitle += "E"+episode;
+		}
+		
+		if (!TextUtils.isEmpty(title))
+		{
+			if (!TextUtils.isEmpty(mediaTitle)) mediaTitle += ": ";
+			mediaTitle += title;
+		}
+		
+		if (!TextUtils.isEmpty(mediaTitle))
+			return mediaTitle;
+
+		if (!TextUtils.isEmpty(filename))
+			return filename;
+
+		return "";
 	}
 
 	/**
