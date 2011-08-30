@@ -435,7 +435,7 @@ public class RemoteUiActivity extends Activity implements
 			Intent notificationIntent = new Intent(this, RemoteUiActivity.class);
 			PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
-			notification.setLatestEventInfo(getApplicationContext(),
+			notification.setLatestEventInfo(this,
 					getText(R.string.app_name), getString(R.string.server_is_playing, title),
 					contentIntent);
 			notification.flags |= Notification.FLAG_ONGOING_EVENT;
