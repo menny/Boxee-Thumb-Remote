@@ -2,8 +2,8 @@
 <manifest 
 	xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.menny.android.thumbremote"
-    android:versionCode="10"
-    android:versionName="20110830-thumbs_up">
+    android:versionCode="11"
+    android:versionName="20110912-thumbs_up">
     
     <application android:name="com.menny.android.thumbremote.RemoteApplication"
     	android:icon="@drawable/app_icon"
