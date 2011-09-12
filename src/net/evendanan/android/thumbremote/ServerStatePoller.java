@@ -3,12 +3,13 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-package com.menny.android.thumbremote;
+package net.evendanan.android.thumbremote;
 
 import java.util.Random;
 
-import com.menny.android.thumbremote.network.HttpRequest;
-import com.menny.android.thumbremote.network.Response;
+import net.evendanan.android.thumbremote.network.HttpRequest;
+import net.evendanan.android.thumbremote.network.Response;
+
 
 import android.content.Context;
 import android.net.wifi.WifiManager;

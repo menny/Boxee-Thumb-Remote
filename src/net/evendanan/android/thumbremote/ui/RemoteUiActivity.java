@@ -3,10 +3,22 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-package com.menny.android.thumbremote.ui;
+package net.evendanan.android.thumbremote.ui;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+
+import net.evendanan.android.thumbremote.R;
+import net.evendanan.android.thumbremote.RemoteApplication;
+import net.evendanan.android.thumbremote.ServerAddress;
+import net.evendanan.android.thumbremote.ServerConnector;
+import net.evendanan.android.thumbremote.ServerState;
+import net.evendanan.android.thumbremote.ServerStatePoller;
+import net.evendanan.android.thumbremote.UiView;
+import net.evendanan.android.thumbremote.ShakeListener.OnShakeListener;
+import net.evendanan.android.thumbremote.boxee.BoxeeConnector;
+import net.evendanan.android.thumbremote.boxee.BoxeeDiscovererThread;
+import net.evendanan.android.thumbremote.network.HttpRequest;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -44,17 +56,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.ViewFlipper;
 
-import com.menny.android.thumbremote.R;
-import com.menny.android.thumbremote.RemoteApplication;
-import com.menny.android.thumbremote.ServerAddress;
-import com.menny.android.thumbremote.ServerConnector;
-import com.menny.android.thumbremote.ServerState;
-import com.menny.android.thumbremote.ServerStatePoller;
-import com.menny.android.thumbremote.ShakeListener.OnShakeListener;
-import com.menny.android.thumbremote.UiView;
-import com.menny.android.thumbremote.boxee.BoxeeConnector;
-import com.menny.android.thumbremote.boxee.BoxeeDiscovererThread;
-import com.menny.android.thumbremote.network.HttpRequest;
 
 public class RemoteUiActivity extends Activity implements
 		OnSharedPreferenceChangeListener, BoxeeDiscovererThread.Receiver, OnClickListener, OnShakeListener, UiView {

@@ -3,7 +3,7 @@
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-package com.menny.android.thumbremote.network;
+package net.evendanan.android.thumbremote.network;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

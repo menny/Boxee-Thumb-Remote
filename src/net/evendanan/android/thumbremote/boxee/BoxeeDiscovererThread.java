@@ -3,7 +3,7 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-package com.menny.android.thumbremote.boxee;
+package net.evendanan.android.thumbremote.boxee;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -16,11 +16,12 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import net.evendanan.android.thumbremote.ServerAddress;
+
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
-import com.menny.android.thumbremote.ServerAddress;
 
 
 import android.content.Context;

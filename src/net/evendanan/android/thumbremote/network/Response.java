@@ -1,4 +1,4 @@
-package com.menny.android.thumbremote.network;
+package net.evendanan.android.thumbremote.network;
 
 public class Response
 {

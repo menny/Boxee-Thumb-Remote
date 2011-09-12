@@ -1,4 +1,4 @@
-package com.menny.android.thumbremote.boxee;
+package net.evendanan.android.thumbremote.boxee;
 
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -8,16 +8,17 @@ import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.evendanan.android.thumbremote.ServerAddress;
+import net.evendanan.android.thumbremote.ServerConnector;
+import net.evendanan.android.thumbremote.UiView;
+import net.evendanan.android.thumbremote.network.HttpRequest;
+import net.evendanan.android.thumbremote.network.Response;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.menny.android.thumbremote.ServerAddress;
-import com.menny.android.thumbremote.ServerConnector;
-import com.menny.android.thumbremote.UiView;
-import com.menny.android.thumbremote.network.HttpRequest;
-import com.menny.android.thumbremote.network.Response;
 
 /*
  * ftp://ohnopublishing.net/distfiles/svn-src/xbmc/trunk/xbmc/lib/libGoAhead/XBMChttp.cpp

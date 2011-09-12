@@ -1,4 +1,4 @@
-package com.menny.android.thumbremote;
+package net.evendanan.android.thumbremote;
 
 public interface UiView {
 //	void showError(int id, boolean longDelay);

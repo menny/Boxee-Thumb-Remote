@@ -3,17 +3,18 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-package com.menny.android.thumbremote.ui;
+package net.evendanan.android.thumbremote.ui;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import com.menny.android.thumbremote.R;
-import com.menny.android.thumbremote.RemoteApplication;
-import com.menny.android.thumbremote.ServerAddress;
-import com.menny.android.thumbremote.boxee.BoxeeConnector;
-import com.menny.android.thumbremote.boxee.BoxeeDiscovererThread;
+import net.evendanan.android.thumbremote.R;
+import net.evendanan.android.thumbremote.RemoteApplication;
+import net.evendanan.android.thumbremote.ServerAddress;
+import net.evendanan.android.thumbremote.boxee.BoxeeConnector;
+import net.evendanan.android.thumbremote.boxee.BoxeeDiscovererThread;
+
 
 import android.app.AlertDialog;
 import android.app.Dialog;

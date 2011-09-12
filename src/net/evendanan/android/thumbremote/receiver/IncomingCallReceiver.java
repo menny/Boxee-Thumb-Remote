@@ -1,6 +1,6 @@
-package com.menny.android.thumbremote.receiver;
+package net.evendanan.android.thumbremote.receiver;
 
-import com.menny.android.thumbremote.ui.RemoteUiActivity;
+import net.evendanan.android.thumbremote.ui.RemoteUiActivity;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

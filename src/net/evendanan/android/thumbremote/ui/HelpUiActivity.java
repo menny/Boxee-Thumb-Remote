@@ -1,6 +1,6 @@
-package com.menny.android.thumbremote.ui;
+package net.evendanan.android.thumbremote.ui;
 
-import com.menny.android.thumbremote.R;
+import net.evendanan.android.thumbremote.R;
 
 import android.app.Activity;
 import android.os.Bundle;

@@ -1,4 +1,4 @@
-package com.menny.android.thumbremote.ui;
+package net.evendanan.android.thumbremote.ui;
 
 import android.os.AsyncTask;
 

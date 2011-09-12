@@ -3,7 +3,7 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-package com.menny.android.thumbremote;
+package net.evendanan.android.thumbremote;
 
 import java.net.InetAddress;
 
