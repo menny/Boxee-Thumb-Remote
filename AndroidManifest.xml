@@ -34,6 +34,8 @@
         
     	<activity android:name=".ui.SettingsActivity" android:exported="false" android:excludeFromRecents="true" android:noHistory="true"/>
     	<activity android:name=".ui.HelpUiActivity" android:theme="@style/Popup" android:exported="false" android:excludeFromRecents="true" android:noHistory="true"/>
+    	
+    	<service android:name=".service.ServerRemoteService"></service>
     </application>
     
     <supports-screens

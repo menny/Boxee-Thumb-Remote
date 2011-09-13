@@ -19,24 +19,25 @@ import net.evendanan.android.thumbremote.ShakeListener.OnShakeListener;
 import net.evendanan.android.thumbremote.boxee.BoxeeConnector;
 import net.evendanan.android.thumbremote.boxee.BoxeeDiscovererThread;
 import net.evendanan.android.thumbremote.network.HttpRequest;
+import net.evendanan.android.thumbremote.service.ServerRemoteService;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
@@ -120,13 +121,9 @@ public class RemoteUiActivity extends Activity implements
 	ProgressBar mElapsedBar;
 	TextView mMediaDetails = null;
 	
-	private static final int NOTIFICATION_PLAYING_ID = 1;
-
 	private static final int DIALOG_NO_PASSWORD = 1;
 	private static final int DIALOG_NO_SERVER = 2;
 	
-	private NotificationManager mNotificationManager;
-
 	boolean mThisAcitivityPaused = true;
 	
 	private ServerConnector mRemote;
@@ -157,10 +154,51 @@ public class RemoteUiActivity extends Activity implements
 
 	private Animation mOutAnimation;
 
+//	private boolean mIsBound = false;
+//	private ServerRemoteService mBoundService;
+//
+//	private ServiceConnection mConnection = new ServiceConnection() {
+//	    public void onServiceConnected(ComponentName className, IBinder service) {
+//	        // This is called when the connection with the service has been
+//	        // established, giving us the service object we can use to
+//	        // interact with the service.  Because we have bound to a explicit
+//	        // service that we know is running in our own process, we can
+//	        // cast its IBinder to a concrete class and directly access it.
+//	        mBoundService = ((ServerRemoteService.LocalBinder)service).getService();
+//	    }
+//
+//	    public void onServiceDisconnected(ComponentName className) {
+//	        // This is called when the connection with the service has been
+//	        // unexpectedly disconnected -- that is, its process crashed.
+//	        // Because it is running in our same process, we should never
+//	        // see this happen.
+//	        mBoundService = null;
+//	    }
+//	};
+//
+//	void doBindService() {
+//	    // Establish a connection with the service.  We use an explicit
+//	    // class name because we want a specific service implementation that
+//	    // we know will be running in our own process (and thus won't be
+//	    // supporting component replacement by other applications).
+//	    bindService(new Intent(RemoteUiActivity.this, ServerRemoteService.class), mConnection, Context.BIND_AUTO_CREATE);
+//	    mIsBound = true;
+//	}
+//
+//	void doUnbindService() {
+//	    if (mIsBound) {
+//	        // Detach our existing connection.
+//	        unbindService(mConnection);
+//	        mIsBound = false;
+//	    }
+//	}
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		//doBindService();
+		
 		mHandler = new Handler() {
 			@Override
 			public void handleMessage(Message msg) {
@@ -190,8 +228,6 @@ public class RemoteUiActivity extends Activity implements
 			@Override
 			public void onAnimationEnd(Animation animation) {mUserMessage.setText(""); mUserMessage.setVisibility(View.INVISIBLE);}
 		});
-		
-		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		
 		mRemote = new BoxeeConnector();
 		mRemote.setUiView(this);
@@ -279,9 +315,9 @@ public class RemoteUiActivity extends Activity implements
 	@Override
 	protected void onDestroy() {
 		msActivity = null;
-		mNotificationManager.cancel(NOTIFICATION_PLAYING_ID);
 		mRemote.setServer(null);
 		stopPollerIfPossible();
+		stopService(new Intent(this, ServerRemoteService.class));
 		super.onDestroy();
 	}
 
@@ -431,19 +467,11 @@ public class RemoteUiActivity extends Activity implements
 			refreshPlayingProgressChanged();
 			
 			flipTo(PAGE_NOWPLAYING);
-			Notification notification = new Notification(R.drawable.notification_playing, getString(R.string.server_is_playing, title), System.currentTimeMillis());
-
-			Intent notificationIntent = new Intent(this, RemoteUiActivity.class);
-			PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-
-			notification.setLatestEventInfo(this,
-					getText(R.string.app_name), getString(R.string.server_is_playing, title),
-					contentIntent);
-			notification.flags |= Notification.FLAG_ONGOING_EVENT;
-			notification.flags |= Notification.FLAG_NO_CLEAR;
-			//notification.defaults = 0;// no sound, vibrate, etc.
-			// notifying
-			mNotificationManager.notify(NOTIFICATION_PLAYING_ID, notification);
+			
+			//if (mBoundService!=null) mBoundService.showPlayingNotification(title);
+			Intent i = new Intent(this, ServerRemoteService.class);
+			i.putExtra(ServerRemoteService.KEY_DATA_TITLE, title);
+			startService(i);
 		}
 		else
 		{
@@ -452,7 +480,10 @@ public class RemoteUiActivity extends Activity implements
 			mTextTitle.setText("");
 			if (mMediaDetails != null) mMediaDetails.setText("");
 			mImageThumbnail.setImageResource(R.drawable.remote_background);
-			mNotificationManager.cancel(NOTIFICATION_PLAYING_ID);
+			
+			//if (mBoundService!=null) mBoundService.cancelPlayingNotification();
+			stopService(new Intent(this, ServerRemoteService.class));
+			
 			//no need to keep this one alive. Right?
 			stopPollerIfPossible();
 		}
@@ -589,6 +620,20 @@ public class RemoteUiActivity extends Activity implements
 			}.execute();
 			return true;
 			
+		default:
+			return super.onKeyDown(keyCode, event);
+		}
+	}
+	
+	@Override
+	public boolean onKeyUp(int keyCode, KeyEvent event) {
+		switch(keyCode)
+		{
+		case KeyEvent.KEYCODE_VOLUME_UP:
+		case KeyEvent.KEYCODE_VOLUME_DOWN:
+			//I catch these two to handle the annoying sound feedback given in some hand-held (Samsung Tab, e.g.)
+			return true;
+
 		default:
 			return super.onKeyDown(keyCode, event);
 		}
