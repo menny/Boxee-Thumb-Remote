@@ -15,6 +15,7 @@ import net.evendanan.android.thumbremote.boxee.BoxeeConnector;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
@@ -42,6 +43,8 @@ public class Settings {
 	private final boolean HANDLE_HARD_BACK_DEFAULT;
 	private final String KEEP_SCREEN_ON_KEY;
 	private final boolean KEEP_SCREEN_ON_DEFAULT;
+	private final String SCREEN_ORIENTATION_KEY;
+	private final String SCREEN_ORIENTATION_DEFAULT_VALUE;
 	
 	private final String NETWORK_TIMEOUT_KEY;
 	private final String NETWORK_TIMEOUT_DEFAULT_VALUE;
@@ -66,6 +69,9 @@ public class Settings {
 		
 		KEEP_SCREEN_ON_KEY = res.getString(R.string.settings_key_keep_screen_on_key);
 		KEEP_SCREEN_ON_DEFAULT = res.getBoolean(R.bool.settings_key_keep_screen_on_default);
+		
+		SCREEN_ORIENTATION_KEY = res.getString(R.string.settings_key_screen_orientation_key);
+		SCREEN_ORIENTATION_DEFAULT_VALUE = res.getString(R.string.settings_key_screen_orientation_default);
 		
 		SERVER_NAME_KEY = res.getString(R.string.settings_key_server_name_key);
 		SERVER_TYPE_KEY = res.getString(R.string.settings_key_server_type_key);
@@ -118,6 +124,15 @@ public class Settings {
 	
 	public boolean getKeepScreenOn(){
 		return mPreferences.getBoolean(KEEP_SCREEN_ON_KEY, KEEP_SCREEN_ON_DEFAULT);
+	}
+	
+	public int getRequestedScreenOrientation(){
+		String value = mPreferences.getString(SCREEN_ORIENTATION_KEY, SCREEN_ORIENTATION_DEFAULT_VALUE);
+		if (value.equals("default")) return ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+		else if (value.equals("portrait")) return ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+		else if (value.equals("landscape")) return ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+		else if (value.equals("auto")) return ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR;
+		else return ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
 	}
 	
 	public String getServerName() {

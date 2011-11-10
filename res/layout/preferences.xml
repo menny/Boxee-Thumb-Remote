@@ -43,6 +43,15 @@
 		android:summaryOff="@string/keep_screen_on_no" 
 		android:defaultValue="@bool/settings_key_keep_screen_on_default"
 		/>
+		
+		<ListPreference
+			android:key="@string/settings_key_screen_orientation_key"
+			android:title="@string/screen_orientation_title"
+			android:summary="@string/screen_orientation_summary"
+			android:entries="@array/screen_orientation_types_strings"
+			android:entryValues="@array/settings_key_screen_orientation_values"
+			android:defaultValue="@string/settings_key_screen_orientation_default"
+			android:dialogTitle="@string/screen_orientation_title"/>
 	</PreferenceCategory>
 	
 	<PreferenceCategory android:key="network_group"

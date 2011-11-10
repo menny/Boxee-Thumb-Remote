@@ -8,13 +8,13 @@
 		android:layout_height="wrap_content" 
 		android:layout_margin="10dp" 
 		/>
-		
-	<ViewFlipper
+		<!-- http://daniel-codes.blogspot.com/2010/05/viewflipper-receiver-not-registered.html -->
+	<net.evendanan.android.thumbremote.ui.FixedViewFlipper
         android:id="@+id/now_playing_flipper"
         android:layout_width="fill_parent" 
         android:layout_height="fill_parent"
         >
     	<include layout="@layout/notplaying" />
         <include layout="@layout/nowplaying" />
-	</ViewFlipper>
+	</net.evendanan.android.thumbremote.ui.FixedViewFlipper>
 </LinearLayout>

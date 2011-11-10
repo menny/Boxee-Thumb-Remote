@@ -66,8 +66,10 @@
 	<string name="preference_volume_step_size">Volume step</string>
 	
 	<string name="screen_orientation_title">Screen orientation</string>
+	<string name="screen_orientation_summary">Requires app restart to take effect</string>
 	
     <string-array name="screen_orientation_types_strings">
+        <item>OS Default</item>
         <item>Use sensor</item>
         <item>Portrait</item>
         <item>Landscape</item>

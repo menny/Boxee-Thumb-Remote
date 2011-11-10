@@ -190,6 +190,8 @@ public class RemoteUiActivity extends Activity implements
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		setRequestedOrientation(RemoteApplication.getConfig().getRequestedScreenOrientation());
+		
 		super.onCreate(savedInstanceState);
 
 		//doBindService();

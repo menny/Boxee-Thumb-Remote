@@ -46,6 +46,15 @@
     <string name="settings_key_keep_screen_on_key">settings_key_keep_screen_on_key</string>
     <bool name="settings_key_keep_screen_on_default">false</bool>
     
+    <string name="settings_key_screen_orientation_key">settings_key_screen_orientation_key</string>
+    <string name="settings_key_screen_orientation_default">default</string>
+	<string-array name="settings_key_screen_orientation_values">
+	    <item>default</item>
+    	<item>auto</item>
+        <item>portrait</item>
+        <item>landscape</item>
+    </string-array>
+    
     <!-- network -->
     <string name="settings_key_network_timeout_key">settings_key_network_timeout_key</string>
     <string name="settings_key_network_timeout_default_value">750</string>
