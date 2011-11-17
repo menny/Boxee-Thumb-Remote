@@ -5,35 +5,33 @@
  */
 package net.evendanan.android.thumbremote.ui;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 
 import net.evendanan.android.thumbremote.R;
 import net.evendanan.android.thumbremote.RemoteApplication;
-import net.evendanan.android.thumbremote.ServerAddress;
-import net.evendanan.android.thumbremote.ServerConnector;
 import net.evendanan.android.thumbremote.ServerState;
-import net.evendanan.android.thumbremote.ServerStatePoller;
 import net.evendanan.android.thumbremote.ShakeListener.OnShakeListener;
 import net.evendanan.android.thumbremote.UiView;
-import net.evendanan.android.thumbremote.boxee.BoxeeConnector;
-import net.evendanan.android.thumbremote.boxee.BoxeeDiscovererThread;
 import net.evendanan.android.thumbremote.network.HttpRequest;
 import net.evendanan.android.thumbremote.service.ServerRemoteService;
+import net.evendanan.android.thumbremote.service.State;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
+import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
@@ -54,7 +52,7 @@ import android.widget.ViewFlipper;
 
 
 public class RemoteUiActivity extends Activity implements
-		OnSharedPreferenceChangeListener, BoxeeDiscovererThread.Receiver, OnClickListener, OnShakeListener, UiView {
+		OnSharedPreferenceChangeListener, OnClickListener, OnShakeListener, UiView {
 
 	public final static String TAG = RemoteUiActivity.class.toString();
 
@@ -66,34 +64,11 @@ public class RemoteUiActivity extends Activity implements
 		for(char c : punctuation.toCharArray())
 			msPunctuation.add(c);
 	}
-	
-	private static RemoteUiActivity msActivity = null;
-
-	public static void onExternalImportantEvent(String event) {
-		final RemoteUiActivity realActivity = msActivity;
-		if (realActivity != null)
-		{
-			Log.i(TAG, "Got an important external event '"+event+"'!");
-			realActivity.pauseIfPlaying();
-		}
-	}
-	
-	public static void onNetworkAvailable()
-	{
-		final RemoteUiActivity realActivity = msActivity;
-		if (realActivity != null && !realActivity.mThisAcitivityPaused)
-		{
-			Log.i(TAG, "Got network! Trying to reconnect...");
-			realActivity.mRemote = new BoxeeConnector();
-			realActivity.mRemote.setUiView(realActivity);
-			realActivity.setServer();
-		}
-	}
-	
+	/*
 	private static final int MESSAGE_MEDIA_PLAYING_CHANGED = 97565;
 	private static final int MESSAGE_MEDIA_PLAYING_PROGRESS_CHANGED = MESSAGE_MEDIA_PLAYING_CHANGED + 1;
 	private static final int MESSAGE_MEDIA_METADATA_CHANGED = MESSAGE_MEDIA_PLAYING_PROGRESS_CHANGED + 1;
-	
+	*/
 	// Menu items
 	private static final int MENU_SETTINGS = Menu.FIRST;
 	private static final int MENU_HELP = MENU_SETTINGS+1;
@@ -121,11 +96,6 @@ public class RemoteUiActivity extends Activity implements
 	
 	boolean mThisAcitivityPaused = true;
 	
-	private ServerConnector mRemote;
-	private BoxeeDiscovererThread mServerDiscoverer;
-	private ServerAddress mServerAddress = null;
-	private ServerStatePoller mStatePoller = null; 
-
 	//Not ready for prime time
 	//private ShakeListener mShakeDetector;
 	
@@ -137,56 +107,60 @@ public class RemoteUiActivity extends Activity implements
 	
 	private Handler mHandler;
 
+	/*
 	private final Runnable mRequestStatusUpdateRunnable = new Runnable() {
 		@Override
 		public void run() {
 			if (mStatePoller != null)
 				mStatePoller.checkStateNow();
 		}
-	};
+	};*/
 
 	private Animation mInAnimation;
 
 	private Animation mOutAnimation;
 
-//	private boolean mIsBound = false;
-//	private ServerRemoteService mBoundService;
-//
-//	private ServiceConnection mConnection = new ServiceConnection() {
-//	    public void onServiceConnected(ComponentName className, IBinder service) {
-//	        // This is called when the connection with the service has been
-//	        // established, giving us the service object we can use to
-//	        // interact with the service.  Because we have bound to a explicit
-//	        // service that we know is running in our own process, we can
-//	        // cast its IBinder to a concrete class and directly access it.
-//	        mBoundService = ((ServerRemoteService.LocalBinder)service).getService();
-//	    }
-//
-//	    public void onServiceDisconnected(ComponentName className) {
-//	        // This is called when the connection with the service has been
-//	        // unexpectedly disconnected -- that is, its process crashed.
-//	        // Because it is running in our same process, we should never
-//	        // see this happen.
-//	        mBoundService = null;
-//	    }
-//	};
-//
-//	void doBindService() {
-//	    // Establish a connection with the service.  We use an explicit
-//	    // class name because we want a specific service implementation that
-//	    // we know will be running in our own process (and thus won't be
-//	    // supporting component replacement by other applications).
-//	    bindService(new Intent(RemoteUiActivity.this, ServerRemoteService.class), mConnection, Context.BIND_AUTO_CREATE);
-//	    mIsBound = true;
-//	}
-//
-//	void doUnbindService() {
-//	    if (mIsBound) {
-//	        // Detach our existing connection.
-//	        unbindService(mConnection);
-//	        mIsBound = false;
-//	    }
-//	}
+	private boolean mIsBound = false;
+	private ServerRemoteService mBoundService;
+
+	private ServiceConnection mConnection = new ServiceConnection() {
+	    public void onServiceConnected(ComponentName className, IBinder service) {
+	        // This is called when the connection with the service has been
+	        // established, giving us the service object we can use to
+	        // interact with the service.  Because we have bound to a explicit
+	        // service that we know is running in our own process, we can
+	        // cast its IBinder to a concrete class and directly access it.
+	        mBoundService = ((ServerRemoteService.LocalBinder)service).getService();
+	        mBoundService.setUiView(RemoteUiActivity.this);
+	    }
+
+	    public void onServiceDisconnected(ComponentName className) {
+	        // This is called when the connection with the service has been
+	        // unexpectedly disconnected -- that is, its process crashed.
+	        // Because it is running in our same process, we should never
+	        // see this happen.
+	    	if (mBoundService!= null) mBoundService.setUiView(RemoteUiActivity.this);
+	        mBoundService = null;
+	    }
+	};
+
+	void doBindService() {
+	    // Establish a connection with the service.  We use an explicit
+	    // class name because we want a specific service implementation that
+	    // we know will be running in our own process (and thus won't be
+	    // supporting component replacement by other applications).
+	    bindService(new Intent(RemoteUiActivity.this, ServerRemoteService.class), mConnection, Context.BIND_AUTO_CREATE);
+	    mIsBound = true;
+	}
+
+	void doUnbindService() {
+	    if (mIsBound) {
+	    	if (mBoundService!= null) mBoundService.setUiView(RemoteUiActivity.this);
+	        // Detach our existing connection.
+	        unbindService(mConnection);
+	        mIsBound = false;
+	    }
+	}
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -194,8 +168,8 @@ public class RemoteUiActivity extends Activity implements
 		
 		super.onCreate(savedInstanceState);
 
-		//doBindService();
-		
+		doBindService();
+		/*
 		mHandler = new Handler() {
 			@Override
 			public void handleMessage(Message msg) {
@@ -212,7 +186,8 @@ public class RemoteUiActivity extends Activity implements
 				}
 			}
 		};
-		
+		*/
+		mHandler = new Handler();
 		mInAnimation = AnimationUtils.loadAnimation(getApplicationContext(), android.R.anim.slide_in_left);
 		mOutAnimation = AnimationUtils.loadAnimation(getApplicationContext(), android.R.anim.slide_out_right);
 		mOutAnimation.setAnimationListener(new AnimationListener() {
@@ -226,9 +201,8 @@ public class RemoteUiActivity extends Activity implements
 			public void onAnimationEnd(Animation animation) {mUserMessage.setText(""); mUserMessage.setVisibility(View.INVISIBLE);}
 		});
 		
-		mRemote = new BoxeeConnector();
-		mRemote.setUiView(this);
-
+		//mRemote = new BoxeeConnector();
+		
 		setContentView(R.layout.main);
 
 		// Setup flipper
@@ -256,10 +230,6 @@ public class RemoteUiActivity extends Activity implements
 		
 		//mShakeDetector = new ShakeListener(getApplicationContext());
 		//mShakeDetector.setOnShakeListener(this);
-		msActivity = this;
-		
-		mStatePoller = new ServerStatePoller(mRemote, getApplicationContext());
-		mStatePoller.poll();
 		
 		startHelpOnFirstRun();
 	}
@@ -293,29 +263,14 @@ public class RemoteUiActivity extends Activity implements
 		mThisAcitivityPaused = true;
 		//mShakeDetector.pause();
 		RemoteApplication.getConfig().unlisten(this);
-		mHandler.removeCallbacks(mRequestStatusUpdateRunnable);
-		
-		super.onPause();
-		if (mStatePoller != null)
-			mStatePoller.moveToBackground();
+		//mHandler.removeCallbacks(mRequestStatusUpdateRunnable);
 		
 		if (mPleaseWaitDialog != null)
 			mPleaseWaitDialog.dismiss();
 		mPleaseWaitDialog = null;
 		
-		stopPollerIfPossible();
-		
-		if (mServerDiscoverer != null) mServerDiscoverer.setReceiver(null);
-		mServerDiscoverer = null;
-	}
-	
-	@Override
-	protected void onDestroy() {
-		msActivity = null;
-		mRemote.setServer(null);
-		stopPollerIfPossible();
-		stopService(new Intent(this, ServerRemoteService.class));
-		super.onDestroy();
+		doUnbindService();
+		super.onPause();
 	}
 
 	@Override
@@ -328,22 +283,6 @@ public class RemoteUiActivity extends Activity implements
 		//mShakeDetector.resume();
 		
 		mImageThumbnail.setKeepScreenOn(RemoteApplication.getConfig().getKeepScreenOn());
-		
-		if (mStatePoller == null)
-		{
-			mStatePoller = new ServerStatePoller(mRemote, getApplicationContext());
-			mStatePoller.poll();
-		}
-		
-		mStatePoller.comeBackToForeground();
-		
-		if (mServerDiscoverer == null || !mServerDiscoverer.isDiscoverying())
-		{
-			if (mServerAddress == null || !mServerAddress.valid())
-			{
-				setServer();
-			}
-		}
 	}
 
 	@Override
@@ -367,6 +306,7 @@ public class RemoteUiActivity extends Activity implements
 		switch(item.getItemId())
 		{
 		case MENU_EXIT:
+			mBoundService.forceStop();
 			finish();
 			return true;
 		case MENU_HELP:
@@ -376,18 +316,10 @@ public class RemoteUiActivity extends Activity implements
 			startSetupActivity();
 			return true;
 		case MENU_RESCAN:
-			setServer();
+			if (mBoundService != null) mBoundService.remoteRescanForServers();
 			return true;
 		default:
 			return super.onMenuItemSelected(featureId, item);
-		}
-	}
-	
-	private void pauseIfPlaying()
-	{
-		if (mRemote.isMediaPlaying())
-		{
-			remoteFlipPlayPause();
 		}
 	}
 
@@ -397,33 +329,22 @@ public class RemoteUiActivity extends Activity implements
 		switch (id) {
 		
 		case R.id.buttonPlayPause:
-			remoteFlipPlayPause();
+			if (mBoundService != null) mBoundService.remoteFlipPlayPause();
 			break;
 
 		case R.id.buttonStop:
-			remoteStop();
+			if (mBoundService != null) mBoundService.remoteStop();
 			break;
 
 		case R.id.buttonSmallSkipBack:
 		case R.id.buttonSmallSkipFwd:
-			final int duration = hmsToSeconds(mRemote.getMediaTotalTime());
-			if (duration > 0)
-			{
-				final double howFar = (id == R.id.buttonSmallSkipFwd)? 30f : -30f;
-				final double newSeekPosition = howFar * 100f / duration;
-				remoteSeek(newSeekPosition);
-			}
+			if (mBoundService != null) mBoundService.remoteSeekOffset((id == R.id.buttonSmallSkipFwd)? 30f : -30f);
 			break;
-
 		case R.id.back:
-			remoteBack();
+			if (mBoundService != null) mBoundService.remoteBack();
 			break;
 		}
 
-	}
-
-	void requestUpdateASAP(int delay_ms) {
-		mHandler.postDelayed(mRequestStatusUpdateRunnable,delay_ms);
 	}
 
 	private void flipTo(int page) {
@@ -432,23 +353,23 @@ public class RemoteUiActivity extends Activity implements
 	}
 
 	@Override
-	public void onPlayingStateChanged(ServerState serverState) {
-		mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_MEDIA_PLAYING_CHANGED));
+	public void onMediaPlayingStateChanged(ServerState serverState) {
+		refreshPlayingStateChanged(serverState, false);
 	}
 	
 	@Override
-	public void onPlayingProgressChanged(ServerState serverState) {
-		mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_MEDIA_PLAYING_PROGRESS_CHANGED));		
+	public void onMediaPlayingProgressChanged(ServerState serverState) {
+		refreshPlayingProgressChanged(serverState);		
 	}
 	
 	@Override
-	public void onMetadataChanged(ServerState serverState) {
-		mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_MEDIA_METADATA_CHANGED));
+	public void onMediaMetadataChanged(ServerState serverState) {
+		refreshMetadataChanged(serverState);
 	}
 	
-	private void refreshPlayingStateChanged(boolean forceChanged) {
-		final boolean isPlaying = mRemote.isMediaPlaying();
-		final boolean newIsMediaActive = mRemote.isMediaActive();
+	private void refreshPlayingStateChanged(ServerState serverState, boolean forceChanged) {
+		final boolean isPlaying = serverState.isMediaPlaying();
+		final boolean newIsMediaActive = serverState.isMediaActive();
 		final boolean mediaActiveChanged = forceChanged || (newIsMediaActive != mIsMediaActive);
 		mIsMediaActive = newIsMediaActive;
 
@@ -458,10 +379,10 @@ public class RemoteUiActivity extends Activity implements
 			mButtonPlayPause.setBackgroundDrawable(getResources().getDrawable(
 					isPlaying ? R.drawable.icon_osd_pause : R.drawable.icon_osd_play));
 	
-			final String title = getMediaTitle();
+			final String title = getMediaTitle(serverState);
 			mTextTitle.setText(title);
-			if (mMediaDetails != null) mMediaDetails.setText(mRemote.getMediaPlot());
-			refreshPlayingProgressChanged();
+			if (mMediaDetails != null) mMediaDetails.setText(serverState.getMediaPlot());
+			refreshPlayingProgressChanged(serverState);
 			
 			flipTo(PAGE_NOWPLAYING);
 			
@@ -477,40 +398,25 @@ public class RemoteUiActivity extends Activity implements
 			mTextTitle.setText("");
 			if (mMediaDetails != null) mMediaDetails.setText("");
 			mImageThumbnail.setImageResource(R.drawable.remote_background);
-			
-			//if (mBoundService!=null) mBoundService.cancelPlayingNotification();
-			stopService(new Intent(this, ServerRemoteService.class));
-			
-			//no need to keep this one alive. Right?
-			stopPollerIfPossible();
-		}
-	}
-	
-	private void stopPollerIfPossible() {
-		if (mThisAcitivityPaused && !mRemote.isMediaPlaying())
-		{
-			if (mStatePoller != null)
-				mStatePoller.stop();
-			mStatePoller = null;
 		}
 	}
 
-	private void refreshPlayingProgressChanged()
+	private void refreshPlayingProgressChanged(ServerState serverState)
 	{
-		mDuration.setText(mRemote.getMediaTotalTime());
+		mDuration.setText(serverState.getMediaTotalTime());
 		
-		mTextElapsed.setText(mRemote.getMediaCurrentTime());
+		mTextElapsed.setText(serverState.getMediaCurrentTime());
 
-		mElapsedBar.setProgress(mRemote.getMediaProgressPercent());
+		mElapsedBar.setProgress(serverState.getMediaProgressPercent());
 	}
 	
-	private void refreshMetadataChanged() {
-		mIsMediaActive = mRemote.isMediaActive();
+	private void refreshMetadataChanged(ServerState serverState) {
+		mIsMediaActive = serverState.isMediaActive();
 		if (mIsMediaActive)
 		{
-			mImageThumbnail.setImageBitmap(mRemote.getMediaPoster());
-			mTextTitle.setText(getMediaTitle());
-			if (mMediaDetails != null) mMediaDetails.setText(mRemote.getMediaPlot());
+			mImageThumbnail.setImageBitmap(serverState.getMediaPoster());
+			mTextTitle.setText(getMediaTitle(serverState));
+			if (mMediaDetails != null) mMediaDetails.setText(serverState.getMediaPlot());
 		}
 		else
 		{
@@ -520,12 +426,12 @@ public class RemoteUiActivity extends Activity implements
 		}
 	}
 
-	private String getMediaTitle() {
-		String showTitle = mRemote.getShowTitle();
-		String title = mRemote.getMediaTitle();
-		String filename = mRemote.getMediaFilename();
-		String season = mRemote.getShowSeason();
-		String episode = mRemote.getShowEpisode();
+	private String getMediaTitle(ServerState serverState) {
+		String showTitle = serverState.getShowTitle();
+		String title = serverState.getMediaTitle();
+		String filename = serverState.getMediaFilename();
+		String season = serverState.getShowSeason();
+		String episode = serverState.getShowEpisode();
 		String mediaTitle = "";
 		if (!TextUtils.isEmpty(showTitle))
 		{
@@ -560,7 +466,7 @@ public class RemoteUiActivity extends Activity implements
 
 		
 		if (Character.isLetterOrDigit(unicodeChar) || msPunctuation.contains(unicodeChar)) {
-			remoteKeypress(unicodeChar);
+			if (mBoundService != null) mBoundService.remoteKeypress(unicodeChar);
 			
 			return true;
 		}
@@ -570,7 +476,7 @@ public class RemoteUiActivity extends Activity implements
 		case KeyEvent.KEYCODE_BACK:
 			if (RemoteApplication.getConfig().getHandleBack())
 			{
-				remoteBack();
+				if (mBoundService != null) mBoundService.remoteBack();
 				return true;
 			}
 			else
@@ -579,42 +485,30 @@ public class RemoteUiActivity extends Activity implements
 			}
 
 		case KeyEvent.KEYCODE_DPAD_CENTER:
-			remoteSelect();
+			if (mBoundService != null) mBoundService.remoteSelect();
 			return true;
 
 		case KeyEvent.KEYCODE_DPAD_DOWN:
-			remoteDown();
+			if (mBoundService != null) mBoundService.remoteDown();
 			return true;
 
 		case KeyEvent.KEYCODE_DPAD_UP:
-			remoteUp();
+			if (mBoundService != null) mBoundService.remoteUp();
 			return true;
 
 		case KeyEvent.KEYCODE_DPAD_LEFT:
-			remoteLeft();
+			if (mBoundService != null) mBoundService.remoteLeft();
 			return true;
 
 		case KeyEvent.KEYCODE_DPAD_RIGHT:
-			remoteRight();
+			if (mBoundService != null) mBoundService.remoteRight();
 			return true;
 
 		case KeyEvent.KEYCODE_VOLUME_UP:
 		case KeyEvent.KEYCODE_VOLUME_DOWN:
 			final int volumeFactor = (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN)? -1 : 1;
-				new DoServerRemoteAction(this, false) {
-					private int mNewVolume = 0;
-				@Override
-				protected void callRemoteFunction() throws Exception {
-					int volume = mRemote.getVolume();
-					mNewVolume = Math.max(0, Math.min(100, volume + (volumeFactor * RemoteApplication.getConfig().getVolumeStep())));
-					mRemote.setVolume(mNewVolume);
-				}
-				@Override
-					protected void onPostExecute(Exception result) {
-						showMessage(getString(R.string.new_volume_toast, mNewVolume), 500);
-						super.onPostExecute(result);
-					}
-			}.execute();
+			final int volumeOffset = (volumeFactor * RemoteApplication.getConfig().getVolumeStep());
+			if (mBoundService != null) mBoundService.remoteVolumeOffset(volumeOffset);
 			return true;
 			
 		default:
@@ -652,7 +546,8 @@ public class RemoteUiActivity extends Activity implements
 		}
 	};
 	
-	void showMessage(final String userMessage, final int messageTime) {
+	@Override
+	public void showMessage(final String userMessage, final int messageTime) {
 		mUserMessageString = userMessage;
 		mHandler.removeCallbacks(mClearUserMessageRunnable);
 		mHandler.removeCallbacks(mSetUserMessageRunnable);
@@ -671,7 +566,7 @@ public class RemoteUiActivity extends Activity implements
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_UP:
 			if (!mDragged) {
-				remoteSelect();
+				if (mBoundService != null) mBoundService.remoteSelect();
 				return true;
 			}
 			break;
@@ -684,25 +579,25 @@ public class RemoteUiActivity extends Activity implements
 
 		case MotionEvent.ACTION_MOVE:
 			if (x - mTouchPoint.x > mSwipeStepSize) {
-				remoteRight();
+				if (mBoundService != null) mBoundService.remoteRight();
 				mTouchPoint.x += mSwipeStepSize;
 				mTouchPoint.y = y;
 				mDragged = true;
 				return true;
 			} else if (mTouchPoint.x - x > mSwipeStepSize) {
-				remoteLeft();
+				if (mBoundService != null) mBoundService.remoteLeft();
 				mTouchPoint.x -= mSwipeStepSize;
 				mTouchPoint.y = y;
 				mDragged = true;
 				return true;
 			} else if (y - mTouchPoint.y > mSwipeStepSize) {
-				remoteDown();
+				if (mBoundService != null) mBoundService.remoteDown();
 				mTouchPoint.y += mSwipeStepSize;
 				mTouchPoint.x = x;
 				mDragged = true;
 				return true;
 			} else if (mTouchPoint.y - y > mSwipeStepSize) {
-				remoteUp();
+				if (mBoundService != null) mBoundService.remoteUp();
 				mTouchPoint.y -= mSwipeStepSize;
 				mTouchPoint.x = x;
 				mDragged = true;
@@ -754,7 +649,7 @@ public class RemoteUiActivity extends Activity implements
 		else
 			HttpRequest.setUserPassword(null, null);
 	}
-
+/*
 	private void setServer() {
 		// Only set the host if manual. Otherwise we'll auto-detect it with
 		// Discoverer -> addAnnouncedServers
@@ -777,7 +672,7 @@ public class RemoteUiActivity extends Activity implements
 			mServerDiscoverer = new BoxeeDiscovererThread(this, this);
 			mServerDiscoverer.start();
 		}
-	}
+	}*/
 
 	@Override
 	protected Dialog onCreateDialog(int id) {
@@ -808,16 +703,16 @@ public class RemoteUiActivity extends Activity implements
 	private Dialog createCredentialsRequiredDialog() {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder
-			.setTitle("Credentials required")
-			.setMessage("The server "+mServerAddress.name()+" requires username and password in order to be controlled.\nWould you like to enter them now?")
+			.setTitle(R.string.need_creds_title)
+			.setMessage(R.string.need_creds_message)
 		       .setCancelable(true)
-		       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+		       .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 		           public void onClick(DialogInterface dialog, int id) {
 		        	   startSetupActivity();
 		        	   dialog.dismiss();
 		           }
 		       })
-		       .setNegativeButton("No", new DialogInterface.OnClickListener() {
+		       .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
 		           public void onClick(DialogInterface dialog, int id) {
 		                dialog.cancel();
 		           }
@@ -830,22 +725,22 @@ public class RemoteUiActivity extends Activity implements
 	private Dialog createNoServerDialog() {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder
-			.setTitle("No server found")
-			.setMessage("I was unable to find a Boxee server in your network.\n\nWould you like to manually set an IP address? Or maybe have me rescan again?")
+			.setTitle(R.string.no_server_found_title)
+			.setMessage(R.string.no_server_found_message)
 		       .setCancelable(true)
-		       .setPositiveButton("Manual", new DialogInterface.OnClickListener() {
+		       .setPositiveButton(R.string.no_server_found_action_manual, new DialogInterface.OnClickListener() {
 		           public void onClick(DialogInterface dialog, int id) {
 		        	   startSetupActivity();
 		        	   dialog.dismiss();
 		           }
 		       })
-		       .setNeutralButton("Rescan", new DialogInterface.OnClickListener() {
+		       .setNeutralButton(R.string.no_server_found_action_rescan, new DialogInterface.OnClickListener() {
 		           public void onClick(DialogInterface dialog, int id) {
-		        	   setServer();
+		        	   if (mBoundService != null) mBoundService.remoteRescanForServers();
 		        	   dialog.dismiss();
 		           }
 		       })
-				.setNegativeButton("Neither", new DialogInterface.OnClickListener() {
+				.setNegativeButton(R.string.no_server_found_action_neither, new DialogInterface.OnClickListener() {
 			           public void onClick(DialogInterface dialog, int id) {
 			                dialog.cancel();
 			           }
@@ -860,80 +755,38 @@ public class RemoteUiActivity extends Activity implements
 	 */
 	public void onSharedPreferenceChanged(SharedPreferences prefs, String pref) {
 		loadPreferences();
-		setServer();
 	}
-
-	/**
-	 * Called when the discovery request we sent in onCreate finishes. If we
-	 * find a server matching mAutoName, we use that.
-	 * 
-	 * @param servers
-	 *            list of discovered servers
-	 */
-	public void addAnnouncedServers(ArrayList<ServerAddress> servers) {
-		
-		if (mPleaseWaitDialog != null)
-			mPleaseWaitDialog.dismiss();
-		mPleaseWaitDialog = null;
-		
-		
-		// This condition shouldn't ever be true.
-		if (RemoteApplication.getConfig().isManuallySetServer()) {
-			Log.d(TAG, "Skipping announced servers. Set manually");
-			return;
-		}
-
-		String preferred = RemoteApplication.getConfig().getServerName();
-
-		for (int k = 0; k < servers.size(); ++k) {
-			final ServerAddress server = servers.get(k);
-			if (server.name().equals(preferred) || TextUtils.isEmpty(preferred)) {
-				if (!server.valid()) {
-					runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							showMessage(String.format("Found '%s' but looks broken", server.name()), 3000);
-						}
-					});
-					continue;
-				} else {
-					mServerAddress = server;
-					mRemote.setServer(mServerAddress);
-					final String serverName = server.name();
-					runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							setTitle(getString(R.string.app_name)+" - "+serverName);
-						}
-					});
-					
-
-					if (server.authRequired())
-					{
-						if (!HttpRequest.hasCredentials())
-						{
-							runOnUiThread(new Runnable() {
-								@Override
-								public void run() {
-									showDialog(DIALOG_NO_PASSWORD);
-								}
-							});
-						}
-					}
-					
-					requestUpdateASAP(100);
-					return;
-				}
-			}
-		}
-
-		mServerAddress = null;
-		
+	
+	@Override
+	public void onServerConnectionStateChanged(final State state) {
 		runOnUiThread(new Runnable() {
+			
 			@Override
 			public void run() {
-				setTitle(getString(R.string.app_name));
-				showDialog(DIALOG_NO_SERVER);
+				if (mDialogToDismiss > 0)
+					dismissDialog(mDialogToDismiss);
+				
+				if (mPleaseWaitDialog != null)
+					mPleaseWaitDialog.dismiss();
+				
+				mPleaseWaitDialog = null;
+				
+				switch(state)
+				{
+				case DEAD:
+					/*OK*/
+					break;
+				case DISCOVERYING:
+					mPleaseWaitDialog = ProgressDialog.show(RemoteUiActivity.this, getString(R.string.discoverying_dialog_title), getString(R.string.discoverying_dialog_message), true, false);
+					break;
+				case ERROR_NO_PASSWORD:
+					showDialog(DIALOG_NO_PASSWORD);
+					break;
+				case ERROR_NO_SERVER:
+					showDialog(DIALOG_NO_SERVER);
+					break;
+				case IDLE:
+				}
 			}
 		});
 	}
@@ -941,117 +794,5 @@ public class RemoteUiActivity extends Activity implements
 	@Override
 	public void onShake() {
 		Log.d(TAG, "Shake detect!");
-		pauseIfPlaying();
-	}
-		
-	private void remoteFlipPlayPause() {
-		new DoServerRemoteAction(this, false) {
-			@Override
-			protected void callRemoteFunction() throws Exception {
-				mRemote.flipPlayPause();
-			}
-		}.execute();
-	}
-
-	private void remoteBack() {
-		new DoServerRemoteAction(this, false) {
-			@Override
-			protected void callRemoteFunction() throws Exception {
-				mRemote.back();
-			}
-		}.execute();
-	}
-
-	private void remoteSeek(final double newSeekPosition) {
-		new DoServerRemoteAction(this, false) {
-			@Override
-			protected void callRemoteFunction() throws Exception {
-				mRemote.seekRelative(newSeekPosition);
-			}
-		}.execute();
-	}
-
-	private void remoteStop() {
-		new DoServerRemoteAction(this, false) {
-			@Override
-			protected void callRemoteFunction() throws Exception {
-				mRemote.stop();
-			}
-		}.execute();
-	}
-
-	private void remoteLeft() {
-		new DoServerRemoteAction(this, false) {
-			@Override
-			protected void callRemoteFunction() throws Exception {
-				mRemote.left();
-			}
-		}.execute();
-	}
-
-	private void remoteRight() {
-		new DoServerRemoteAction(this, false) {
-			@Override
-			protected void callRemoteFunction() throws Exception {
-				mRemote.right();
-			}
-		}.execute();
-	}
-
-	private void remoteUp() {
-		new DoServerRemoteAction(this, false) {
-			@Override
-			protected void callRemoteFunction() throws Exception {
-				mRemote.up();
-			}
-		}.execute();
-	}
-
-	private void remoteDown() {
-		new DoServerRemoteAction(this, false) {
-			@Override
-			protected void callRemoteFunction() throws Exception {
-				mRemote.down();
-			}
-		}.execute();
-	}
-
-	private void remoteSelect() {
-		new DoServerRemoteAction(this, false) {
-			@Override
-			protected void callRemoteFunction() throws Exception {
-				mRemote.select();
-			}
-		}.execute();
-	}
-
-	private void remoteKeypress(final char unicodeChar) {
-		new DoServerRemoteAction(this, false) {
-			@Override
-			protected void callRemoteFunction() throws Exception {
-				mRemote.keypress(unicodeChar);
-			}
-		}.execute();
-	}
-
-	private static int hmsToSeconds(String hms) {
-		if (TextUtils.isEmpty(hms))
-			return 0;
-
-		int seconds = 0;
-		String[] times = hms.split(":");
-
-		// seconds
-		seconds += Integer.parseInt(times[times.length - 1]);
-
-		// minutes
-		if (times.length >= 2)
-			seconds += Integer.parseInt(times[times.length - 2]) * 60;
-
-		// hours
-		if (times.length >= 3)
-			seconds += Integer.parseInt(times[times.length - 3]) * 3600;
-
-		return seconds;
 	}
 }

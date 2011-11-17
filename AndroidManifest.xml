@@ -20,7 +20,7 @@
             </intent-filter>
             
         </activity>
-        
+        <!-- 
         <receiver android:name=".receiver.IncomingCallReceiver" android:exported="true"> 
                 <intent-filter> 
                     <action android:name="android.intent.action.PHONE_STATE"/>
@@ -31,7 +31,7 @@
                     <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
                 </intent-filter> 
         </receiver>
-        
+         -->
     	<activity android:name=".ui.SettingsActivity" android:exported="false" android:excludeFromRecents="true" android:noHistory="true"/>
     	<activity android:name=".ui.HelpUiActivity" android:theme="@style/Popup" android:exported="false" android:excludeFromRecents="true" android:noHistory="true"/>
     	

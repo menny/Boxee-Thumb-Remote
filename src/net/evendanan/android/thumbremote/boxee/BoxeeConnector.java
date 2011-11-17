@@ -8,9 +8,9 @@ import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.evendanan.android.thumbremote.MediaStateListener;
 import net.evendanan.android.thumbremote.ServerAddress;
 import net.evendanan.android.thumbremote.ServerConnector;
-import net.evendanan.android.thumbremote.UiView;
 import net.evendanan.android.thumbremote.network.HttpRequest;
 import net.evendanan.android.thumbremote.network.Response;
 
@@ -57,7 +57,7 @@ public class BoxeeConnector implements ServerConnector  {
 	private boolean mInMoreDataState = false;
 	private Bitmap mThumbnail;
 	
-	private UiView mUiView;
+	private MediaStateListener mUiView;
 
 	private void clear() {
 		synchronized (mEntries) {
@@ -67,7 +67,7 @@ public class BoxeeConnector implements ServerConnector  {
 	}
 	
 	@Override
-	public void setUiView(UiView uiView) {
+	public void setUiView(MediaStateListener uiView) {
 		mUiView = uiView;
 	}
 	
@@ -155,7 +155,7 @@ public class BoxeeConnector implements ServerConnector  {
 				if (thumb != null)
 				{
 					mThumbnail = BitmapFactory.decodeByteArray(thumb, 0, thumb.length);
-					mUiView.onMetadataChanged(this);
+					mUiView.onMediaMetadataChanged(this);
 				}
 				else
 				{
@@ -185,9 +185,9 @@ public class BoxeeConnector implements ServerConnector  {
 				* void onMetadataChanged(ServerState serverState);
 				 */
 				if (isPlaying != isMediaPlaying() || isMediaActive != isMediaActive())
-					mUiView.onPlayingStateChanged(this);
+					mUiView.onMediaPlayingStateChanged(this);
 				if (!time.equals(getMediaCurrentTime()))
-					mUiView.onPlayingProgressChanged(this);
+					mUiView.onMediaPlayingProgressChanged(this);
 				if (!filename.equals(getMediaFilename()))
 				{
 					String thumbUrl = getEntryValue("Thumb");

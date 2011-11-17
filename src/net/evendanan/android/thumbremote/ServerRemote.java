@@ -30,5 +30,5 @@ public interface ServerRemote {
 
 	void setServer(ServerAddress server);
 	
-	void setUiView(UiView uiView);
+	void setUiView(MediaStateListener uiView);
 }

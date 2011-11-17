@@ -1,18 +1,44 @@
 package net.evendanan.android.thumbremote.service;
 
+import java.util.ArrayList;
+
+import net.evendanan.android.thumbremote.MediaStateListener;
 import net.evendanan.android.thumbremote.R;
+import net.evendanan.android.thumbremote.RemoteApplication;
+import net.evendanan.android.thumbremote.ServerAddress;
+import net.evendanan.android.thumbremote.ServerConnector;
+import net.evendanan.android.thumbremote.ServerState;
+import net.evendanan.android.thumbremote.ServerStatePoller;
+import net.evendanan.android.thumbremote.UiView;
+import net.evendanan.android.thumbremote.boxee.BoxeeConnector;
+import net.evendanan.android.thumbremote.boxee.BoxeeDiscovererThread;
+import net.evendanan.android.thumbremote.network.HttpRequest;
+import net.evendanan.android.thumbremote.service.DoServerRemoteAction.DoServerRemoteActionListener;
 import net.evendanan.android.thumbremote.ui.RemoteUiActivity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
+import android.telephony.TelephonyManager;
 import android.text.TextUtils;
+import android.util.Log;
 
-public class ServerRemoteService extends Service {
+public class ServerRemoteService extends Service implements BoxeeDiscovererThread.Receiver, DoServerRemoteActionListener {
+	
+	public class LocalBinder extends Binder {
+		public ServerRemoteService getService() {
+            return ServerRemoteService.this;
+        }
+    }
+	
 	private static final String TAG = "ServerRemoteService";
     
 	public static final String KEY_DATA_TITLE = "KEY_DATA_TITLE";
@@ -22,51 +48,138 @@ public class ServerRemoteService extends Service {
 	private NotificationManager mNotificationManager;
 
 	private IBinder mBinder;
+	
+	private final BroadcastReceiver mCallReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            onPhone();
+        }
+    };
+    
+    private final BroadcastReceiver mNetworkChangedReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            onNetworkChanged();
+        }
+    };
+    
+    private Handler mHandler;
+	
+	private UiView mUi;
+	private ServerConnector mRemote;
+	private BoxeeDiscovererThread mServerDiscoverer;
+	private ServerAddress mServerAddress = null;
+	private ServerStatePoller mStatePoller = null;
+
+	private State mState;
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		mHandler = new Handler();
+		mState = State.DISCOVERYING;
 		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-		mBinder = new Binder();
+		mBinder = new LocalBinder();
+		mRemote = new BoxeeConnector();
+		mRemote.setUiView(new MediaStateListener() {
+			
+			@Override
+			public void onMediaPlayingStateChanged(ServerState serverState) {
+				if (serverState.isMediaPlaying())
+				{
+					showPlayingNotification(serverState.getMediaTitle());
+				}
+				else
+				{
+					stopServiceIfNothingIsPlaying();
+					cancelPlayingNotification();
+				}
+				if (mUi != null) mUi.onMediaPlayingStateChanged(serverState);
+			}
+			
+			@Override
+			public void onMediaPlayingProgressChanged(ServerState serverState) {
+				if (mUi != null) mUi.onMediaPlayingProgressChanged(serverState);
+			}
+			
+			@Override
+			public void onMediaMetadataChanged(ServerState serverState) {
+				if (mUi != null) mUi.onMediaMetadataChanged(serverState);
+			}
+		});
+		
+		mStatePoller = new ServerStatePoller(mRemote, getApplicationContext());
+		mStatePoller.poll();
+		
+		IntentFilter callFilter = new IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
+        registerReceiver(mCallReceiver, callFilter);
+        IntentFilter networkFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        registerReceiver(mNetworkChangedReceiver, networkFilter);
+        
+        setServer();
 	}
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-    	boolean sticky = false;
-    	if (intent != null)
+    	//We want this service to continue running until it is explicitly
+        // stopped, so return sticky.
+        return START_STICKY;    	
+    }
+    
+    private void stopServiceIfNothingIsPlaying()
+    {
+    	if (mRemote.isMediaPlaying())
     	{
-    		String title = intent.getStringExtra(KEY_DATA_TITLE);
-    		if (TextUtils.isEmpty(title))
-    			cancelPlayingNotification();
-    		else
-    		{
-    			sticky = true;
-    			showPlayingNotification(title);
-    		}	
-    	}
-    	else
-    	{
-    		cancelPlayingNotification();
-    	}
-    	if (sticky)
-    	{
-	        // We want this service to continue running until it is explicitly
-	        // stopped, so return sticky.
-	        return START_STICKY;
-    	}
-    	else
-    	{
-    		return START_NOT_STICKY;
+    		Log.d(TAG,"stopServiceIfNothingIsPlaying determined that there is no running media. Killing self.");
+    		stopSelf();
     	}
     }
 	
 	@Override
 	public void onDestroy() {
-		super.onDestroy();
-
+		mStatePoller.stop();
+		
 		cancelPlayingNotification();
+		unregisterReceiver(mCallReceiver);
+		unregisterReceiver(mNetworkChangedReceiver);
+		
+		setServiceState(State.DEAD);
+		
+		super.onDestroy();		
 	}
 	
+	public State getServiceState() {return mState;}
+	
+	private void onPhone() {
+		Log.i(TAG, "Got a phone call! Pausing if running...");
+		if (mRemote.isMediaPlaying())
+		{
+			Log.d(TAG, "Pausing media, since it is runing.");
+			remoteFlipPlayPause();
+		}
+	}
+	
+	private void onNetworkChanged()
+	{
+		Log.i(TAG, "Got network! Trying to reconnect...");
+		setServer();
+	}
+	
+	private void setServer() {
+		if (RemoteApplication.getConfig().isManuallySetServer()) {
+			setServiceState(State.IDLE);
+			mRemote.setServer(RemoteApplication.getConfig().constructServer());
+		}
+		else {
+			if (mServerDiscoverer != null)
+				mServerDiscoverer.setReceiver(null);
+			
+			setServiceState(State.DISCOVERYING);
+			mServerDiscoverer = new BoxeeDiscovererThread(this, this);
+			mServerDiscoverer.start();
+		}
+	}
+
 	private void showPlayingNotification(String title)
 	{
 		Notification notification = new Notification(R.drawable.notification_playing, getString(R.string.server_is_playing, title), System.currentTimeMillis());
@@ -92,6 +205,234 @@ public class ServerRemoteService extends Service {
 	@Override
 	public IBinder onBind(Intent intent) {
 		return mBinder;
+	}
+
+	public void setUiView(UiView ui) {
+		if (ui != null)
+			mStatePoller.comeBackToForeground();
+		else
+			mStatePoller.moveToBackground();
+		
+		mUi = ui;
+		setServiceState(getServiceState());
+	}
+	
+	@Override
+	public boolean onUnbind(Intent intent) {
+		Log.d(TAG, "onUnbind");
+		super.onUnbind(intent);
+		
+		stopServiceIfNothingIsPlaying();
+		
+		return false; 
+	}
+	
+	@Override
+	public void addAnnouncedServers(ArrayList<ServerAddress> servers) {
+		setServiceState(State.IDLE);
+		// This condition shouldn't ever be true.
+		if (RemoteApplication.getConfig().isManuallySetServer()) {
+			Log.d(TAG, "Skipping announced servers. Set manually");
+			return;
+		}
+
+		String preferred = RemoteApplication.getConfig().getServerName();
+
+		for (int k = 0; k < servers.size(); ++k) {
+			final ServerAddress server = servers.get(k);
+			if (server.name().equals(preferred) || TextUtils.isEmpty(preferred)) {
+				if (!server.valid()) {
+					if (mUi != null) mUi.showMessage(String.format("Found '%s' but looks broken", server.name()), 3000);
+					continue;
+				} else {
+					mServerAddress = server;
+					mRemote.setServer(mServerAddress);
+					
+					if (server.authRequired())
+					{
+						if (!HttpRequest.hasCredentials())
+						{
+							setServiceState(State.ERROR_NO_PASSWORD);
+						}
+					}
+					return;
+				}
+			}
+		}
+
+		mServerAddress = null;
+		
+		setServiceState(State.ERROR_NO_SERVER);
+	}
+
+	void setServiceState(State newState) {
+		mState = newState;
+		if (mUi != null) mUi.onServerConnectionStateChanged(mState);
+	}
+
+	public void forceStop() {
+		Log.i(TAG, "Force Stop was called!");
+		stopSelf();		
+	}
+	
+	
+	@Override
+	public void onRemoteActionError(String userMessage, boolean longDelayMessage) {
+		if (!TextUtils.isEmpty(userMessage) && mUi != null) mUi.showMessage(userMessage, longDelayMessage? 2500 : 1250);
+	}
+	
+	@Override
+	public void onRemoteActionSuccess(String successMessage, boolean longDelayMessage) {
+		if (!TextUtils.isEmpty(successMessage) && mUi != null) mUi.showMessage(successMessage, longDelayMessage? 2500 : 500);
+		
+		mHandler.postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				mStatePoller.checkStateNow();
+			}
+		}, 100);
+	}
+
+	private static int hmsToSeconds(String hms) {
+		if (TextUtils.isEmpty(hms))
+			return 0;
+
+		int seconds = 0;
+		String[] times = hms.split(":");
+
+		// seconds
+		seconds += Integer.parseInt(times[times.length - 1]);
+
+		// minutes
+		if (times.length >= 2)
+			seconds += Integer.parseInt(times[times.length - 2]) * 60;
+
+		// hours
+		if (times.length >= 3)
+			seconds += Integer.parseInt(times[times.length - 3]) * 3600;
+
+		return seconds;
+	}
+	/*CONTROLLER interface*/
+
+	public void remoteFlipPlayPause() {
+		new DoServerRemoteAction(this, false) {
+			@Override
+			protected void callRemoteFunction() throws Exception {
+				mRemote.flipPlayPause();
+			}
+		}.execute();
+	}
+
+	public void remoteBack() {
+		new DoServerRemoteAction(this, false) {
+			@Override
+			protected void callRemoteFunction() throws Exception {
+				mRemote.back();
+			}
+		}.execute();
+	}
+
+	public void remoteSeek(final double newSeekPosition) {
+		new DoServerRemoteAction(this, false) {
+			@Override
+			protected void callRemoteFunction() throws Exception {
+				mRemote.seekRelative(newSeekPosition);
+			}
+		}.execute();
+	}
+	
+	public void remoteSeekOffset(final double seekOffset)
+	{
+		final int duration = hmsToSeconds(mRemote.getMediaTotalTime());
+		if (duration > 0)
+		{
+			final double newSeekPosition = seekOffset * 100f / duration;
+			remoteSeek(newSeekPosition);
+		}
+	}
+
+	public void remoteStop() {
+		new DoServerRemoteAction(this, false) {
+			@Override
+			protected void callRemoteFunction() throws Exception {
+				mRemote.stop();
+			}
+		}.execute();
+	}
+
+	public void remoteLeft() {
+		new DoServerRemoteAction(this, false) {
+			@Override
+			protected void callRemoteFunction() throws Exception {
+				mRemote.left();
+			}
+		}.execute();
+	}
+
+	public void remoteRight() {
+		new DoServerRemoteAction(this, false) {
+			@Override
+			protected void callRemoteFunction() throws Exception {
+				mRemote.right();
+			}
+		}.execute();
+	}
+
+	public void remoteUp() {
+		new DoServerRemoteAction(this, false) {
+			@Override
+			protected void callRemoteFunction() throws Exception {
+				mRemote.up();
+			}
+		}.execute();
+	}
+
+	public void remoteDown() {
+		new DoServerRemoteAction(this, false) {
+			@Override
+			protected void callRemoteFunction() throws Exception {
+				mRemote.down();
+			}
+		}.execute();
+	}
+
+	public void remoteSelect() {
+		new DoServerRemoteAction(this, false) {
+			@Override
+			protected void callRemoteFunction() throws Exception {
+				mRemote.select();
+			}
+		}.execute();
+	}
+
+	public void remoteKeypress(final char unicodeChar) {
+		new DoServerRemoteAction(this, false) {
+			@Override
+			protected void callRemoteFunction() throws Exception {
+				mRemote.keypress(unicodeChar);
+			}
+		}.execute();
+	}
+
+	public void remoteVolumeOffset(final int volumeOffset) {
+		new DoServerRemoteAction(this, false) {
+			private int mNewVolume = 0;
+		@Override
+		protected void callRemoteFunction() throws Exception {
+			int volume = mRemote.getVolume();
+			mNewVolume = Math.max(0, Math.min(100, volume + volumeOffset));
+			mRemote.setVolume(mNewVolume);
+		}
+		
+		protected String getSuccessMessage() {
+			return getString(R.string.new_volume_toast, mNewVolume);
+		}
+	}.execute();
+	}
+
+	public void remoteRescanForServers() {
+		setServer();
 	}
 
 }

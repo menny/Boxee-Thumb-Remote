@@ -77,4 +77,15 @@
     
     <string name="new_volume_toast">Volume: <xliff:g id="new_volume">%d</xliff:g></string>
     
+    <string name="need_creds_title">Credentials required</string>
+	<string name="need_creds_message">The server requires username and password in order to be controlled.\nWould you like to enter them now?</string>
+	
+	<string name="no_server_found_title">No server found</string>
+	<string name="no_server_found_message">I was unable to find a Boxee server in your network.\n\nWould you like to manually set an IP address? Or maybe have me rescan again?</string>
+	<string name="no_server_found_action_manual">Manual</string>
+	<string name="no_server_found_action_rescan">Rescan</string>
+	<string name="no_server_found_action_neither">Neither</string>
+	
+	<string name="discoverying_dialog_title"></string>
+	<string name="discoverying_dialog_message">Looking for a server...</string>
 </resources>
