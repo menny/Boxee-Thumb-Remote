@@ -28,6 +28,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
@@ -139,7 +140,7 @@ public class RemoteUiActivity extends Activity implements
 	        // unexpectedly disconnected -- that is, its process crashed.
 	        // Because it is running in our same process, we should never
 	        // see this happen.
-	    	if (mBoundService!= null) mBoundService.setUiView(RemoteUiActivity.this);
+	    	if (mBoundService!= null) mBoundService.setUiView(null);
 	        mBoundService = null;
 	    }
 	};
@@ -155,7 +156,7 @@ public class RemoteUiActivity extends Activity implements
 
 	void doUnbindService() {
 	    if (mIsBound) {
-	    	if (mBoundService!= null) mBoundService.setUiView(RemoteUiActivity.this);
+	    	if (mBoundService!= null) mBoundService.setUiView(null);
 	        // Detach our existing connection.
 	        unbindService(mConnection);
 	        mIsBound = false;
@@ -168,7 +169,6 @@ public class RemoteUiActivity extends Activity implements
 		
 		super.onCreate(savedInstanceState);
 
-		doBindService();
 		/*
 		mHandler = new Handler() {
 			@Override
@@ -283,6 +283,8 @@ public class RemoteUiActivity extends Activity implements
 		//mShakeDetector.resume();
 		
 		mImageThumbnail.setKeepScreenOn(RemoteApplication.getConfig().getKeepScreenOn());
+		
+		doBindService();
 	}
 
 	@Override
@@ -306,7 +308,7 @@ public class RemoteUiActivity extends Activity implements
 		switch(item.getItemId())
 		{
 		case MENU_EXIT:
-			mBoundService.forceStop();
+			if (mBoundService != null) mBoundService.forceStop();
 			finish();
 			return true;
 		case MENU_HELP:
@@ -351,20 +353,49 @@ public class RemoteUiActivity extends Activity implements
 		if (mFlipper.getDisplayedChild() != page)
 			mFlipper.setDisplayedChild(page);
 	}
+	
+	@Override
+	public void hello(final ServerState serverState) {
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				refreshPlayingStateChanged(serverState, true);
+				if (serverState.isMediaActive())
+				{
+					refreshMetadataChanged(serverState);
+				}
+			}
+		});
+	}
 
 	@Override
-	public void onMediaPlayingStateChanged(ServerState serverState) {
-		refreshPlayingStateChanged(serverState, false);
+	public void onMediaPlayingStateChanged(final ServerState serverState) {
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				refreshPlayingStateChanged(serverState, false);
+			}
+		});
 	}
 	
 	@Override
-	public void onMediaPlayingProgressChanged(ServerState serverState) {
-		refreshPlayingProgressChanged(serverState);		
+	public void onMediaPlayingProgressChanged(final ServerState serverState) {
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				refreshPlayingProgressChanged(serverState);
+			}
+		});		
 	}
 	
 	@Override
-	public void onMediaMetadataChanged(ServerState serverState) {
-		refreshMetadataChanged(serverState);
+	public void onMediaMetadataChanged(final ServerState serverState) {
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				refreshMetadataChanged(serverState);
+			}
+		});
 	}
 	
 	private void refreshPlayingStateChanged(ServerState serverState, boolean forceChanged) {
@@ -414,7 +445,11 @@ public class RemoteUiActivity extends Activity implements
 		mIsMediaActive = serverState.isMediaActive();
 		if (mIsMediaActive)
 		{
-			mImageThumbnail.setImageBitmap(serverState.getMediaPoster());
+			Bitmap poster = serverState.getMediaPoster();
+			if (poster == null)
+				mImageThumbnail.setImageResource(R.drawable.remote_background);
+			else
+				mImageThumbnail.setImageBitmap(poster);
 			mTextTitle.setText(getMediaTitle(serverState));
 			if (mMediaDetails != null) mMediaDetails.setText(serverState.getMediaPlot());
 		}
@@ -699,6 +734,12 @@ public class RemoteUiActivity extends Activity implements
 		else
 			return super.onCreateDialog(id);
 	}
+	
+	@Override
+	protected void onPrepareDialog(int id, Dialog dialog) {
+		mDialogToDismiss = id;
+		super.onPrepareDialog(id, dialog);
+	}
 
 	private Dialog createCredentialsRequiredDialog() {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -760,7 +801,6 @@ public class RemoteUiActivity extends Activity implements
 	@Override
 	public void onServerConnectionStateChanged(final State state) {
 		runOnUiThread(new Runnable() {
-			
 			@Override
 			public void run() {
 				if (mDialogToDismiss > 0)
@@ -787,6 +827,16 @@ public class RemoteUiActivity extends Activity implements
 					break;
 				case IDLE:
 				}
+				
+				String serverName = mBoundService!=null? mBoundService.getServerName() : null;
+				if (TextUtils.isEmpty(serverName))
+				{
+					setTitle(R.string.app_name);
+				}
+				else
+				{
+					setTitle(getString(R.string.app_name)+" - "+serverName);
+				}	
 			}
 		});
 	}

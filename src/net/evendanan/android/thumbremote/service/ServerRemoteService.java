@@ -20,9 +20,11 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.net.ConnectivityManager;
 import android.os.Binder;
 import android.os.Handler;
@@ -72,6 +74,15 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 	private ServerStatePoller mStatePoller = null;
 
 	private State mState;
+	
+	private final ServiceConnection mKeepAliveConnection = new ServiceConnection() {
+		@Override
+		public void onServiceDisconnected(ComponentName name) {				
+		}			
+		@Override
+		public void onServiceConnected(ComponentName name, IBinder service) {				
+		}
+	};
 
 	@Override
 	public void onCreate() {
@@ -117,6 +128,9 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
         registerReceiver(mNetworkChangedReceiver, networkFilter);
         
         setServer();
+        
+        //and I want my own reference.
+        bindService(new Intent(this, ServerRemoteService.class), mKeepAliveConnection, Context.BIND_AUTO_CREATE);
 	}
 
     @Override
@@ -128,11 +142,17 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
     
     private void stopServiceIfNothingIsPlaying()
     {
-    	if (mRemote.isMediaPlaying())
-    	{
-    		Log.d(TAG,"stopServiceIfNothingIsPlaying determined that there is no running media. Killing self.");
-    		stopSelf();
-    	}
+    	mHandler.postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				if (mUi == null && !mRemote.isMediaPlaying())
+		    	{
+		    		Log.d(TAG,"stopServiceIfNothingIsPlaying determined that there is no running media. Killing self.");
+		    		unbindService(mKeepAliveConnection);
+		    		stopSelf();
+		    	}
+			}
+		}, 500);
     }
 	
 	@Override
@@ -167,8 +187,9 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 	
 	private void setServer() {
 		if (RemoteApplication.getConfig().isManuallySetServer()) {
+			mServerAddress = RemoteApplication.getConfig().constructServer();
+			mRemote.setServer(mServerAddress);
 			setServiceState(State.IDLE);
-			mRemote.setServer(RemoteApplication.getConfig().constructServer());
 		}
 		else {
 			if (mServerDiscoverer != null)
@@ -208,13 +229,18 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 	}
 
 	public void setUiView(UiView ui) {
-		if (ui != null)
-			mStatePoller.comeBackToForeground();
-		else
-			mStatePoller.moveToBackground();
-		
 		mUi = ui;
 		setServiceState(getServiceState());
+		if (ui != null)
+		{
+			mStatePoller.comeBackToForeground();
+			mUi.hello(mRemote);
+		}
+		else
+		{
+			mStatePoller.moveToBackground();
+			stopServiceIfNothingIsPlaying();
+		}
 	}
 	
 	@Override
@@ -222,17 +248,20 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 		Log.d(TAG, "onUnbind");
 		super.onUnbind(intent);
 		
-		stopServiceIfNothingIsPlaying();
-		
 		return false; 
+	}
+	
+	public String getServerName()
+	{
+		return mServerAddress!=null? mServerAddress.name() : null;
 	}
 	
 	@Override
 	public void addAnnouncedServers(ArrayList<ServerAddress> servers) {
-		setServiceState(State.IDLE);
 		// This condition shouldn't ever be true.
 		if (RemoteApplication.getConfig().isManuallySetServer()) {
 			Log.d(TAG, "Skipping announced servers. Set manually");
+			setServiceState(State.IDLE);
 			return;
 		}
 
@@ -247,6 +276,8 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 				} else {
 					mServerAddress = server;
 					mRemote.setServer(mServerAddress);
+					
+					setServiceState(State.IDLE);
 					
 					if (server.authRequired())
 					{
@@ -272,6 +303,7 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 
 	public void forceStop() {
 		Log.i(TAG, "Force Stop was called!");
+		unbindService(mKeepAliveConnection);
 		stopSelf();		
 	}
 	
