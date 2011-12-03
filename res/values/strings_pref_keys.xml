@@ -41,7 +41,7 @@
     </string-array>
     
     <string name="settings_key_handle_back_hard_key">settings_key_handle_back_hard_key</string>
-    <bool name="settings_key_handle_back_hard_default">true</bool>
+    <bool name="settings_key_handle_back_hard_default">false</bool>
     
     <string name="settings_key_keep_screen_on_key">settings_key_keep_screen_on_key</string>
     <bool name="settings_key_keep_screen_on_default">false</bool>
