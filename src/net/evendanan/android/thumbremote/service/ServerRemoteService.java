@@ -148,7 +148,14 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 				if (mUi == null && !mRemote.isMediaPlaying())
 		    	{
 		    		Log.d(TAG,"stopServiceIfNothingIsPlaying determined that there is no running media. Killing self.");
-		    		unbindService(mKeepAliveConnection);
+		    		try
+		    		{
+		    			unbindService(mKeepAliveConnection);
+		    		}
+		    		catch(Exception e)
+		    		{
+		    			Log.w(TAG, "Caught an exception while unbinding from self. nm."+e.getMessage());
+		    		}
 		    		stopSelf();
 		    	}
 			}

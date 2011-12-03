@@ -2,8 +2,8 @@
 <manifest 
 	xmlns:android="http://schemas.android.com/apk/res/android"
     package="net.evendanan.android.thumbremote"
-    android:versionCode="12"
-    android:versionName="20111110-thumbs_up">
+    android:versionCode="13"
+    android:versionName="20111202-thumbs_up">
     
     <application android:name=".RemoteApplication"
     	android:icon="@drawable/app_icon"
@@ -20,22 +20,11 @@
             </intent-filter>
             
         </activity>
-        <!-- 
-        <receiver android:name=".receiver.IncomingCallReceiver" android:exported="true"> 
-                <intent-filter> 
-                    <action android:name="android.intent.action.PHONE_STATE"/>
-                </intent-filter> 
-        </receiver>
-        <receiver android:name=".receiver.NetworkTypeChangedReceiver" android:exported="true"> 
-                <intent-filter> 
-                    <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
-                </intent-filter> 
-        </receiver>
-         -->
+
     	<activity android:name=".ui.SettingsActivity" android:exported="false" android:excludeFromRecents="true" android:noHistory="true"/>
     	<activity android:name=".ui.HelpUiActivity" android:theme="@style/Popup" android:exported="false" android:excludeFromRecents="true" android:noHistory="true"/>
     	
-    	<service android:name=".service.ServerRemoteService"></service>
+    	<service android:name="net.evendanan.android.thumbremote.service.ServerRemoteService"></service>
     </application>
     
     <supports-screens

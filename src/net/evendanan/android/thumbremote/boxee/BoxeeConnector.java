@@ -63,7 +63,6 @@ public class BoxeeConnector implements ServerConnector  {
 		synchronized (mEntries) {
 			mEntries.clear();			
 		}
-		mThumbnail = null;
 	}
 	
 	@Override
@@ -167,7 +166,8 @@ public class BoxeeConnector implements ServerConnector  {
 				final boolean isPlaying = isMediaPlaying();
 				final boolean isMediaActive = isMediaActive();
 				final String time = getMediaCurrentTime();
-				final String filename = getMediaFilename();
+				//final String filename = getMediaFilename();
+				final String posterUrl = getEntryValue("Thumb");
 				clear();
 				if (responses != null)//it can be null if there are lots of network errors.
 				{
@@ -188,13 +188,14 @@ public class BoxeeConnector implements ServerConnector  {
 					mUiView.onMediaPlayingStateChanged(this);
 				if (!time.equals(getMediaCurrentTime()))
 					mUiView.onMediaPlayingProgressChanged(this);
-				if (!filename.equals(getMediaFilename()))
+				final String newPoster = getEntryValue("Thumb");
+				if (!posterUrl.equals(newPoster))
 				{
-					String thumbUrl = getEntryValue("Thumb");
-					if (!TextUtils.isEmpty(thumbUrl))
+					Log.d(TAG, "New poster at:"+newPoster);
+					if (!TextUtils.isEmpty(newPoster))
 					{
 						mInMoreDataState = true;
-						mUrlsToDo.add(new String[]{mRequestPrefix + String.format("getthumbnail(%s)", URLEncoder.encode(thumbUrl))});
+						mUrlsToDo.add(new String[]{mRequestPrefix + String.format("getthumbnail(%s)", URLEncoder.encode(newPoster))});
 					}	
 				}
 			}
@@ -204,6 +205,7 @@ public class BoxeeConnector implements ServerConnector  {
 	@Override
 	public void onServerStateRetrievalError() {
 		clear();
+		mThumbnail = null;
 		startOver();
 	}
 
