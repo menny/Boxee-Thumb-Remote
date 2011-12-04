@@ -495,28 +495,18 @@ public class RemoteUiActivity extends Activity implements
 	 */
 	@Override
 	public boolean onKeyDown(final int keyCode, final KeyEvent event) {
-		final char unicodeChar = (char)event.getUnicodeChar();
-		
-		Log.d(TAG, "Unicode is " + ((int)unicodeChar));
-
-		
-		if (Character.isLetterOrDigit(unicodeChar) || msPunctuation.contains(unicodeChar)) {
-			if (mBoundService != null) mBoundService.remoteKeypress(unicodeChar);
-			
-			return true;
-		}
-
 		switch (keyCode) {
-
 		case KeyEvent.KEYCODE_BACK:
 			if (RemoteApplication.getConfig().getHandleBack())
 			{
+				Log.d(TAG, "Will handle back");
 				if (mBoundService != null) mBoundService.remoteBack();
 				return true;
 			}
 			else
 			{
-				super.onKeyDown(keyCode, event);
+				Log.d(TAG, "Will NOT handle back");
+				return super.onKeyDown(keyCode, event);
 			}
 
 		case KeyEvent.KEYCODE_DPAD_CENTER:
@@ -547,7 +537,20 @@ public class RemoteUiActivity extends Activity implements
 			return true;
 			
 		default:
-			return super.onKeyDown(keyCode, event);
+			final char unicodeChar = (char)event.getUnicodeChar();
+			
+			Log.d(TAG, "Unicode is " + ((int)unicodeChar));
+
+			
+			if (Character.isLetterOrDigit(unicodeChar) || msPunctuation.contains(unicodeChar)) {
+				if (mBoundService != null) mBoundService.remoteKeypress(unicodeChar);
+				
+				return true;
+			}
+			else
+			{
+				return super.onKeyDown(keyCode, event);
+			}
 		}
 	}
 	
@@ -555,6 +558,15 @@ public class RemoteUiActivity extends Activity implements
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		switch(keyCode)
 		{
+		case KeyEvent.KEYCODE_BACK:
+			if (RemoteApplication.getConfig().getHandleBack())
+			{
+				return true;
+			}
+			else
+			{
+				return super.onKeyUp(keyCode, event);
+			}
 		case KeyEvent.KEYCODE_VOLUME_UP:
 		case KeyEvent.KEYCODE_VOLUME_DOWN:
 			//I catch these two to handle the annoying sound feedback given in some hand-held (Samsung Tab, e.g.)

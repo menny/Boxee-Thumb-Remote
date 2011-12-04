@@ -2,8 +2,8 @@
 <manifest 
 	xmlns:android="http://schemas.android.com/apk/res/android"
     package="net.evendanan.android.thumbremote"
-    android:versionCode="14"
-    android:versionName="20111203-thumbs_up">
+    android:versionCode="15"
+    android:versionName="20111204-thumbs_up">
     
     <application android:name=".RemoteApplication"
     	android:icon="@drawable/app_icon"
@@ -28,10 +28,11 @@
     </application>
     
     <supports-screens
-          android:largeScreens="true"
-          android:normalScreens="true"
-          android:smallScreens="true"
-          android:anyDensity="true" />
+        android:xlargeScreens="true"
+		android:largeScreens="true"
+		android:normalScreens="true"
+		android:smallScreens="true"
+		android:anyDensity="true" />
           <!-- http://d.android.com/guide/practices/screens_support.html read about legacy. -->
     
     <uses-sdk android:minSdkVersion="4" android:targetSdkVersion="10"></uses-sdk>
