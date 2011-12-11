@@ -541,11 +541,10 @@ public class RemoteUiActivity extends Activity implements
 		default:
 			final char unicodeChar = (char)event.getUnicodeChar();
 			
-			Log.d(TAG, "Unicode is " + ((int)unicodeChar));
+			//Log.d(TAG, "Unicode is " + ((int)unicodeChar));
 
 			if (Character.isLetterOrDigit(unicodeChar) || msPunctuation.contains(unicodeChar)) {
 				if (mBoundService != null) mBoundService.remoteKeypress(unicodeChar);
-				
 				return true;
 			}
 			else
