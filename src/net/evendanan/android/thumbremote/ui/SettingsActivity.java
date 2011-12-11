@@ -26,6 +26,7 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceScreen;
 import android.preference.Preference.OnPreferenceClickListener;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -68,6 +69,7 @@ public class SettingsActivity extends PreferenceActivity implements
 
 	private HashMap<String, ServerAddress> mServers;
 	private PreferenceScreen mServersScreen;
+	private Preference mCustomServerPreference;
 
 	public SettingsActivity() {
 		mServers = new HashMap<String, ServerAddress>();
@@ -81,13 +83,11 @@ public class SettingsActivity extends PreferenceActivity implements
 
 		mServersScreen = (PreferenceScreen) getPreferenceScreen().findPreference(getText(R.string.settings_key_servers_screen));
 		
-		mServersScreen.setSummary(RemoteApplication.getConfig().getServerName());
-		
-		Preference preference = new Preference(this);
-		preference.setTitle(getText(R.string.custom_server));
-		preference.setOrder(1000);
-		preference.setOnPreferenceClickListener(this);
-		mServersScreen.addPreference(preference);
+		mCustomServerPreference = new Preference(this);
+		mCustomServerPreference.setTitle(getText(R.string.custom_server));
+		mCustomServerPreference.setOrder(1000);
+		mCustomServerPreference.setOnPreferenceClickListener(this);
+		mServersScreen.addPreference(mCustomServerPreference);
 
 		getPreferenceScreen().findPreference(getText(R.string.settings_key_network_timeout_key)).setOnPreferenceChangeListener(numberCheckListener);
 	}
@@ -102,6 +102,15 @@ public class SettingsActivity extends PreferenceActivity implements
 	protected void onResume() {
 		super.onResume();
 		RemoteApplication.getConfig().listen(this);
+		setServerNameInSummary();
+	}
+
+	public void setServerNameInSummary() {
+		mServersScreen.setSummary(RemoteApplication.getConfig().getServerName());
+		if (RemoteApplication.getConfig().isManuallySetServer())
+			mCustomServerPreference.setSummary(RemoteApplication.getConfig().getServerName());
+		else
+			mCustomServerPreference.setSummary("");
 	}
 	
 	@Override
@@ -110,48 +119,81 @@ public class SettingsActivity extends PreferenceActivity implements
 			return null;
 
 		LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
-		final View layout = inflater.inflate(R.layout.custom_host,
-				(ViewGroup) findViewById(R.id.layoutCustomHost));
-		InetAddress hostname = RemoteApplication.getConfig().getHost();
-		if (hostname != null)
-			((TextView) layout.findViewById(R.id.textAddress)).setText(hostname.toString());
-		((TextView) layout.findViewById(R.id.textPort)).setText(new Integer(RemoteApplication.getConfig().getPort()).toString());
-
+		final View layout = inflater.inflate(R.layout.custom_host, (ViewGroup) findViewById(R.id.layoutCustomHost));
+		
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setView(layout);
 		builder.setPositiveButton(android.R.string.ok,
 				new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int id) {
-						String address = ((TextView) layout
-								.findViewById(R.id.textAddress)).getText()
-								.toString();
-
-						int port = Integer.parseInt(((TextView) layout
-								.findViewById(R.id.textPort)).getText()
-								.toString());
+						String address = ((TextView) layout.findViewById(R.id.textAddress)).getText().toString();
+						String portText = ((TextView) layout.findViewById(R.id.textPort)).getText().toString();
 						
-						RemoteApplication.getConfig().putServer(BoxeeConnector.BOXEE_SERVER_TYPE, 
-								BoxeeConnector.BOXEE_SERVER_VERSION_OLD, address, port, "custom", false, true);
-						mServersScreen.getDialog().dismiss();
+						setCustomServer(address, portText);
+						
+						dialog.dismiss();
 					}
 				});
 
 		builder.setNegativeButton(android.R.string.cancel, null);
+		builder.setNeutralButton(R.string.clear_custom_server, new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						setCustomServer("", "8800");
+						
+						dialog.dismiss();
+					}
+				});
 		builder.setTitle(R.string.custom_server);
 		builder.setIcon(R.drawable.app_icon);
 
 		return builder.create();
 	}
+	
+	protected void setCustomServer(String address, String portText) {
+		if (TextUtils.isEmpty(address))
+		{
+			RemoteApplication.getConfig().putServer("",  "", "", 8800, "", false, false);
+		}
+		else
+		{
+			int port = !TextUtils.isEmpty(portText) && TextUtils.isDigitsOnly(portText)? Integer.parseInt(portText) : 8800;
+		
+			RemoteApplication.getConfig().putServer(BoxeeConnector.BOXEE_SERVER_TYPE, 
+					BoxeeConnector.BOXEE_SERVER_VERSION_OLD, address, port, "custom", false, true);
+		}
+		
+		setServerNameInSummary();
+	}
+
+	@Override
+	protected void onPrepareDialog(int id, Dialog dialog) {
+		super.onPrepareDialog(id, dialog);
+		
+		if (id != DIALOG_CUSTOM)
+			return;
+		
+		InetAddress hostname = RemoteApplication.getConfig().getHost();
+		if (hostname != null) 
+			((TextView) dialog.findViewById(R.id.textAddress)).setText(hostname.getHostName());
+		else
+			((TextView) dialog.findViewById(R.id.textAddress)).setText("");
+		
+		((TextView) dialog.findViewById(R.id.textPort)).setText(new Integer(RemoteApplication.getConfig().getPort()).toString());
+	}
 
 	@Override
 	public void addAnnouncedServers(ArrayList<ServerAddress> servers) {
+		mServersScreen.removeAll();
+		mServersScreen.addPreference(mCustomServerPreference);
+		//and now the one I discovered
 		for (ServerAddress server : servers) {
+			final String serverNameKey = server.name()+"@"+server.address().getHostName();
 			Preference preference = new Preference(this);
 			preference.setOrder(mServers.size());
-			preference.setTitle(server.name());
+			preference.setTitle(serverNameKey);
 			preference.setOnPreferenceClickListener(this);
 			mServersScreen.addPreference(preference);
-			mServers.put(server.name(), server);
+			mServers.put(serverNameKey, server);
 		}
 	}
 
@@ -167,6 +209,8 @@ public class SettingsActivity extends PreferenceActivity implements
 		RemoteApplication.getConfig().putServer(server, false);
 		mServersScreen.getDialog().dismiss();
 
+		setServerNameInSummary();
+		
 		return true;
 	}
 
@@ -176,7 +220,7 @@ public class SettingsActivity extends PreferenceActivity implements
 		if (key.equals(RemoteApplication.getConfig().SERVER_NAME_KEY)) {
 			String value = RemoteApplication.getConfig().getServerName();
 			Toast.makeText(this.getApplicationContext(), "New server "+value, Toast.LENGTH_SHORT);
-			mServersScreen.setSummary(value);
+			setServerNameInSummary();
 		}
 	}
 

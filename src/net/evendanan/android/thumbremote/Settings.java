@@ -29,7 +29,7 @@ public class Settings {
 	private final String SERVER_TYPE_KEY;
 	private final String SERVER_HOST_KEY;
 	private final String SERVER_PORT_KEY;
-	private final String SERVER_PORT_DEFAULT_VALUE;
+	private final int SERVER_PORT_DEFAULT_VALUE;
 	private final String SERVER_CREDS_REQUIRED_KEY;
 	private final String SERVER_USERNAME_KEY;
 	private final String SERVER_PASSWORD_KEY;
@@ -78,7 +78,7 @@ public class Settings {
 		SERVER_VERSION_KEY = res.getString(R.string.settings_key_server_version_key);
 		SERVER_HOST_KEY = res.getString(R.string.settings_key_server_host_key);
 		SERVER_PORT_KEY = res.getString(R.string.settings_key_server_port_on_key);
-		SERVER_PORT_DEFAULT_VALUE = res.getString(R.string.settings_key_server_port_on_default_value);
+		SERVER_PORT_DEFAULT_VALUE = Integer.parseInt(res.getString(R.string.settings_key_server_port_on_default_value));
 		SERVER_CREDS_REQUIRED_KEY = res.getString(R.string.settings_key_server_creds_required_key);
 		SERVER_USERNAME_KEY = res.getString(R.string.settings_key_server_username_key);
 		SERVER_PASSWORD_KEY = res.getString(R.string.settings_key_server_password_key);
@@ -153,7 +153,7 @@ public class Settings {
 	}
 	
 	public int getPort() {
-		return Integer.parseInt(mPreferences.getString(SERVER_PORT_KEY, SERVER_PORT_DEFAULT_VALUE));
+		return mPreferences.getInt(SERVER_PORT_KEY, SERVER_PORT_DEFAULT_VALUE);
 	}
 	
 	public String getUser() {

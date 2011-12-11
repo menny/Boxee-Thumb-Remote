@@ -10,6 +10,7 @@
 	<string name="custom_server">Custom server...</string>
 	<string name="host_title">Host</string>
 	<string name="port_title">Port</string>
+	<string name="clear_custom_server">Clear</string>
 	
 	<string name="ux_group">UX Settings</string>
 	

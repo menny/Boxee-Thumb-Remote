@@ -73,7 +73,7 @@ public class BoxeeConnector implements ServerConnector  {
 	
 	@Override
 	public void setServer(ServerAddress server) {
-		if (server == null)
+		if (server == null || server.address() == null || server.port() < 1)
 		{
 			mRequestPrefix = null;
 			mRequestPausePlay = null;
