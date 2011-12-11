@@ -96,7 +96,7 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 			
 			@Override
 			public void onMediaPlayingStateChanged(ServerState serverState) {
-				if (serverState.isMediaPlaying())
+				if (serverState.isMediaActive())
 				{
 					showPlayingNotification(serverState.getMediaTitle());
 				}

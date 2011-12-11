@@ -535,13 +535,14 @@ public class RemoteUiActivity extends Activity implements
 			final int volumeOffset = (volumeFactor * RemoteApplication.getConfig().getVolumeStep());
 			if (mBoundService != null) mBoundService.remoteVolumeOffset(volumeOffset);
 			return true;
-			
+		case KeyEvent.KEYCODE_DEL:
+			if (mBoundService != null) mBoundService.remoteKeypress((char)8);
+			return true;
 		default:
 			final char unicodeChar = (char)event.getUnicodeChar();
 			
 			Log.d(TAG, "Unicode is " + ((int)unicodeChar));
 
-			
 			if (Character.isLetterOrDigit(unicodeChar) || msPunctuation.contains(unicodeChar)) {
 				if (mBoundService != null) mBoundService.remoteKeypress(unicodeChar);
 				

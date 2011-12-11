@@ -49,6 +49,7 @@ public class BoxeeConnector implements ServerConnector  {
 	private String mRequestSelect = null;
 	private String mRequestGetVolume = null;
 	private String mRequestSetVolumeTemplate = null;
+	private String mRequestGetOnScreenText = null;
 	
 	final static Pattern LIST_ITEM = Pattern.compile("^<li>([A-Za-z ]+):([^\n<]+)", Pattern.MULTILINE);
 	final static Pattern SINGLE_ITEM = Pattern.compile("^<li>([0-9]+)", Pattern.MULTILINE);
@@ -88,6 +89,7 @@ public class BoxeeConnector implements ServerConnector  {
 			mRequestSelect = null;
 			mRequestGetVolume = null;
 			mRequestSetVolumeTemplate = null;
+			mRequestGetOnScreenText = null;
 		}
 		else
 		{
@@ -102,15 +104,18 @@ public class BoxeeConnector implements ServerConnector  {
 			mRequestRight = String.format(mSendKeyRequestTemplate, 273);
 			mRequestBack = String.format(mSendKeyRequestTemplate, 275);
 			mRequestSelect = String.format(mSendKeyRequestTemplate, 256);
-			mCurrentPlayingUrls = new String[]{
-					mRequestPrefix + "getcurrentlyplaying()",
-					mRequestPrefix + "getguistatus()"
-			};
 			mRequestPausePlay = mRequestPrefix+"Pause";
 			mRequestStop = mRequestPrefix+"Stop";
 			mSeekPercentageRelativeTemplate = mRequestPrefix + "SeekPercentageRelative(%3.5f)";
 			mRequestGetVolume = mRequestPrefix+"getVolume()";
 			mRequestSetVolumeTemplate = mRequestPrefix+"setVolume(%d)";
+			mRequestGetOnScreenText = mRequestPrefix+"getKeyboardText()";
+			
+			mCurrentPlayingUrls = new String[]{
+					mRequestPrefix + "getcurrentlyplaying()",
+					mRequestPrefix + "getguistatus()",
+					mRequestGetOnScreenText
+			};
 			synchronized (mEntries) {
 				mEntries.clear();
 			}
@@ -362,7 +367,7 @@ public class BoxeeConnector implements ServerConnector  {
 		if (unicode == 8)//backspace is a special case
 			sendKeyPress(61704);
 		else
-			sendKeyPress(unicode + 0xF100);
+			sendKeyPress(unicode + 61696);
 	}
 
 	@Override
@@ -382,11 +387,17 @@ public class BoxeeConnector implements ServerConnector  {
 		sendHttpCommand(request);
 	}
 	
-	/*to be implemented*/
-	public String getOnScreenTextboxText()
+	public String getOnScreenTextboxText() throws IOException
 	{
-		//http://host:port/xbmcCmds/xbmcHttp?command=getKeyboardText()
-		return null;
+		Response response = sendHttpCommand(mRequestGetOnScreenText);
+		Matcher m = SINGLE_ITEM.matcher(response.response());
+		if (m != null && m.find()) {
+			return m.group(1);
+		}
+		else
+		{
+			throw new IOException("Failed to understand server response!");
+		}
 	}
 
 }
