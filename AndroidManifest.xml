@@ -2,8 +2,8 @@
 <manifest 
 	xmlns:android="http://schemas.android.com/apk/res/android"
     package="net.evendanan.android.thumbremote"
-    android:versionCode="15"
-    android:versionName="20111204-thumbs_up">
+    android:versionCode="16"
+    android:versionName="20111211-thumbs_up">
     
     <application android:name=".RemoteApplication"
     	android:icon="@drawable/app_icon"
