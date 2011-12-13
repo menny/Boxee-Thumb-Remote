@@ -26,6 +26,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.net.ConnectivityManager;
+import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
@@ -193,19 +194,26 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 	}
 	
 	private void setServer() {
-		if (RemoteApplication.getConfig().isManuallySetServer()) {
-			mServerAddress = RemoteApplication.getConfig().constructServer();
-			mRemote.setServer(mServerAddress);
-			setServiceState(State.IDLE);
-		}
-		else {
-			if (mServerDiscoverer != null)
-				mServerDiscoverer.setReceiver(null);
-			
-			setServiceState(State.DISCOVERYING);
-			mServerDiscoverer = new BoxeeDiscovererThread(this, this);
-			mServerDiscoverer.start();
-		}
+		new AsyncTask<Void, Void, Void>()
+		{
+			@Override
+			protected Void doInBackground(Void... params) {
+				if (RemoteApplication.getConfig().isManuallySetServer()) {
+					mServerAddress = RemoteApplication.getConfig().constructServer();
+					mRemote.setServer(mServerAddress);
+					setServiceState(State.IDLE);
+				}
+				else {
+					if (mServerDiscoverer != null)
+						mServerDiscoverer.setReceiver(null);
+					
+					setServiceState(State.DISCOVERYING);
+					mServerDiscoverer = new BoxeeDiscovererThread(ServerRemoteService.this, ServerRemoteService.this);
+					mServerDiscoverer.start();
+				}
+				return null;
+			}
+		}.execute();
 	}
 
 	private void showPlayingNotification(String title)

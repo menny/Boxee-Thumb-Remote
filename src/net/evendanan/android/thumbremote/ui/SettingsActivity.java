@@ -21,6 +21,7 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -166,19 +167,41 @@ public class SettingsActivity extends PreferenceActivity implements
 	}
 
 	@Override
-	protected void onPrepareDialog(int id, Dialog dialog) {
+	protected void onPrepareDialog(int id, final Dialog dialog) {
 		super.onPrepareDialog(id, dialog);
 		
 		if (id != DIALOG_CUSTOM)
 			return;
-		
-		InetAddress hostname = RemoteApplication.getConfig().getHost();
-		if (hostname != null) 
-			((TextView) dialog.findViewById(R.id.textAddress)).setText(hostname.getHostName());
-		else
-			((TextView) dialog.findViewById(R.id.textAddress)).setText("");
-		
-		((TextView) dialog.findViewById(R.id.textPort)).setText(new Integer(RemoteApplication.getConfig().getPort()).toString());
+		//"getHost()" has a possible netword call. Need to be done out of the UI thread 
+		new AsyncTask<Void, Void, String>()
+		{
+			@Override
+			protected String doInBackground(Void... params) {
+				try
+				{
+					InetAddress hostname = RemoteApplication.getConfig().getHost();
+					return hostname.getHostName();
+				}
+				catch(Exception e)
+				{
+					e.printStackTrace();
+					return null;
+				}
+			}
+			
+			@Override
+			protected void onPostExecute(String hostname) {
+				super.onPostExecute(hostname);
+				
+				if (hostname != null) 
+					((TextView) dialog.findViewById(R.id.textAddress)).setText(hostname);
+				else
+					((TextView) dialog.findViewById(R.id.textAddress)).setText("");
+				
+				((TextView) dialog.findViewById(R.id.textPort)).setText(new Integer(RemoteApplication.getConfig().getPort()).toString());
+				
+			}
+		}.execute();
 	}
 
 	@Override
