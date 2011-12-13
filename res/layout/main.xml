@@ -4,6 +4,21 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:background="@android:color/black">
+    <LinearLayout android:id="@+id/serverTitleLayout"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_width="fill_parent" android:layout_height="wrap_content"
+   		android:layout_alignParentTop="true">
+        <TextView android:id="@+id/serverTitle"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+			android:maxLines="1"
+	   		android:marqueeRepeatLimit="marquee_forever"
+	   		android:ellipsize="marquee"
+	   		android:textSize="22sp"
+   			android:textColor="@android:color/white"/>
+	</LinearLayout>
     <TextView
 		android:id="@+id/textNowPlayingTitle"
 		android:text=""
@@ -14,7 +29,7 @@
    		android:marqueeRepeatLimit="marquee_forever"
    		android:ellipsize="marquee"
    		android:textSize="18sp"
-   		android:layout_alignParentTop="true"
+   		android:layout_below="@id/serverTitleLayout"
    		android:textColor="@android:color/white"
 		/>
    	

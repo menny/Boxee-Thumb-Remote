@@ -4,8 +4,10 @@
 	<string name="app_name">Boxee Thumb Remote</string>
 	
 	<string name="server_is_playing">Playing: <xliff:g id="title">%s</xliff:g></string>
+	<string name="server_is_paused">Paused: <xliff:g id="title">%s</xliff:g></string>
 	
-	
+	<string name="not_connected">Not connected</string>
+	<string name="connected_to">Boxee @ <xliff:g id="serverName">%s</xliff:g></string>
 	<!-- settings -->
 	<string name="custom_server">Custom server...</string>
 	<string name="host_title">Host</string>

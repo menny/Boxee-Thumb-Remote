@@ -99,7 +99,7 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 			public void onMediaPlayingStateChanged(ServerState serverState) {
 				if (serverState.isMediaActive())
 				{
-					showPlayingNotification(serverState.getMediaTitle());
+					showPlayingNotification(serverState.getMediaTitle(), serverState.isMediaPlaying());
 				}
 				else
 				{
@@ -216,15 +216,19 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 		}.execute();
 	}
 
-	private void showPlayingNotification(String title)
+	private void showPlayingNotification(String title, boolean isPlaying)
 	{
-		Notification notification = new Notification(R.drawable.notification_playing, getString(R.string.server_is_playing, title), System.currentTimeMillis());
+		Notification notification = new Notification(
+				isPlaying? R.drawable.notification_playing : R.drawable.notification_paused, 
+				getString(isPlaying? R.string.server_is_playing:R.string.server_is_paused, title), 
+				System.currentTimeMillis());
 
 		Intent notificationIntent = new Intent(this, RemoteUiActivity.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
 		notification.setLatestEventInfo(this,
-				getText(R.string.app_name), getString(R.string.server_is_playing, title),
+				getText(R.string.app_name), 
+				getString(isPlaying? R.string.server_is_playing:R.string.server_is_paused, title),
 				contentIntent);
 		notification.flags |= Notification.FLAG_ONGOING_EVENT;
 		notification.flags |= Notification.FLAG_NO_CLEAR;

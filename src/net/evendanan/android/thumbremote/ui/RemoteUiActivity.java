@@ -84,6 +84,7 @@ public class RemoteUiActivity extends Activity implements
 	// Other Views
 	ImageView mImageThumbnail;
 	Button mButtonPlayPause;
+	TextView mServerTitle;
 	TextView mTextTitle;
 	TextView mUserMessage;
 	String mUserMessageString = "";
@@ -211,6 +212,7 @@ public class RemoteUiActivity extends Activity implements
 		mFlipper.setOutAnimation(this, android.R.anim.slide_out_right);
 
 		// Find other views
+		mServerTitle = (TextView)findViewById(R.id.serverTitle);
 		mImageThumbnail = (ImageView) findViewById(R.id.thumbnail);
 		mButtonPlayPause = (Button) findViewById(R.id.buttonPlayPause);
 		mTextTitle = (TextView) findViewById(R.id.textNowPlayingTitle);
@@ -843,11 +845,11 @@ public class RemoteUiActivity extends Activity implements
 				String serverName = mBoundService!=null? mBoundService.getServerName() : null;
 				if (TextUtils.isEmpty(serverName))
 				{
-					setTitle(R.string.app_name);
+					mServerTitle.setText(R.string.not_connected);
 				}
 				else
 				{
-					setTitle(getString(R.string.app_name)+" - "+serverName);
+					mServerTitle.setText(getString(R.string.connected_to, serverName));
 				}	
 			}
 		});
