@@ -103,7 +103,7 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 				}
 				else
 				{
-					stopServiceIfNothingIsPlaying();
+					stopServiceIfMediaIsNotActive();
 					cancelPlayingNotification();
 				}
 				if (mUi != null) mUi.onMediaPlayingStateChanged(serverState);
@@ -141,12 +141,12 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
         return START_STICKY;    	
     }
     
-    private void stopServiceIfNothingIsPlaying()
+    private void stopServiceIfMediaIsNotActive()
     {
     	mHandler.postDelayed(new Runnable() {
 			@Override
 			public void run() {
-				if (mUi == null && !mRemote.isMediaPlaying())
+				if (mUi == null && !mRemote.isMediaActive())
 		    	{
 		    		Log.d(TAG,"stopServiceIfNothingIsPlaying determined that there is no running media. Killing self.");
 		    		try
@@ -258,7 +258,7 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 		else
 		{
 			mStatePoller.moveToBackground();
-			stopServiceIfNothingIsPlaying();
+			stopServiceIfMediaIsNotActive();
 		}
 	}
 	
