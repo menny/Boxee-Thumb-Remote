@@ -35,7 +35,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.text.method.KeyListener;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -43,6 +46,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnKeyListener;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
@@ -226,7 +230,49 @@ public class RemoteUiActivity extends Activity implements
 		mMediaDetails = (TextView)findViewById(R.id.textMediaDetails);
 		mImeManager = (InputMethodManager)getSystemService(Service.INPUT_METHOD_SERVICE);
 		mKeyboardText = (TextView)findViewById(R.id.keyboard_text);
-		
+		mKeyboardText.setKeyListener(new KeyListener() {
+			
+			@Override
+			public boolean onKeyUp(View view, Editable text, int keyCode, KeyEvent event) {
+				//I'm returning false here so the activity will handle the onKeyUp
+				return false;
+			}
+			
+			@Override
+			public boolean onKeyOther(View view, Editable text, KeyEvent event) {
+				//I'm returning false here so the activity will handle the onKeyOther
+				return false;
+			}
+			
+			@Override
+			public boolean onKeyDown(View view, Editable text, int keyCode,
+					KeyEvent event) {
+				//I'm returning false here so the activity will handle the onKeyDown
+				return false;
+			}
+			
+			@Override
+			public int getInputType() {
+				// TODO Auto-generated method stub
+				return 0;
+			}
+			
+			@Override
+			public void clearMetaKeyState(View view, Editable content, int states) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+		/*
+		mKeyboardText.setOnKeyListener(new OnKeyListener() {
+			@Override
+			public boolean onKey(View v, int keyCode, KeyEvent event) {
+				RemoteUiActivity.this.onKeyDown(keyCode, event);
+				RemoteUiActivity.this.onKeyUp(keyCode, event);
+				
+				return false;
+			}
+		});*/
 		loadPreferences();
 
 		setButtonAction(R.id.back, KeyEvent.KEYCODE_BACK);
@@ -234,7 +280,8 @@ public class RemoteUiActivity extends Activity implements
 		setButtonAction(R.id.buttonStop, 0);
 		setButtonAction(R.id.buttonSmallSkipBack, 0);
 		setButtonAction(R.id.buttonSmallSkipFwd, 0);
-		
+		setButtonAction(R.id.buttonPreviousMedia, 0);
+		setButtonAction(R.id.buttonNextMedia, 0);
 		//mShakeDetector = new ShakeListener(getApplicationContext());
 		//mShakeDetector.setOnShakeListener(this);
 		
@@ -568,7 +615,7 @@ public class RemoteUiActivity extends Activity implements
 		default:
 			final char unicodeChar = (char)event.getUnicodeChar();
 			
-			//Log.d(TAG, "Unicode is " + ((int)unicodeChar));
+			Log.d(TAG, "Unicode is " + ((int)unicodeChar));
 
 			if (Character.isLetterOrDigit(unicodeChar) || msPunctuation.contains(unicodeChar)) {
 				if (mBoundService != null) mBoundService.remoteKeypress(unicodeChar);
