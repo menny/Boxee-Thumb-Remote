@@ -202,7 +202,7 @@ public class BoxeeConnector implements ServerConnector  {
 							}
 							if (keyboardActive != newKeyboardActive)
 							{
-								
+								mUiView.onKeyboardStateChanged(this);
 							}
 						}
 						else

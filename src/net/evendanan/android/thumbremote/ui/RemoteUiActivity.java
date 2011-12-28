@@ -19,6 +19,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -45,6 +46,7 @@ import android.view.View.OnClickListener;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -91,6 +93,7 @@ public class RemoteUiActivity extends Activity implements
 	TextView mDuration;
 	ProgressBar mElapsedBar;
 	TextView mMediaDetails = null;
+	InputMethodManager mImeManager;
 	TextView mKeyboardText;
 	
 	private static final int DIALOG_NO_PASSWORD = 1;
@@ -221,7 +224,7 @@ public class RemoteUiActivity extends Activity implements
 		mDuration = (TextView) findViewById(R.id.textDuration);
 		mElapsedBar = (ProgressBar) findViewById(R.id.progressTimeBar);
 		mMediaDetails = (TextView)findViewById(R.id.textMediaDetails);
-		
+		mImeManager = (InputMethodManager)getSystemService(Service.INPUT_METHOD_SERVICE);
 		mKeyboardText = (TextView)findViewById(R.id.keyboard_text);
 		
 		loadPreferences();
@@ -407,16 +410,18 @@ public class RemoteUiActivity extends Activity implements
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				if (serverState.isKeyboardActive())
+				if (serverState.isKeyboardActive() && mKeyboardText.getVisibility() != View.VISIBLE)
 				{
+					Log.d(TAG, "Keyboard is active. Showing textbox");
 					mKeyboardText.setVisibility(View.VISIBLE);
 					mKeyboardText.requestFocus();
+					mImeManager.showSoftInput(mKeyboardText, InputMethodManager.SHOW_FORCED);
 				}
-				else
+				else if (!serverState.isKeyboardActive() && mKeyboardText.getVisibility() == View.VISIBLE)
 				{
-					mKeyboardText.setVisibility(View.GONE);
-					//InputMethodManager k;
-					//k.hideSoftInputFromWindow(windowToken, flags)
+					Log.d(TAG, "Keyboard is inactive. Hiding textbox");
+					mKeyboardText.setVisibility(View.INVISIBLE);
+					mImeManager.hideSoftInputFromWindow(mKeyboardText.getWindowToken(), 0);
 				}
 			}
 		});

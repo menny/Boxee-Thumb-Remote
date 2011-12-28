@@ -5,9 +5,6 @@
     android:layout_height="fill_parent"
     android:background="@drawable/background">
     
-    <TextView android:id="@+id/keyboard_text" android:layout_centerInParent="true" android:layout_height="match_parent" android:layout_width="320dp"
-        android:visibility="invisible"/>
-    
     <LinearLayout android:id="@+id/serverTitleLayout"
         android:orientation="horizontal"
         android:gravity="center"
@@ -77,7 +74,15 @@
 			android:layout_margin="4dp"/>
 	</LinearLayout>
 		
-	<include layout="@layout/messages"
+    <EditText android:id="@+id/keyboard_text" android:layout_centerInParent="true" android:layout_height="40dp" android:layout_width="320dp"
+	    android:textSize="24dp"
+	    android:textColor="@android:color/white"
+	    android:inputType="text|textNoSuggestions"
+        android:visibility="invisible"
+        android:padding="5dp"
+        android:background="@drawable/message_background"/>
+    
+    <include layout="@layout/messages"
    		android:layout_centerInParent="true"
 		android:layout_height="wrap_content"
 		android:layout_width="fill_parent" />
