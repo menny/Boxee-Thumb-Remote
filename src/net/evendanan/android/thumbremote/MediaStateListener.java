@@ -8,4 +8,5 @@ public interface MediaStateListener {
 
 	public abstract void onMediaMetadataChanged(ServerState serverState);
 
+	public abstract void onKeyboardStateChanged(ServerState serverState);
 }

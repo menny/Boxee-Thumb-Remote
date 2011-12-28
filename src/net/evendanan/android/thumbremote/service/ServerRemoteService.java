@@ -118,6 +118,11 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 			public void onMediaMetadataChanged(ServerState serverState) {
 				if (mUi != null) mUi.onMediaMetadataChanged(serverState);
 			}
+			
+			@Override
+			public void onKeyboardStateChanged(ServerState serverState) {
+				if (mUi != null) mUi.onKeyboardStateChanged(serverState);
+			}
 		});
 		
 		mStatePoller = new ServerStatePoller(mRemote, getApplicationContext());

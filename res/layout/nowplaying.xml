@@ -9,33 +9,60 @@
 		
 	<LinearLayout android:layout_height="wrap_content" 
 	android:layout_width="wrap_content"
-	android:orientation="horizontal">
-		<Button 
+	android:orientation="horizontal"
+	android:weightSum="6">
+		<ImageView 
+			android:id="@+id/buttonPreviousMedia"
+			android:layout_height="wrap_content" 
+			android:layout_width="0px" android:layout_weight="1"
+			android:src="@drawable/icon_osd_previous_on"
+			android:scaleType="centerInside" 
+			android:layout_margin="3dp"
+			/>
+	
+		<ImageView 
 			android:id="@+id/buttonSmallSkipBack"
 			android:layout_height="wrap_content" 
-			android:layout_width="wrap_content"
-			android:background="@drawable/icon_osd_small_skip_bwd" 
+			android:layout_width="0px" android:layout_weight="1"
+			android:src="@drawable/icon_osd_bwd_on"
+			android:scaleType="centerInside"  
+			android:layout_margin="3dp" 
 			/>
 					
-		<Button 
+		<ImageView 
 			android:id="@+id/buttonStop"
 			android:layout_height="wrap_content" 
-			android:layout_width="wrap_content"
-			android:background="@drawable/icon_osd_stop" 
+			android:layout_width="0px" android:layout_weight="1"
+			android:src="@drawable/icon_osd_stop_on"  
+			android:scaleType="centerInside" 
+			android:layout_margin="3dp"
 			/>
 		
-		<Button 
+		<ImageView 
 			android:id="@+id/buttonPlayPause" 
-			android:layout_width="wrap_content" 
 			android:layout_height="wrap_content" 
-			android:background="@drawable/icon_osd_play" 
+			android:layout_width="0px" android:layout_weight="1"
+			android:src="@drawable/icon_osd_play_on"  
+			android:scaleType="centerInside" 
+			android:layout_margin="3dp"
 			/>
 							
-		<Button 
+		<ImageView 
 			android:id="@+id/buttonSmallSkipFwd"
 			android:layout_height="wrap_content" 
-			android:layout_width="wrap_content"
-			android:background="@drawable/icon_osd_small_skip_fwd" 
+			android:layout_width="0px" android:layout_weight="1"
+			android:src="@drawable/icon_osd_fwd_on"  
+			android:scaleType="centerInside" 
+			android:layout_margin="3dp"
+			/>
+		
+		<ImageView 
+			android:id="@+id/buttonNextMedia"
+			android:layout_height="wrap_content" 
+			android:layout_width="0px" android:layout_weight="1"
+			android:src="@drawable/icon_osd_next_on"  
+			android:scaleType="centerInside" 
+			android:layout_margin="3dp"
 			/>
 	</LinearLayout>
 	

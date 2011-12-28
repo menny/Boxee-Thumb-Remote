@@ -18,4 +18,7 @@ public interface ServerState {
 	Bitmap getMediaPoster();
 	boolean isMediaActive();
 	boolean isMediaPlaying();
+	
+	boolean isKeyboardActive();
+	String getKeyboardText();
 }

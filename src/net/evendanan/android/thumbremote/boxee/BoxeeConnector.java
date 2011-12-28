@@ -49,10 +49,12 @@ public class BoxeeConnector implements ServerConnector  {
 	private String mRequestSelect = null;
 	private String mRequestGetVolume = null;
 	private String mRequestSetVolumeTemplate = null;
-	private String mRequestGetOnScreenText = null;
+	//private String mRequestGetOnScreenText = null;
 	
 	final static Pattern LIST_ITEM = Pattern.compile("^<li>([A-Za-z ]+):([^\n<]+)", Pattern.MULTILINE);
 	final static Pattern SINGLE_ITEM = Pattern.compile("^<li>([0-9]+)", Pattern.MULTILINE);
+	private static final String KEYBOARD_TEXT_KEY = "KEYBOARD_TEXT_KEY";
+	private static final String KEYBOARD_ACTIVE_KEY = "KEYBOARD_ACTIVE_KEY";
 
 	private HashMap<String, String> mEntries = new HashMap<String, String>();
 	private boolean mInMoreDataState = false;
@@ -89,7 +91,7 @@ public class BoxeeConnector implements ServerConnector  {
 			mRequestSelect = null;
 			mRequestGetVolume = null;
 			mRequestSetVolumeTemplate = null;
-			mRequestGetOnScreenText = null;
+			//mRequestGetOnScreenText = null;
 		}
 		else
 		{
@@ -109,12 +111,12 @@ public class BoxeeConnector implements ServerConnector  {
 			mSeekPercentageRelativeTemplate = mRequestPrefix + "SeekPercentageRelative(%3.5f)";
 			mRequestGetVolume = mRequestPrefix+"getVolume()";
 			mRequestSetVolumeTemplate = mRequestPrefix+"setVolume(%d)";
-			mRequestGetOnScreenText = mRequestPrefix+"getKeyboardText()";
+			//mRequestGetOnScreenText = mRequestPrefix+"getKeyboardText()";
 			
 			mCurrentPlayingUrls = new String[]{
 					mRequestPrefix + "getcurrentlyplaying()",
 					mRequestPrefix + "getguistatus()",
-					mRequestGetOnScreenText
+					mRequestPrefix + "getKeyboardText()"
 			};
 			synchronized (mEntries) {
 				mEntries.clear();
@@ -168,19 +170,48 @@ public class BoxeeConnector implements ServerConnector  {
 			}
 			else
 			{
+				final String filename = getMediaFilename();
 				final boolean isPlaying = isMediaPlaying();
 				final boolean isMediaActive = isMediaActive();
 				final String time = getMediaCurrentTime();
-				//final String filename = getMediaFilename();
 				final String posterUrl = getEntryValue("Thumb");
+				final boolean keyboardActive = isKeyboardActive();
 				clear();
 				if (responses != null)//it can be null if there are lots of network errors.
 				{
 					for(String response : responses)
 					{
-						Matcher m = LIST_ITEM.matcher(response);
-						while (m.find()) {
-							mEntries.put(m.group(1), m.group(2));
+						if (response.startsWith("<html>") && response.contains("<boxee:keyboard active"))
+						{
+							if (response.contains("<boxee:keyboard active=\"1\""))
+								mEntries.put(KEYBOARD_ACTIVE_KEY, "true");
+							else if (response.contains("<boxee:keyboard active=\"0\""))
+								mEntries.put(KEYBOARD_ACTIVE_KEY, "false");
+							
+							final boolean newKeyboardActive = isKeyboardActive();
+							
+							if (newKeyboardActive)
+							{
+								int textStartIndex = response.indexOf("text=\"") + "text=\"".length();
+								int textEndIndex = response.indexOf("\" hidden=\"", textStartIndex);
+								mEntries.put(KEYBOARD_TEXT_KEY, response.substring(textStartIndex, textEndIndex));
+							}
+							else
+							{
+								mEntries.put(KEYBOARD_TEXT_KEY, "");
+							}
+							if (keyboardActive != newKeyboardActive)
+							{
+								
+							}
+						}
+						else
+						{
+							Matcher m = LIST_ITEM.matcher(response);
+							while (m.find()) {
+								//Log.d(TAG, "mEntries put '"+m.group(1)+"' = '"+m.group(2)+"'");
+								mEntries.put(m.group(1), m.group(2));
+							}
 						}
 					}
 				}
@@ -193,6 +224,8 @@ public class BoxeeConnector implements ServerConnector  {
 					mUiView.onMediaPlayingStateChanged(this);
 				if (!time.equals(getMediaCurrentTime()))
 					mUiView.onMediaPlayingProgressChanged(this);
+				if (filename.equals(getMediaFilename()))
+					mUiView.onMediaMetadataChanged(this);
 				final String newPoster = getEntryValue("Thumb");
 				if (!posterUrl.equals(newPoster))
 				{
@@ -293,6 +326,16 @@ public class BoxeeConnector implements ServerConnector  {
 		}
 	}
 	
+	@Override
+	public String getKeyboardText() {
+		return getEntryValue(KEYBOARD_TEXT_KEY);
+	}
+	
+	@Override
+	public boolean isKeyboardActive() {
+		return getEntryValue(KEYBOARD_ACTIVE_KEY).equals("true");
+	}
+	
 	/*CONTROL*/
 
 	private Response sendHttpCommand(final String request) throws IOException {
@@ -386,18 +429,18 @@ public class BoxeeConnector implements ServerConnector  {
 
 		sendHttpCommand(request);
 	}
-	
-	public String getOnScreenTextboxText() throws IOException
-	{
-		Response response = sendHttpCommand(mRequestGetOnScreenText);
-		Matcher m = SINGLE_ITEM.matcher(response.response());
-		if (m != null && m.find()) {
-			return m.group(1);
-		}
-		else
-		{
-			throw new IOException("Failed to understand server response!");
-		}
-	}
+//	
+//	public String getOnScreenTextboxText() throws IOException
+//	{
+//		Response response = sendHttpCommand(mRequestGetOnScreenText);
+//		Matcher m = SINGLE_ITEM.matcher(response.response());
+//		if (m != null && m.find()) {
+//			return m.group(1);
+//		}
+//		else
+//		{
+//			throw new IOException("Failed to understand server response!");
+//		}
+//	}
 
 }

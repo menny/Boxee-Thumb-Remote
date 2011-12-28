@@ -3,7 +3,11 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="@android:color/black">
+    android:background="@drawable/background">
+    
+    <TextView android:id="@+id/keyboard_text" android:layout_centerInParent="true" android:layout_height="match_parent" android:layout_width="320dp"
+        android:visibility="invisible"/>
+    
     <LinearLayout android:id="@+id/serverTitleLayout"
         android:orientation="horizontal"
         android:gravity="center"
@@ -40,8 +44,8 @@
 		android:layout_height="wrap_content" android:layout_width="fill_parent"/>
 	
 	<ImageView
-		android:id="@+id/thumbnail"
-		android:src="@drawable/remote_background"
+	    android:id="@+id/thumbnail"
+		android:src="@drawable/no_media_background"
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
 		android:layout_below="@id/textNowPlayingTitle"

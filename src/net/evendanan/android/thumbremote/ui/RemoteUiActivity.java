@@ -45,7 +45,6 @@ import android.view.View.OnClickListener;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -83,7 +82,7 @@ public class RemoteUiActivity extends Activity implements
 
 	// Other Views
 	ImageView mImageThumbnail;
-	Button mButtonPlayPause;
+	ImageView mButtonPlayPause;
 	TextView mServerTitle;
 	TextView mTextTitle;
 	TextView mUserMessage;
@@ -92,6 +91,7 @@ public class RemoteUiActivity extends Activity implements
 	TextView mDuration;
 	ProgressBar mElapsedBar;
 	TextView mMediaDetails = null;
+	TextView mKeyboardText;
 	
 	private static final int DIALOG_NO_PASSWORD = 1;
 	private static final int DIALOG_NO_SERVER = 2;
@@ -214,13 +214,15 @@ public class RemoteUiActivity extends Activity implements
 		// Find other views
 		mServerTitle = (TextView)findViewById(R.id.serverTitle);
 		mImageThumbnail = (ImageView) findViewById(R.id.thumbnail);
-		mButtonPlayPause = (Button) findViewById(R.id.buttonPlayPause);
+		mButtonPlayPause = (ImageView)findViewById(R.id.buttonPlayPause);
 		mTextTitle = (TextView) findViewById(R.id.textNowPlayingTitle);
 		mUserMessage = (TextView)findViewById(R.id.textMessages);
 		mTextElapsed = (TextView) findViewById(R.id.textElapsed);
 		mDuration = (TextView) findViewById(R.id.textDuration);
 		mElapsedBar = (ProgressBar) findViewById(R.id.progressTimeBar);
 		mMediaDetails = (TextView)findViewById(R.id.textMediaDetails);
+		
+		mKeyboardText = (TextView)findViewById(R.id.keyboard_text);
 		
 		loadPreferences();
 
@@ -400,18 +402,36 @@ public class RemoteUiActivity extends Activity implements
 		});
 	}
 	
+	@Override
+	public void onKeyboardStateChanged(final ServerState serverState) {
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				if (serverState.isKeyboardActive())
+				{
+					mKeyboardText.setVisibility(View.VISIBLE);
+					mKeyboardText.requestFocus();
+				}
+				else
+				{
+					mKeyboardText.setVisibility(View.GONE);
+					//InputMethodManager k;
+					//k.hideSoftInputFromWindow(windowToken, flags)
+				}
+			}
+		});
+	}
+	
 	private void refreshPlayingStateChanged(ServerState serverState, boolean forceChanged) {
 		final boolean isPlaying = serverState.isMediaPlaying();
 		final boolean newIsMediaActive = serverState.isMediaActive();
-		final boolean mediaActiveChanged = forceChanged || (newIsMediaActive != mIsMediaActive);
+		final boolean mediaDataChanged = forceChanged || (newIsMediaActive != mIsMediaActive);
 		mIsMediaActive = newIsMediaActive;
 
-		if (!mediaActiveChanged) return;
+		if (mIsMediaActive) mButtonPlayPause.setImageResource(isPlaying ? R.drawable.icon_osd_pause_on : R.drawable.icon_osd_play_on);
+		if (!mediaDataChanged) return;
 		
 		if (mIsMediaActive) {
-			mButtonPlayPause.setBackgroundDrawable(getResources().getDrawable(
-					isPlaying ? R.drawable.icon_osd_pause : R.drawable.icon_osd_play));
-	
 			final String title = getMediaTitle(serverState);
 			mTextTitle.setText(title);
 			if (mMediaDetails != null) mMediaDetails.setText(serverState.getMediaPlot());
@@ -430,7 +450,7 @@ public class RemoteUiActivity extends Activity implements
 			
 			mTextTitle.setText("");
 			if (mMediaDetails != null) mMediaDetails.setText("");
-			mImageThumbnail.setImageResource(R.drawable.remote_background);
+			mImageThumbnail.setImageResource(R.drawable.no_media_background);
 		}
 	}
 
@@ -449,7 +469,7 @@ public class RemoteUiActivity extends Activity implements
 		{
 			Bitmap poster = serverState.getMediaPoster();
 			if (poster == null)
-				mImageThumbnail.setImageResource(R.drawable.remote_background);
+				mImageThumbnail.setImageResource(R.drawable.no_media_background);
 			else
 				mImageThumbnail.setImageBitmap(poster);
 			mTextTitle.setText(getMediaTitle(serverState));
@@ -457,7 +477,7 @@ public class RemoteUiActivity extends Activity implements
 		}
 		else
 		{
-			mImageThumbnail.setImageResource(R.drawable.remote_background);
+			mImageThumbnail.setImageResource(R.drawable.no_media_background);
 			mTextTitle.setText("");
 			if (mMediaDetails != null) mMediaDetails.setText("");
 		}
@@ -669,7 +689,7 @@ public class RemoteUiActivity extends Activity implements
 	 *            keyCode we should send to Boxee when this button is pressed
 	 */
 	private void setButtonAction(int id, final int keyCode) {
-		Button button = (Button) findViewById(id);
+		View button = findViewById(id);
 		button.setFocusable(false);
 		button.setTag(new Integer(keyCode));
 		button.setOnClickListener(this);
