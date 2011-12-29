@@ -410,7 +410,11 @@ public class BoxeeConnector implements ServerConnector  {
 		if (unicode == 8)//backspace is a special case
 			sendKeyPress(61704);
 		else
+		{
+			if (Character.isLetter(unicode)) unicode = Character.toUpperCase(unicode);
+			//this is abug I can't find a way to fix: lowercase L does not register in Boxee....
 			sendKeyPress(unicode + 61696);
+		}
 	}
 
 	@Override

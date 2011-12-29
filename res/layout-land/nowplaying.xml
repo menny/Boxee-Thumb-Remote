@@ -12,6 +12,15 @@
 	android:orientation="horizontal"
 	android:weightSum="6">
 		<ImageView 
+			android:id="@+id/buttonPreviousMedia"
+			android:layout_height="wrap_content" 
+			android:layout_width="0px" android:layout_weight="1"
+			android:src="@drawable/icon_osd_previous_on"
+			android:scaleType="centerInside" 
+			android:layout_margin="3dp"
+			/>
+	
+		<ImageView 
 			android:id="@+id/buttonSmallSkipBack"
 			android:layout_height="wrap_content" 
 			android:layout_width="0px" android:layout_weight="1"
@@ -43,6 +52,15 @@
 			android:layout_height="wrap_content" 
 			android:layout_width="0px" android:layout_weight="1"
 			android:src="@drawable/icon_osd_fwd_on"  
+			android:scaleType="centerInside" 
+			android:layout_margin="3dp"
+			/>
+		
+		<ImageView 
+			android:id="@+id/buttonNextMedia"
+			android:layout_height="wrap_content" 
+			android:layout_width="0px" android:layout_weight="1"
+			android:src="@drawable/icon_osd_next_on"  
 			android:scaleType="centerInside" 
 			android:layout_margin="3dp"
 			/>

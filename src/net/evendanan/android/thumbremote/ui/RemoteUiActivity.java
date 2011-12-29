@@ -37,7 +37,6 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.text.method.KeyListener;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -46,7 +45,6 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnKeyListener;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
@@ -247,6 +245,7 @@ public class RemoteUiActivity extends Activity implements
 			@Override
 			public boolean onKeyDown(View view, Editable text, int keyCode,
 					KeyEvent event) {
+				//Log.d(TAG, "KeyListener.onKeyDown: "+(char)event.getUnicodeChar());
 				//I'm returning false here so the activity will handle the onKeyDown
 				return false;
 			}
@@ -615,9 +614,10 @@ public class RemoteUiActivity extends Activity implements
 		default:
 			final char unicodeChar = (char)event.getUnicodeChar();
 			
-			Log.d(TAG, "Unicode is " + ((int)unicodeChar));
+			//Log.d(TAG, "Unicode is " + ((char)unicodeChar));
 
 			if (Character.isLetterOrDigit(unicodeChar) || msPunctuation.contains(unicodeChar)) {
+				//Log.d(TAG, "handling " + ((char)unicodeChar));
 				if (mBoundService != null) mBoundService.remoteKeypress(unicodeChar);
 				return true;
 			}
@@ -742,6 +742,7 @@ public class RemoteUiActivity extends Activity implements
 	 */
 	private void setButtonAction(int id, final int keyCode) {
 		View button = findViewById(id);
+		if (button == null) return;
 		button.setFocusable(false);
 		button.setTag(new Integer(keyCode));
 		button.setOnClickListener(this);
