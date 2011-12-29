@@ -85,6 +85,13 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 		}
 	};
 
+	private final Runnable mCheckServerStateASAP = new Runnable() {
+		@Override
+		public void run() {
+			mStatePoller.checkStateNow();
+		}
+	};
+
 	@Override
 	public void onCreate() {
 		super.onCreate();
@@ -341,12 +348,8 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 	public void onRemoteActionSuccess(String successMessage, boolean longDelayMessage) {
 		if (!TextUtils.isEmpty(successMessage) && mUi != null) mUi.showMessage(successMessage, longDelayMessage? 2500 : 500);
 		
-		mHandler.postDelayed(new Runnable() {
-			@Override
-			public void run() {
-				mStatePoller.checkStateNow();
-			}
-		}, 100);
+		mHandler.removeCallbacks(mCheckServerStateASAP);
+		mHandler.postDelayed(mCheckServerStateASAP, 100);
 	}
 
 	private static int hmsToSeconds(String hms) {

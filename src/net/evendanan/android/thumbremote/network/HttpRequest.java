@@ -23,7 +23,7 @@ public class HttpRequest {
 		return !TextUtils.isEmpty(msUser) && !TextUtils.isEmpty(msPassword);
 	}
 
-	public static Response getHttpResponse(final String url)
+	public synchronized static Response getHttpResponse(final String url)
 	{
 		try
 		{

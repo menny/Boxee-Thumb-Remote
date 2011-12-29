@@ -20,5 +20,5 @@ public interface ServerState {
 	boolean isMediaPlaying();
 	
 	boolean isKeyboardActive();
-	String getKeyboardText();
+	//String getKeyboardText();
 }

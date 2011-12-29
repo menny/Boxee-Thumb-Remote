@@ -21,8 +21,8 @@ public final class ServerStatePoller {
 	
 	private static final int MAX_NETWORK_ERRORS = 3;
 	
-	private static final long REGULAR_DELAY = 500;
-	private static final long BACKGROUND_DELAY = REGULAR_DELAY * 3;
+	private static final long REGULAR_DELAY = 1000;
+	private static final long BACKGROUND_DELAY = 5000;
 	
 	private final Object mWaiter = new Object();
 	private final ServerStateUrlsProvider mUrlsProvider;

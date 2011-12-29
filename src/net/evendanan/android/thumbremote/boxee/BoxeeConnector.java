@@ -53,7 +53,7 @@ public class BoxeeConnector implements ServerConnector  {
 	
 	final static Pattern LIST_ITEM = Pattern.compile("^<li>([A-Za-z ]+):([^\n<]+)", Pattern.MULTILINE);
 	final static Pattern SINGLE_ITEM = Pattern.compile("^<li>([0-9]+)", Pattern.MULTILINE);
-	private static final String KEYBOARD_TEXT_KEY = "KEYBOARD_TEXT_KEY";
+	//private static final String KEYBOARD_TEXT_KEY = "KEYBOARD_TEXT_KEY";
 	private static final String KEYBOARD_ACTIVE_KEY = "KEYBOARD_ACTIVE_KEY";
 
 	private HashMap<String, String> mEntries = new HashMap<String, String>();
@@ -190,7 +190,7 @@ public class BoxeeConnector implements ServerConnector  {
 							
 							final boolean newKeyboardActive = isKeyboardActive();
 							
-							if (newKeyboardActive)
+							/*if (newKeyboardActive)
 							{
 								int textStartIndex = response.indexOf("text=\"") + "text=\"".length();
 								int textEndIndex = response.indexOf("\" hidden=\"", textStartIndex);
@@ -199,7 +199,7 @@ public class BoxeeConnector implements ServerConnector  {
 							else
 							{
 								mEntries.put(KEYBOARD_TEXT_KEY, "");
-							}
+							}*/
 							if (keyboardActive != newKeyboardActive)
 							{
 								mUiView.onKeyboardStateChanged(this);
@@ -244,6 +244,15 @@ public class BoxeeConnector implements ServerConnector  {
 	public void onServerStateRetrievalError() {
 		clear();
 		mThumbnail = null;
+		//notifying UI
+		if (mUiView != null)
+		{
+			mUiView.onMediaPlayingStateChanged(this);
+			mUiView.onMediaPlayingProgressChanged(this);
+			mUiView.onMediaMetadataChanged(this);
+			mUiView.onKeyboardStateChanged(this);
+		}
+		
 		startOver();
 	}
 
@@ -325,12 +334,12 @@ public class BoxeeConnector implements ServerConnector  {
 			return mEntries.containsKey("Time");
 		}
 	}
-	
+	/*
 	@Override
 	public String getKeyboardText() {
 		return getEntryValue(KEYBOARD_TEXT_KEY);
 	}
-	
+	*/
 	@Override
 	public boolean isKeyboardActive() {
 		return getEntryValue(KEYBOARD_ACTIVE_KEY).equals("true");
