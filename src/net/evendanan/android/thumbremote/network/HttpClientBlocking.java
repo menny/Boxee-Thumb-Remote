@@ -36,6 +36,8 @@ class HttpClientBlocking implements HttpBlocking {
 	private final String mPassword;
 	private final int mTimeout;
 	
+	private DefaultHttpClient mHttpClient = null;
+	
 	HttpClientBlocking(String url, int timeout, String user, String password) throws URISyntaxException {
 		mUrl = new URI(url);
 		mUser = user;
@@ -47,7 +49,7 @@ class HttpClientBlocking implements HttpBlocking {
 	 * Perform the blocking fetch.
 	 * @throws IOException 
 	 */
-	public Response fetch() throws IOException {
+	public synchronized Response fetch() throws IOException {
 		if (mUrl == null)
 			return new Response(false, null);
 
@@ -57,37 +59,42 @@ class HttpClientBlocking implements HttpBlocking {
 		request.getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, new Integer(mTimeout));
     	request.getParams().setParameter(CoreConnectionPNames.SO_LINGER, new Integer(mTimeout/2));
     	request.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, new Integer(mTimeout));
-        
-    	DefaultHttpClient client = new DefaultHttpClient();
-    	addAuthentication(client);
     	
+    	if (mHttpClient == null)
+    	{
+    		mHttpClient = new DefaultHttpClient();
+    		addAuthentication(mHttpClient);
+    	}
+    	
+    	InputStream instream = null;
         try {
-        	HttpResponse httpResponse = client.execute(request);
+        	HttpResponse httpResponse = mHttpClient.execute(request);
             int responseCode = httpResponse.getStatusLine().getStatusCode();
             String response = "";
             HttpEntity entity = httpResponse.getEntity();
 
             if (entity != null) {
 
-                InputStream instream = entity.getContent();
+                instream = entity.getContent();
                 response = convertStreamToString(instream);
-
-                // Closing the input stream will trigger connection release
-                instream.close();
             }
 
             return new Response(responseCode >= 200 && responseCode < 300, response);
         } catch (ClientProtocolException e)  {
-            e.printStackTrace();
+        	mHttpClient.getConnectionManager().shutdown();
+        	mHttpClient = null;
+        	e.printStackTrace();
             throw e;
         } catch (IOException e) {
-            e.printStackTrace();
+        	mHttpClient.getConnectionManager().shutdown();
+        	mHttpClient = null;
+        	e.printStackTrace();
             throw e;
-        }
+        }/*
         finally
         {
-            client.getConnectionManager().shutdown();
-        }
+            mHttpClient.getConnectionManager().shutdown();
+        }*/
 	}
 
     private static String convertStreamToString(InputStream is) {
@@ -104,13 +111,13 @@ class HttpClientBlocking implements HttpBlocking {
             }
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
+        } /*finally {
             try {
                 is.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
+        }*/
         return sb.toString();
     }
 

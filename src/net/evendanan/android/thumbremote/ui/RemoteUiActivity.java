@@ -281,6 +281,8 @@ public class RemoteUiActivity extends Activity implements
 		setButtonAction(R.id.buttonSmallSkipFwd, 0);
 		setButtonAction(R.id.buttonPreviousMedia, 0);
 		setButtonAction(R.id.buttonNextMedia, 0);
+		
+		setButtonAction(R.id.buttonOpenKeyboard, 0);
 		//mShakeDetector = new ShakeListener(getApplicationContext());
 		//mShakeDetector.setOnShakeListener(this);
 		
@@ -398,6 +400,9 @@ public class RemoteUiActivity extends Activity implements
 		case R.id.back:
 			if (mBoundService != null) mBoundService.remoteBack();
 			break;
+		case R.id.buttonOpenKeyboard:
+			showOnScreenKeyboard();
+			break;
 		}
 
 	}
@@ -459,9 +464,7 @@ public class RemoteUiActivity extends Activity implements
 				if (serverState.isKeyboardActive() && mKeyboardText.getVisibility() != View.VISIBLE)
 				{
 					Log.d(TAG, "Keyboard is active. Showing textbox");
-					mKeyboardText.setVisibility(View.VISIBLE);
-					mKeyboardText.requestFocus();
-					mImeManager.showSoftInput(mKeyboardText, InputMethodManager.SHOW_FORCED);
+					showOnScreenKeyboard();
 				}
 				else if (!serverState.isKeyboardActive() && mKeyboardText.getVisibility() == View.VISIBLE)
 				{
@@ -931,5 +934,11 @@ public class RemoteUiActivity extends Activity implements
 	@Override
 	public void onShake() {
 		Log.d(TAG, "Shake detect!");
+	}
+
+	private void showOnScreenKeyboard() {
+		mKeyboardText.setVisibility(View.VISIBLE);
+		mKeyboardText.requestFocus();
+		mImeManager.showSoftInput(mKeyboardText, InputMethodManager.SHOW_FORCED);
 	}
 }

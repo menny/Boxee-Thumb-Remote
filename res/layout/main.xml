@@ -40,7 +40,7 @@
 		android:layout_alignParentBottom="true" 
 		android:layout_height="wrap_content" android:layout_width="fill_parent"/>
 	
-	<ImageView
+   	<ImageView
 	    android:id="@+id/thumbnail"
 		android:src="@drawable/no_media_background"
 		android:layout_width="fill_parent"
@@ -49,6 +49,17 @@
 		android:layout_above="@id/controls_layout"
 		android:layout_margin="4dp"
 		/>
+   	
+    <ImageView 
+		android:id="@+id/buttonOpenKeyboard"
+		android:layout_height="40dp" 
+		android:layout_width="40dp"
+		android:src="@drawable/button_keyboard_on"
+		android:scaleType="centerInside"  
+		android:layout_margin="3dp"
+		android:layout_alignParentRight="true"
+		android:layout_above="@id/controls_layout"/>
+    
 	<EditText android:id="@+id/keyboard_text" android:layout_centerInParent="true" android:layout_height="0px" android:layout_width="0px"
 	    android:textSize="0px"
 	    android:textColor="@android:color/white"

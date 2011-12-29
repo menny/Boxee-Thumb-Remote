@@ -131,7 +131,7 @@ public class Settings {
 		if (value.equals("default")) return ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
 		else if (value.equals("portrait")) return ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 		else if (value.equals("landscape")) return ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-		else if (value.equals("auto")) return ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR;
+		else if (value.equals("auto")) return ActivityInfo.SCREEN_ORIENTATION_SENSOR;
 		else return ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
 	}
 	
