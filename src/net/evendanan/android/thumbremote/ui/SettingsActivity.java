@@ -28,6 +28,7 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceScreen;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -67,6 +68,7 @@ public class SettingsActivity extends PreferenceActivity implements
 	 * private constants
 	 */
 	private static final int DIALOG_CUSTOM = 1;
+	private static final String TAG = SettingsActivity.class.getName();
 
 	private HashMap<String, ServerAddress> mServers;
 	private PreferenceScreen mServersScreen;
@@ -157,7 +159,16 @@ public class SettingsActivity extends PreferenceActivity implements
 		}
 		else
 		{
-			int port = !TextUtils.isEmpty(portText) && TextUtils.isDigitsOnly(portText)? Integer.parseInt(portText) : 8800;
+			int port;
+			try
+			{
+				port = !TextUtils.isEmpty(portText) && TextUtils.isDigitsOnly(portText)? Integer.parseInt(portText) : 8800;
+			}
+			catch(Exception e)
+			{
+				Log.w(TAG, "Port number value illegal! Reverting to default 8800");
+				port = 8800;
+			}
 		
 			RemoteApplication.getConfig().putServer(BoxeeConnector.BOXEE_SERVER_TYPE, 
 					BoxeeConnector.BOXEE_SERVER_VERSION_OLD, address, port, "custom", false, true);

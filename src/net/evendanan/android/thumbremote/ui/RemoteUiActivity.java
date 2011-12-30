@@ -21,9 +21,7 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.app.Service;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
@@ -110,7 +108,7 @@ public class RemoteUiActivity extends Activity implements
 	private boolean mDragged = false;
 	private boolean mIsMediaActive = false;
 	private ProgressDialog mPleaseWaitDialog;
-	private int mDialogToDismiss = -1;
+	private Dialog mAlertDialog;
 	
 	private Handler mHandler;
 
@@ -132,6 +130,7 @@ public class RemoteUiActivity extends Activity implements
 
 	private ServiceConnection mConnection = new ServiceConnection() {
 	    public void onServiceConnected(ComponentName className, IBinder service) {
+	    	Log.i(TAG, "Connected to "+className);
 	        // This is called when the connection with the service has been
 	        // established, giving us the service object we can use to
 	        // interact with the service.  Because we have bound to a explicit
@@ -152,12 +151,12 @@ public class RemoteUiActivity extends Activity implements
 	};
 
 	void doBindService() {
-	    // Establish a connection with the service.  We use an explicit
+		startService(new Intent(getApplicationContext(), ServerRemoteService.class)); 
+		// Establish a connection with the service.  We use an explicit
 	    // class name because we want a specific service implementation that
 	    // we know will be running in our own process (and thus won't be
 	    // supporting component replacement by other applications).
-	    bindService(new Intent(RemoteUiActivity.this, ServerRemoteService.class), mConnection, Context.BIND_AUTO_CREATE);
-	    mIsBound = true;
+		mIsBound = bindService(new Intent(getApplicationContext(), ServerRemoteService.class), mConnection, 0);
 	}
 
 	void doUnbindService() {
@@ -801,33 +800,20 @@ public class RemoteUiActivity extends Activity implements
 
 	@Override
 	protected Dialog onCreateDialog(int id) {
-		Dialog d = null;
 		switch(id)
 		{
 		case DIALOG_NO_PASSWORD:
-			mDialogToDismiss = DIALOG_NO_PASSWORD;
-			d = createCredentialsRequiredDialog();
+			return createCredentialsRequiredDialog();
 		case DIALOG_NO_SERVER:
-			mDialogToDismiss = DIALOG_NO_SERVER;
-			d =  createNoServerDialog();
+			return  createNoServerDialog();
 		}
-		if (d != null)
-		{
-			d.setOnDismissListener(new OnDismissListener() {
-				@Override
-				public void onDismiss(DialogInterface dialog) {
-					mDialogToDismiss = -1;
-				}
-			});
-			return d;
-		}
-		else
-			return super.onCreateDialog(id);
+		
+		return super.onCreateDialog(id);
 	}
 	
 	@Override
 	protected void onPrepareDialog(int id, Dialog dialog) {
-		mDialogToDismiss = id;
+		mAlertDialog = dialog;
 		super.onPrepareDialog(id, dialog);
 	}
 
@@ -893,10 +879,11 @@ public class RemoteUiActivity extends Activity implements
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				if (mDialogToDismiss > 0)
-					dismissDialog(mDialogToDismiss);
+				if (mAlertDialog != null && mAlertDialog.isShowing())
+					mAlertDialog.dismiss();
+				mAlertDialog = null;
 				
-				if (mPleaseWaitDialog != null)
+				if (mPleaseWaitDialog != null && mPleaseWaitDialog.isShowing())
 					mPleaseWaitDialog.dismiss();
 				
 				mPleaseWaitDialog = null;

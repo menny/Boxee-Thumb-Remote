@@ -367,8 +367,16 @@ public class BoxeeConnector implements ServerConnector  {
 		Response response = sendHttpCommand(mRequestGetVolume);
 		Matcher m = SINGLE_ITEM.matcher(response.response());
 		if (m != null && m.find()) {
-			final int currentVolume = Integer.parseInt(m.group(1));
-			return currentVolume;
+			try
+			{
+				final int currentVolume = Integer.parseInt(m.group(1));
+				return currentVolume;
+			}
+			catch(Exception e)
+			{
+				Log.w(TAG, "Failed to parsse current volume! Got value "+m.group(1));
+				return 50;
+			}
 		}
 		else
 		{

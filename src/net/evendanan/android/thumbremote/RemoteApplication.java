@@ -20,7 +20,7 @@ public class RemoteApplication extends Application {
 
 		super.onCreate();
 		
-		msConfig = new Settings(getApplicationContext());
+		msConfig = new Settings(getApplicationContext());     
 	}
 	
 	public static Settings getConfig() { return msConfig;}

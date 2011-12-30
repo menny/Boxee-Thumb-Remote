@@ -20,11 +20,9 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Binder;
@@ -75,7 +73,7 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 	private ServerStatePoller mStatePoller = null;
 
 	private State mState;
-	
+	/*
 	private final ServiceConnection mKeepAliveConnection = new ServiceConnection() {
 		@Override
 		public void onServiceDisconnected(ComponentName name) {				
@@ -84,7 +82,7 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 		public void onServiceConnected(ComponentName name, IBinder service) {				
 		}
 	};
-
+*/
 	private final Runnable mCheckServerStateASAP = new Runnable() {
 		@Override
 		public void run() {
@@ -145,18 +143,19 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
         registerReceiver(mNetworkChangedReceiver, networkFilter);
         
         setServer();
-        
+        /*
         //and I want my own reference.
         bindService(new Intent(this, ServerRemoteService.class), mKeepAliveConnection, Context.BIND_AUTO_CREATE);
+        */
 	}
-
+/*
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
     	//We want this service to continue running until it is explicitly
         // stopped, so return sticky.
         return START_STICKY;    	
     }
-    
+  */  
     private void stopServiceIfMediaIsNotActive()
     {
     	mHandler.postDelayed(new Runnable() {
@@ -165,6 +164,7 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 				if (mUi == null && !mRemote.isMediaActive())
 		    	{
 		    		Log.d(TAG,"stopServiceIfNothingIsPlaying determined that there is no running media. Killing self.");
+		    		/*
 		    		try
 		    		{
 		    			unbindService(mKeepAliveConnection);
@@ -173,6 +173,7 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 		    		{
 		    			Log.w(TAG, "Caught an exception while unbinding from self. nm."+e.getMessage());
 		    		}
+		    		*/
 		    		stopSelf();
 		    	}
 			}
@@ -277,7 +278,7 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 			stopServiceIfMediaIsNotActive();
 		}
 	}
-	
+	/*
 	@Override
 	public boolean onUnbind(Intent intent) {
 		Log.d(TAG, "onUnbind");
@@ -285,7 +286,7 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 		
 		return false; 
 	}
-	
+	*/
 	public String getServerName()
 	{
 		return mServerAddress!=null? mServerAddress.name() : null;
@@ -338,7 +339,7 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 
 	public void forceStop() {
 		Log.i(TAG, "Force Stop was called!");
-		unbindService(mKeepAliveConnection);
+		//unbindService(mKeepAliveConnection);
 		stopSelf();		
 	}
 	

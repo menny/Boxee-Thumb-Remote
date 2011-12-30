@@ -90,7 +90,18 @@ public class Settings {
 
 	public int getVolumeStep() {
 		String volumeStep = mPreferences.getString(VOLUME_STEP_SIZE_KEY, VOLUME_STEP_SIZE_DEFAULT_VALUE);
-		return Integer.parseInt(volumeStep);
+		try
+		{
+			return Integer.parseInt(volumeStep);
+		}
+		catch(Exception e)
+		{
+			Log.w(TAG, "Volume step size value illegal! Reverting to default "+VOLUME_STEP_SIZE_DEFAULT_VALUE);
+			SharedPreferences.Editor editor = mPreferences.edit();
+			editor.putString(VOLUME_STEP_SIZE_KEY, VOLUME_STEP_SIZE_DEFAULT_VALUE);
+			editor.commit();
+			return getVolumeStep();
+		}
 	}
 	
 	public int getSwipeStepSize(Context appContext) {
@@ -169,7 +180,18 @@ public class Settings {
 	}
 	
 	public int getTimeout() {
-		return Integer.parseInt(mPreferences.getString(NETWORK_TIMEOUT_KEY, NETWORK_TIMEOUT_DEFAULT_VALUE));
+		try
+		{
+			return Integer.parseInt(mPreferences.getString(NETWORK_TIMEOUT_KEY, NETWORK_TIMEOUT_DEFAULT_VALUE));
+		}
+		catch(Exception e)
+		{
+			Log.w(TAG, "Timeout value illegal! Reverting to default "+NETWORK_TIMEOUT_DEFAULT_VALUE);
+			SharedPreferences.Editor editor = mPreferences.edit();
+			editor.putString(NETWORK_TIMEOUT_KEY, NETWORK_TIMEOUT_DEFAULT_VALUE);
+			editor.commit();
+			return getVolumeStep();
+		}
 	}
 	
 	public boolean isAuthRequired() {
