@@ -2,36 +2,48 @@ package net.evendanan.android.thumbremote.network;
 
 import android.text.TextUtils;
 
+/*
+ * Controls the live cycle of a network connection.
+ * Tries to keep the connection alive as long as possible, thus, reusing HTTP connections, and reduce sockets and objects creations.
+ */
 public class HttpRequest {
 
 	// We set these for all requests.
 	private static int msTimeout = 2000;
 	private static String msPassword;
 	private static String msUser;
-
-	public static void setTimeout(int timeout_ms) {
+	private static HttpBlocking msRequester = null;
+	
+	public synchronized static void setTimeout(int timeout_ms) {
+		msRequester = null;
 		msTimeout = timeout_ms;
 	}
 
-	public static void setUserPassword(String user, String password) {
+	public synchronized static void setUserPassword(String user, String password) {
+		msRequester = null;
 		msUser = user;
 		msPassword = password;
 	}
 	
-	public static boolean hasCredentials()
+	public synchronized static boolean hasCredentials()
 	{
 		return !TextUtils.isEmpty(msUser) && !TextUtils.isEmpty(msPassword);
 	}
 
 	public synchronized static Response getHttpResponse(final String url)
 	{
+		if (msRequester == null)
+		{
+			msRequester = new ReusableHttpClientBlocking(msTimeout, msUser, msPassword);
+		}
 		try
 		{
-			HttpBlocking requester = new HttpClientBlocking(url, msTimeout, msUser, msPassword);
-			return requester.fetch();
+			return msRequester.fetch(url);
 		}
 		catch(Exception e)
 		{
+			msRequester.close();
+			msRequester = null;
 			e.printStackTrace();
 			return new Response(false, "");
 		}
