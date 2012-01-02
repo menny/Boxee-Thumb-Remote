@@ -85,7 +85,7 @@ class ReusableHttpClientBlocking implements HttpBlocking {
 	}
 	
 	@Override
-	public void close() {
+	public synchronized void close() {
 		mHttpClient.getConnectionManager().shutdown();
 	}
 

@@ -15,12 +15,12 @@ public class HttpRequest {
 	private static HttpBlocking msRequester = null;
 	
 	public synchronized static void setTimeout(int timeout_ms) {
-		msRequester = null;
+		close();
 		msTimeout = timeout_ms;
 	}
 
 	public synchronized static void setUserPassword(String user, String password) {
-		msRequester = null;
+		close();
 		msUser = user;
 		msPassword = password;
 	}
@@ -42,10 +42,15 @@ public class HttpRequest {
 		}
 		catch(Exception e)
 		{
-			msRequester.close();
-			msRequester = null;
+			close();
 			e.printStackTrace();
 			return new Response(false, "");
 		}
+	}
+
+	public synchronized static void close() {
+		if (msRequester != null)
+			msRequester.close();
+		msRequester = null;
 	}
 }
