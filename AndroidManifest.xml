@@ -2,8 +2,8 @@
 <manifest 
 	xmlns:android="http://schemas.android.com/apk/res/android"
     package="net.evendanan.android.thumbremote"
-    android:versionCode="20"
-    android:versionName="20120101-thumbs_up">
+    android:versionCode="21"
+    android:versionName="20120108-thumbs_up">
     
     <supports-screens
 			android:xlargeScreens="true"
