@@ -3,7 +3,8 @@
 	xmlns:android="http://schemas.android.com/apk/res/android"
     package="net.evendanan.android.thumbremote"
     android:versionCode="21"
-    android:versionName="20120108-thumbs_up">
+    android:versionName="20120108-thumbs_up"
+    android:installLocation="auto">
     
     <supports-screens
 			android:xlargeScreens="true"
