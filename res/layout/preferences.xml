@@ -57,11 +57,23 @@
 	<PreferenceCategory android:key="network_group"
 	android:title="@string/network_group">
 		<EditTextPreference 
-		android:key="@string/settings_key_network_timeout_key" 
-		android:title="@string/network_timeout_title"
-		android:summary="@string/network_timeout_summary"
-		android:defaultValue="@string/settings_key_network_timeout_default_value"
-		/>
+			android:key="@string/settings_key_network_timeout_key" 
+			android:title="@string/network_timeout_title"
+			android:summary="@string/network_timeout_summary"
+			android:defaultValue="@string/settings_key_network_timeout_default_value"
+			/>
+		<EditTextPreference 
+			android:key="@string/settings_key_server_username_key" 
+			android:title="@string/network_username_title"
+			android:summary="@string/network_username_summary"
+			android:defaultValue=""
+			/>
+		<EditTextPreference 
+			android:key="@string/settings_key_server_password_key" 
+			android:title="@string/network_password_title"
+			android:summary="@string/network_password_summary"
+			android:defaultValue=""
+			/>
 	</PreferenceCategory>
 
 </PreferenceScreen>
