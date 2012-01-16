@@ -1,12 +1,14 @@
 package net.evendanan.android.thumbremote.service;
 
+import org.apache.http.client.HttpResponseException;
+
 import android.os.AsyncTask;
 
 abstract class DoServerRemoteAction extends AsyncTask<Void, Void, Exception>
 {	
 	public static interface DoServerRemoteActionListener
 	{
-		void onRemoteActionError(String userMessage, boolean longMessageDelay);
+		void onRemoteActionError(String userMessage, int errorCode, boolean longMessageDelay);
 
 		void onRemoteActionSuccess(String successMessage, boolean longDelayMessage);
 	}
@@ -57,13 +59,17 @@ abstract class DoServerRemoteAction extends AsyncTask<Void, Void, Exception>
 		
 		String errorMessage = result.getMessage();
 		if (errorMessage == null) errorMessage = "";
-		
+		int errorCode = 404;
+		if (result instanceof HttpResponseException)
+		{
+			HttpResponseException httpError = (HttpResponseException)result;
+			errorCode = httpError.getStatusCode();
+		}
 		//checking for repeating error
 		final long currentTime = System.currentTimeMillis();
 		if ((!errorMessage.equals(msLastErrorMessage)) || ((currentTime - msLastErrorMessageTime) > MINIMUM_ms_TIME_BETWEEN_ERRORS))
 		{
-			//mActivity.showMessage(errorMessage, mLongErrorMessageDelay? 2500 : 1250);
-			mListener.onRemoteActionError(errorMessage, mLongShowMessage);
+			mListener.onRemoteActionError(errorMessage, errorCode, mLongShowMessage);
 		}
 		msLastErrorMessage = errorMessage;
 		msLastErrorMessageTime = currentTime;

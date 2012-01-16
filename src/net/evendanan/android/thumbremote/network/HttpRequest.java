@@ -1,6 +1,7 @@
 package net.evendanan.android.thumbremote.network;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 /*
  * Controls the live cycle of a network connection.
@@ -8,6 +9,7 @@ import android.text.TextUtils;
  */
 public class HttpRequest {
 
+	private static final String TAG = "HttpRequest";
 	// We set these for all requests.
 	private static int msTimeout = 2000;
 	private static String msPassword;
@@ -42,9 +44,10 @@ public class HttpRequest {
 		}
 		catch(Exception e)
 		{
+			Log.w(TAG, "Caught an exception while fetching url "+url+". Error: "+e.getMessage());
 			close();
 			e.printStackTrace();
-			return new Response(false, "");
+			return new Response(false, 404, "Failed to connect to server");
 		}
 	}
 

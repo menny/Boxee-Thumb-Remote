@@ -8,6 +8,8 @@ import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.http.client.HttpResponseException;
+
 import net.evendanan.android.thumbremote.MediaStateListener;
 import net.evendanan.android.thumbremote.ServerAddress;
 import net.evendanan.android.thumbremote.ServerConnector;
@@ -241,7 +243,7 @@ public class BoxeeConnector implements ServerConnector  {
 	}
 	
 	@Override
-	public void onServerStateRetrievalError() {
+	public void onServerStateRetrievalError(int errorCode) {
 		clear();
 		mThumbnail = null;
 		//notifying UI
@@ -347,11 +349,11 @@ public class BoxeeConnector implements ServerConnector  {
 	
 	/*CONTROL*/
 
-	private Response sendHttpCommand(final String request) throws IOException {
+	private Response sendHttpCommand(final String request) throws HttpResponseException {
 		Response response = HttpRequest.getHttpResponse(request);
 		if (!response.success())
 		{
-			throw new IOException("Could not send command to Boxee!");
+			throw new HttpResponseException(response.responseCode(), response.response());
 		}
 		return response;
 	}

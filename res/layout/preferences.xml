@@ -66,7 +66,7 @@
 			android:key="@string/settings_key_server_username_key" 
 			android:title="@string/network_username_title"
 			android:summary="@string/network_username_summary"
-			android:defaultValue=""
+			android:defaultValue="boxee"
 			/>
 		<EditTextPreference 
 			android:key="@string/settings_key_server_password_key" 

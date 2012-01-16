@@ -345,8 +345,12 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 	
 	
 	@Override
-	public void onRemoteActionError(String userMessage, boolean longDelayMessage) {
-		if (!TextUtils.isEmpty(userMessage) && mUi != null) mUi.showMessage(userMessage, longDelayMessage? 2500 : 1250);
+	public void onRemoteActionError(String userMessage, int errorCode, boolean longDelayMessage) {
+		if (errorCode == 401)
+		{
+			setServiceState(State.ERROR_NO_PASSWORD);
+		}
+		else if (!TextUtils.isEmpty(userMessage) && mUi != null) mUi.showMessage(userMessage, longDelayMessage? 2500 : 1250);
 	}
 	
 	@Override

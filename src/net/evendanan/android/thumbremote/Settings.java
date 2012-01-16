@@ -168,7 +168,7 @@ public class Settings {
 	}
 	
 	public String getUser() {
-		return mPreferences.getString(SERVER_USERNAME_KEY, "");
+		return mPreferences.getString(SERVER_USERNAME_KEY, "boxee");
 	}
 	
 	public String getPassword() {

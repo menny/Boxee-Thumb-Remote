@@ -10,6 +10,6 @@ public interface ServerStateUrlsProvider {
 
 	void onServerStateResponsesAvailable(String[] responses);
 
-	void onServerStateRetrievalError();
+	void onServerStateRetrievalError(int errorCode);
 
 }

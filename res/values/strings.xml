@@ -51,7 +51,7 @@
     <string name="is_an_invalid_number"><xliff:g id="new_text">%s</xliff:g> is an invalid number</string>
     
     <string name="network_username_title">Username</string>
-    <string name="network_username_summary">Username to use as Boxee credentials</string>
+    <string name="network_username_summary">Username to use as Boxee credentials. Usually \'boxee\'!</string>
     <string name="network_password_title">Password</string>
     <string name="network_password_summary">Password to use as Boxee credentials</string>
     

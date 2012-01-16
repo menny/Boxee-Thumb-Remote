@@ -271,7 +271,6 @@ public class RemoteUiActivity extends Activity implements
 				return false;
 			}
 		});*/
-		loadPreferences();
 
 		setButtonAction(R.id.back, KeyEvent.KEYCODE_BACK);
 		setButtonAction(R.id.buttonPlayPause, 0);
@@ -333,6 +332,7 @@ public class RemoteUiActivity extends Activity implements
 		mThisAcitivityPaused = false;
 		
 		RemoteApplication.getConfig().listen(this);
+		loadPreferences();
 		
 		//mShakeDetector.resume();
 		

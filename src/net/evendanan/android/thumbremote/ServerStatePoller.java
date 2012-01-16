@@ -30,6 +30,7 @@ public final class ServerStatePoller {
 	
 	private boolean mInBackground = false;
 	private int mErrorsAllowedLeft = MAX_NETWORK_ERRORS;
+	private int mServerErrorCode = 200;
 	
 	private boolean mRun;
 
@@ -58,6 +59,7 @@ public final class ServerStatePoller {
 						String[] responses = getResponsesFromServer(mUrlsProvider.getServerStateUrls());
 						if (responses != null)
 						{
+							mServerErrorCode = 200;
 							mErrorsAllowedLeft = MAX_NETWORK_ERRORS;
 							mUrlsProvider.onServerStateResponsesAvailable(responses);
 						}
@@ -66,7 +68,7 @@ public final class ServerStatePoller {
 							mErrorsAllowedLeft--;
 							if (mErrorsAllowedLeft == 0)
 							{
-								mUrlsProvider.onServerStateRetrievalError();
+								mUrlsProvider.onServerStateRetrievalError(mServerErrorCode);
 							}
 						}
 					}
@@ -128,7 +130,10 @@ public final class ServerStatePoller {
 			final String url = urls[i];
 			Response r = HttpRequest.getHttpResponse(url);
 			if (!r.success())
+			{
+				mServerErrorCode = r.responseCode();
 				return null;
+			}
 			responses[i] = r.response();
 		}
 		

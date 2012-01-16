@@ -16,7 +16,6 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicCredentialsProvider;
@@ -57,31 +56,31 @@ class ReusableHttpClientBlocking implements HttpBlocking {
 	 */
 	public synchronized Response fetch(String url) throws IOException, URISyntaxException {
 		if (url == null)
-			return new Response(false, null);
+			return new Response(false, 404, null);
 
 		URI uri = new URI(url);
 		mRequest.setURI(uri);
 		Log.d(TAG, "Fetching " + url);
 		
-    	InputStream instream = null;
-        try {
-        	HttpResponse httpResponse = mHttpClient.execute(mRequest);
-            int responseCode = httpResponse.getStatusLine().getStatusCode();
-            String response = "";
-            HttpEntity entity = httpResponse.getEntity();
+    	HttpResponse httpResponse = mHttpClient.execute(mRequest);
+        int responseCode = httpResponse.getStatusLine().getStatusCode();
+        String response = "";
+        HttpEntity entity = httpResponse.getEntity();
 
-            if (entity != null) {
+        if (entity != null) {
 
-                instream = entity.getContent();
-                response = convertStreamToString(instream);
-            }
-
-            return new Response(responseCode >= 200 && responseCode < 300, response);
-        } catch (ClientProtocolException e)  {
-            throw e;
-        } catch (IOException e) {
-            throw e;
+        	InputStream instream = entity.getContent();
+            response = convertStreamToString(instream);
         }
+
+        boolean success = responseCode >= 200 && responseCode < 300;
+        if (!success)
+        {
+        	Log.w(TAG, "Got error response code "+responseCode);
+        	return new Response(false, responseCode, httpResponse.getStatusLine().getReasonPhrase());
+        }
+        
+        return new Response(true, responseCode, response);
 	}
 	
 	@Override

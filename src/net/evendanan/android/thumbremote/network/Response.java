@@ -3,12 +3,14 @@ package net.evendanan.android.thumbremote.network;
 public class Response
 {
 	private final boolean mSuccess;
+	private final int mResponseCode;
 	private final String mResponse;
 	
-	Response(boolean success, String response)
+	Response(boolean success, int responseCode, String response)
 	{
 		mSuccess = success;
 		mResponse = response;
+		mResponseCode = responseCode;
 	}
 	
 	/**
@@ -16,6 +18,10 @@ public class Response
 	 */
 	public boolean success() {
 		return mSuccess;
+	}
+	
+	public int responseCode(){
+		return mResponseCode;
 	}
 
 	/**
