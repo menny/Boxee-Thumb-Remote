@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+  	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="@dimen/seekbar_dialog_width"
+  	android:layout_height="wrap_content"
+  	android:orientation="vertical"
+  	android:padding="8dp">
+  
+	<TextView 
+		android:text="@string/slide_to_time" 
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content"
+		android:gravity="center" style="@android:style/TextAppearance.Large"/>
+		
+	<TextView 
+		android:id="@+id/time_string"
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content"
+		android:gravity="center" style="@android:style/TextAppearance.Medium"/>
+	  
+	<SeekBar android:id="@+id/time_seek_bar" android:max="1000"
+	    android:layout_width="fill_parent" android:layout_height="wrap_content"/>
+	
+	<Button android:id="@+id/seeker_close_button" android:text="@string/close_button"
+	    android:layout_height="wrap_content" android:layout_width="wrap_content"
+	    android:layout_gravity="center_horizontal"
+	    android:layout_marginTop="10dp"/>
+</LinearLayout>

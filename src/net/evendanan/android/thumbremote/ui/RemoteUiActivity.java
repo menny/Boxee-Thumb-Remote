@@ -22,6 +22,7 @@ import android.app.ProgressDialog;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
@@ -49,12 +50,14 @@ import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.ViewFlipper;
 
 
 public class RemoteUiActivity extends Activity implements
-		OnSharedPreferenceChangeListener, OnClickListener, OnShakeListener, UiView {
+		OnSharedPreferenceChangeListener, OnClickListener, OnShakeListener, UiView, OnSeekBarChangeListener {
 
 	public final static String TAG = RemoteUiActivity.class.toString();
 
@@ -95,9 +98,14 @@ public class RemoteUiActivity extends Activity implements
 	TextView mMediaDetails = null;
 	InputMethodManager mImeManager;
 	TextView mKeyboardText;
+	private boolean mMediaSeekBarInUserChange = false;
+	private SeekBar mMediaSeekBar;
+	private TextView mMediaSeekDialogTime;
+	private static final int MEDIA_SEEKER_MAX = 10000;
 	
 	private static final int DIALOG_NO_PASSWORD = 1;
 	private static final int DIALOG_NO_SERVER = 2;
+	private static final int DIALOG_MEDIA_TIME_SEEK = 3;
 	
 	boolean mThisAcitivityPaused = true;
 	
@@ -224,6 +232,7 @@ public class RemoteUiActivity extends Activity implements
 		mTextElapsed = (TextView) findViewById(R.id.textElapsed);
 		mDuration = (TextView) findViewById(R.id.textDuration);
 		mElapsedBar = (ProgressBar) findViewById(R.id.progressTimeBar);
+		mElapsedBar.setOnClickListener(this);
 		mMediaDetails = (TextView)findViewById(R.id.textMediaDetails);
 		mImeManager = (InputMethodManager)getSystemService(Service.INPUT_METHOD_SERVICE);
 		mKeyboardText = (TextView)findViewById(R.id.keyboard_text);
@@ -402,6 +411,8 @@ public class RemoteUiActivity extends Activity implements
 		case R.id.buttonOpenKeyboard:
 			showOnScreenKeyboard();
 			break;
+		case R.id.progressTimeBar:
+			showDialog(DIALOG_MEDIA_TIME_SEEK);
 		}
 
 	}
@@ -514,6 +525,19 @@ public class RemoteUiActivity extends Activity implements
 		mTextElapsed.setText(serverState.getMediaCurrentTime());
 
 		mElapsedBar.setProgress(serverState.getMediaProgressPercent());
+		
+		if (!mMediaSeekBarInUserChange)
+		{
+			if (mMediaSeekBar != null)
+			{
+				mMediaSeekBar.setProgress(serverState.getMediaProgressPercent() * (MEDIA_SEEKER_MAX / 100));
+			}
+			if (mMediaSeekDialogTime != null)
+			{
+				mMediaSeekDialogTime.setText(serverState.getMediaCurrentTime());
+			}
+		}
+		
 	}
 	
 	private void refreshMetadataChanged(ServerState serverState) {
@@ -679,6 +703,7 @@ public class RemoteUiActivity extends Activity implements
 	}
 
 	private int mSwipeStepSize = -1;
+
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		
@@ -806,6 +831,8 @@ public class RemoteUiActivity extends Activity implements
 			return createCredentialsRequiredDialog();
 		case DIALOG_NO_SERVER:
 			return  createNoServerDialog();
+		case DIALOG_MEDIA_TIME_SEEK:
+			return createMediaTimeSeekDialog();
 		}
 		
 		return super.onCreateDialog(id);
@@ -814,6 +841,13 @@ public class RemoteUiActivity extends Activity implements
 	@Override
 	protected void onPrepareDialog(int id, Dialog dialog) {
 		mAlertDialog = dialog;
+		if (id == DIALOG_MEDIA_TIME_SEEK)
+		{
+			mMediaSeekBarInUserChange = false;
+			mMediaSeekBar = (SeekBar) dialog.findViewById(R.id.time_seek_bar);
+			mMediaSeekBar.setMax(MEDIA_SEEKER_MAX);
+			mMediaSeekDialogTime = (TextView)dialog.findViewById(R.id.time_string);
+		}
 		super.onPrepareDialog(id, dialog);
 	}
 
@@ -839,6 +873,28 @@ public class RemoteUiActivity extends Activity implements
 		return alert;
 	}
 
+	private Dialog createMediaTimeSeekDialog() {
+		final Dialog seeker = new Dialog(this, R.style.Popup);
+		seeker.setContentView(R.layout.custom_time_selection);
+		seeker.findViewById(R.id.seeker_close_button).setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				seeker.dismiss();
+			}
+		});
+		seeker.setOnDismissListener(new OnDismissListener() {
+			@Override
+			public void onDismiss(DialogInterface dialog) {
+				mMediaSeekBar = null;
+			}
+		});
+
+		SeekBar seekBar = (SeekBar) seeker.findViewById(R.id.time_seek_bar);
+		seekBar.setOnSeekBarChangeListener(this);
+		
+		return seeker;
+	}
+	
 	private Dialog createNoServerDialog() {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder
@@ -867,6 +923,21 @@ public class RemoteUiActivity extends Activity implements
 		return alert;
 	}
 
+	@Override
+	public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+		
+	}
+	
+	@Override
+	public void onStartTrackingTouch(SeekBar seekBar) {
+		mMediaSeekBarInUserChange = true;
+	}
+	
+	@Override
+	public void onStopTrackingTouch(SeekBar seekBar) {
+		mMediaSeekBarInUserChange = false;
+	}
+	
 	/**
 	 * Callback when user alters preferences.
 	 */

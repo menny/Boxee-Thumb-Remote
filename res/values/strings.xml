@@ -95,4 +95,6 @@
 	
 	<string name="discoverying_dialog_title"></string>
 	<string name="discoverying_dialog_message">Looking for a server...</string>
+	
+	<string name="slide_to_time">Seek</string>
 </resources>
