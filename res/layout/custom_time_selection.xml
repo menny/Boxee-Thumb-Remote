@@ -6,23 +6,28 @@
   	android:orientation="vertical"
   	android:padding="8dp">
   
-	<TextView 
+    <LinearLayout android:orientation="horizontal"
+        android:layout_width="fill_parent" android:layout_height="wrap_content"
+        android:weightSum="1">
+        <TextView 
 		android:text="@string/slide_to_time" 
-		android:layout_width="fill_parent" 
+		android:layout_width="wrap_content" 
 		android:layout_height="wrap_content"
-		android:gravity="center" style="@android:style/TextAppearance.Large"/>
-		
-	<TextView 
-		android:id="@+id/time_string"
-		android:layout_width="fill_parent" 
-		android:layout_height="wrap_content"
-		android:gravity="center" style="@android:style/TextAppearance.Medium"/>
-	  
+		android:gravity="center" style="@android:style/TextAppearance.Medium"
+		android:layout_gravity="center"/>
+        <TextView 
+			android:id="@+id/time_string"
+			android:layout_width="0px" android:layout_weight="1"
+			android:layout_height="wrap_content"
+			android:gravity="center" style="@android:style/TextAppearance.Small"
+			android:layout_gravity="center"/>
+        <ImageView android:id="@+id/seeker_close_button"
+            android:contentDescription="@string/close_button"
+            android:src="@android:drawable/ic_menu_close_clear_cancel" 
+		    android:layout_height="wrap_content" android:layout_width="wrap_content"
+		    android:layout_gravity="center"/>
+    </LinearLayout>
+      
 	<SeekBar android:id="@+id/time_seek_bar" android:max="1000"
 	    android:layout_width="fill_parent" android:layout_height="wrap_content"/>
-	
-	<Button android:id="@+id/seeker_close_button" android:text="@string/close_button"
-	    android:layout_height="wrap_content" android:layout_width="wrap_content"
-	    android:layout_gravity="center_horizontal"
-	    android:layout_marginTop="10dp"/>
 </LinearLayout>

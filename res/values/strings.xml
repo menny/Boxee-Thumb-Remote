@@ -94,7 +94,7 @@
 	<string name="no_server_found_action_neither">Neither</string>
 	
 	<string name="discoverying_dialog_title"></string>
-	<string name="discoverying_dialog_message">Looking for a server...</string>
+	<string name="discoverying_dialog_message">Looking for a server…</string>
 	
-	<string name="slide_to_time">Seek</string>
+	<string name="slide_to_time">Seek to:</string>
 </resources>

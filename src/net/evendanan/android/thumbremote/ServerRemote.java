@@ -27,6 +27,8 @@ public interface ServerRemote {
 	void stop() throws IOException;
 
 	void seekRelative(double pct) throws IOException;
+	
+	void seekTo(double pct) throws IOException;
 
 	void setServer(ServerAddress server);
 	

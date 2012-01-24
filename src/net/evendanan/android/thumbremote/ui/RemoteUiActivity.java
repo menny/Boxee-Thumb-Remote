@@ -98,10 +98,13 @@ public class RemoteUiActivity extends Activity implements
 	TextView mMediaDetails = null;
 	InputMethodManager mImeManager;
 	TextView mKeyboardText;
+	
+	private double mSeekToPercentRequest = -1;
+	private int mTotalDuration = 0;
+	private int mCurrentTime = 0;
 	private boolean mMediaSeekBarInUserChange = false;
 	private SeekBar mMediaSeekBar;
 	private TextView mMediaSeekDialogTime;
-	private static final int MEDIA_SEEKER_MAX = 10000;
 	
 	private static final int DIALOG_NO_PASSWORD = 1;
 	private static final int DIALOG_NO_SERVER = 2;
@@ -521,16 +524,17 @@ public class RemoteUiActivity extends Activity implements
 	private void refreshPlayingProgressChanged(ServerState serverState)
 	{
 		mDuration.setText(serverState.getMediaTotalTime());
-		
+		mTotalDuration = ServerRemoteService.hmsToSeconds(serverState.getMediaTotalTime());
 		mTextElapsed.setText(serverState.getMediaCurrentTime());
-
+		mCurrentTime = ServerRemoteService.hmsToSeconds(serverState.getMediaCurrentTime());
+		
 		mElapsedBar.setProgress(serverState.getMediaProgressPercent());
 		
 		if (!mMediaSeekBarInUserChange)
 		{
 			if (mMediaSeekBar != null)
 			{
-				mMediaSeekBar.setProgress(serverState.getMediaProgressPercent() * (MEDIA_SEEKER_MAX / 100));
+				mMediaSeekBar.setProgress(mCurrentTime);
 			}
 			if (mMediaSeekDialogTime != null)
 			{
@@ -844,9 +848,12 @@ public class RemoteUiActivity extends Activity implements
 		if (id == DIALOG_MEDIA_TIME_SEEK)
 		{
 			mMediaSeekBarInUserChange = false;
+			mSeekToPercentRequest = -1;
 			mMediaSeekBar = (SeekBar) dialog.findViewById(R.id.time_seek_bar);
-			mMediaSeekBar.setMax(MEDIA_SEEKER_MAX);
+			mMediaSeekBar.setMax(mTotalDuration);
+			mMediaSeekBar.setProgress(mCurrentTime);
 			mMediaSeekDialogTime = (TextView)dialog.findViewById(R.id.time_string);
+			mMediaSeekDialogTime.setText(mTextElapsed.getText());
 		}
 		super.onPrepareDialog(id, dialog);
 	}
@@ -925,17 +932,48 @@ public class RemoteUiActivity extends Activity implements
 
 	@Override
 	public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+		if (fromUser)
+		{
+			mSeekToPercentRequest = 100f * ((float)progress / (float)seekBar.getMax());
+			String totalTime = mDuration.getText().toString();
+			int totalSeconds = ServerRemoteService.hmsToSeconds(totalTime);
+			if (totalSeconds > 0)
+			{
+				int newSeconds = (int)(mSeekToPercentRequest * ((float)totalSeconds))/100;
+				mMediaSeekDialogTime.setText(secondsToHms(newSeconds));
+			}
+			else
+			{
+				mMediaSeekDialogTime.setText("---");
+			}
+		}
+	}
+	
+	private static String secondsToHms(int totalSeconds)
+	{
+		int hours = totalSeconds / (60 * 60);
+		int minutes = (totalSeconds / 60) % 60;
+		int seconds = totalSeconds % 60;
 		
+		if (hours > 0)
+			return String.format("%d:%02d:%02d", hours, minutes, seconds);
+		else
+			return String.format("%02d:%02d", minutes, seconds);
 	}
 	
 	@Override
 	public void onStartTrackingTouch(SeekBar seekBar) {
+		mSeekToPercentRequest = -1f;
 		mMediaSeekBarInUserChange = true;
 	}
 	
 	@Override
 	public void onStopTrackingTouch(SeekBar seekBar) {
 		mMediaSeekBarInUserChange = false;
+		if (mSeekToPercentRequest >= 0)
+		{
+			if (mBoundService != null) mBoundService.remoteSeekTo(mSeekToPercentRequest);
+		}
 	}
 	
 	/**

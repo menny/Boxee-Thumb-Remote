@@ -42,6 +42,7 @@ public class BoxeeConnector implements ServerConnector  {
 	private String mRequestStop = null;
 	private String mSendKeyRequestTemplate = null;
 	private String mSeekPercentageRelativeTemplate = null;
+	private String mSeekPercentageTemplate = null;
 	private String[] mCurrentPlayingUrls = null;
 	private String mRequestUp = null;
 	private String mRequestDown = null;
@@ -85,6 +86,7 @@ public class BoxeeConnector implements ServerConnector  {
 			mSendKeyRequestTemplate = null;
 			mCurrentPlayingUrls = null;
 			mSeekPercentageRelativeTemplate = null;
+			mSeekPercentageTemplate = null;
 			mRequestUp = null;
 			mRequestDown = null;
 			mRequestLeft = null;
@@ -111,6 +113,7 @@ public class BoxeeConnector implements ServerConnector  {
 			mRequestPausePlay = mRequestPrefix+"Pause";
 			mRequestStop = mRequestPrefix+"Stop";
 			mSeekPercentageRelativeTemplate = mRequestPrefix + "SeekPercentageRelative(%3.5f)";
+			mSeekPercentageTemplate = mRequestPrefix + "SeekPercentage(%3.5f)";
 			mRequestGetVolume = mRequestPrefix+"getVolume()";
 			mRequestSetVolumeTemplate = mRequestPrefix+"setVolume(%d)";
 			//mRequestGetOnScreenText = mRequestPrefix+"getKeyboardText()";
@@ -449,6 +452,13 @@ public class BoxeeConnector implements ServerConnector  {
 	@Override
 	public void seekRelative(double pct) throws IOException {
 		String request = String.format(mSeekPercentageRelativeTemplate, pct);
+
+		sendHttpCommand(request);
+	}
+
+	@Override
+	public void seekTo(double pct) throws IOException {
+		String request = String.format(mSeekPercentageTemplate, pct);
 
 		sendHttpCommand(request);
 	}

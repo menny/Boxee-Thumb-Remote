@@ -361,25 +361,32 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 		mHandler.postDelayed(mCheckServerStateASAP, 100);
 	}
 
-	private static int hmsToSeconds(String hms) {
+	public static int hmsToSeconds(String hms) {
 		if (TextUtils.isEmpty(hms))
 			return 0;
 
-		int seconds = 0;
-		String[] times = hms.split(":");
-
-		// seconds
-		seconds += Integer.parseInt(times[times.length - 1]);
-
-		// minutes
-		if (times.length >= 2)
-			seconds += Integer.parseInt(times[times.length - 2]) * 60;
-
-		// hours
-		if (times.length >= 3)
-			seconds += Integer.parseInt(times[times.length - 3]) * 3600;
-
-		return seconds;
+		try
+		{
+			int seconds = 0;
+			String[] times = hms.split(":");
+	
+			// seconds
+			seconds += Integer.parseInt(times[times.length - 1]);
+	
+			// minutes
+			if (times.length >= 2)
+				seconds += Integer.parseInt(times[times.length - 2]) * 60;
+	
+			// hours
+			if (times.length >= 3)
+				seconds += Integer.parseInt(times[times.length - 3]) * 3600;
+	
+			return seconds;
+		}
+		catch(Exception e)
+		{
+			return 0;
+		}
 	}
 	/*CONTROLLER interface*/
 
@@ -401,11 +408,20 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 		}.execute();
 	}
 
-	public void remoteSeek(final double newSeekPosition) {
+	public void remoteSeekRelative(final double newSeekPosition) {
 		new DoServerRemoteAction(this, false) {
 			@Override
 			protected void callRemoteFunction() throws Exception {
 				mRemote.seekRelative(newSeekPosition);
+			}
+		}.execute();
+	}
+	
+	public void remoteSeekTo(final double newSeekPosition) {
+		new DoServerRemoteAction(this, false) {
+			@Override
+			protected void callRemoteFunction() throws Exception {
+				mRemote.seekTo(newSeekPosition);
 			}
 		}.execute();
 	}
@@ -416,7 +432,7 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 		if (duration > 0)
 		{
 			final double newSeekPosition = seekOffset * 100f / duration;
-			remoteSeek(newSeekPosition);
+			remoteSeekRelative(newSeekPosition);
 		}
 	}
 
