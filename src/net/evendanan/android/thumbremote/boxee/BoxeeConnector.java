@@ -158,7 +158,7 @@ public class BoxeeConnector implements ServerConnector  {
 				byte[] thumb;
 				try {
 					thumb = iharder.base64.Base64.decode(shorter.getBytes());
-				} catch (IOException e) {
+				} catch (Exception e) {//protect about decode's IOExceptions and other RuntimeExceptions
 					thumb = null;
 					e.printStackTrace();
 				}
