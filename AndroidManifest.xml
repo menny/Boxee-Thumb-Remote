@@ -2,8 +2,8 @@
 <manifest 
 	xmlns:android="http://schemas.android.com/apk/res/android"
     package="net.evendanan.android.thumbremote"
-    android:versionCode="23"
-    android:versionName="20120202-thumbs_up-dad-bday"
+    android:versionCode="24"
+    android:versionName="20120202-thumbs_up-dad-bday-77"
     android:installLocation="auto">
     
     <supports-screens

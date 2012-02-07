@@ -508,9 +508,9 @@ public class RemoteUiActivity extends Activity implements
 			flipTo(PAGE_NOWPLAYING);
 			
 			//if (mBoundService!=null) mBoundService.showPlayingNotification(title);
-			Intent i = new Intent(this, ServerRemoteService.class);
-			i.putExtra(ServerRemoteService.KEY_DATA_TITLE, title);
-			startService(i);
+//			Intent i = new Intent(this, ServerRemoteService.class);
+//			i.putExtra(ServerRemoteService.KEY_DATA_TITLE, title);
+//			startService(i);
 		}
 		else
 		{

@@ -42,7 +42,7 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 	
 	private static final String TAG = "ServerRemoteService";
     
-	public static final String KEY_DATA_TITLE = "KEY_DATA_TITLE";
+	//public static final String KEY_DATA_TITLE = "KEY_DATA_TITLE";
 	
 	private static final int NOTIFICATION_PLAYING_ID = 1;
 
