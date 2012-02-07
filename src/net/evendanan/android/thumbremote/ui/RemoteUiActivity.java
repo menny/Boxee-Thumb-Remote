@@ -235,7 +235,7 @@ public class RemoteUiActivity extends Activity implements
 		mTextElapsed = (TextView) findViewById(R.id.textElapsed);
 		mDuration = (TextView) findViewById(R.id.textDuration);
 		mElapsedBar = (ProgressBar) findViewById(R.id.progressTimeBar);
-		mElapsedBar.setOnClickListener(this);
+		findViewById(R.id.layoutTimeBar).setOnClickListener(this);
 		mMediaDetails = (TextView)findViewById(R.id.textMediaDetails);
 		mImeManager = (InputMethodManager)getSystemService(Service.INPUT_METHOD_SERVICE);
 		mKeyboardText = (TextView)findViewById(R.id.keyboard_text);
@@ -415,6 +415,7 @@ public class RemoteUiActivity extends Activity implements
 			showOnScreenKeyboard();
 			break;
 		case R.id.progressTimeBar:
+		case R.id.layoutTimeBar:
 			showDialog(DIALOG_MEDIA_TIME_SEEK);
 		}
 

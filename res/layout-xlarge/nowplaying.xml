@@ -71,6 +71,8 @@
 	android:layout_width="fill_parent" 
 	android:layout_height="wrap_content"
 	android:padding="5dp"
+	android:focusable="true" android:focusableInTouchMode="true"
+	android:clickable="true" 
 	>
 
 	<ProgressBar 
@@ -85,7 +87,7 @@
 	
 	<TextView
 		android:id="@+id/textElapsed"
-		android:text="time"
+		android:text=""
 		android:layout_height="wrap_content"
 		android:layout_width="wrap_content" 
 		android:layout_below="@id/progressTimeBar"
@@ -95,7 +97,6 @@
 	
 	<TextView
 		android:id="@+id/textDuration"
-		android:text="duration"
 		android:layout_height="wrap_content"
 		android:layout_width="wrap_content" 
 		android:layout_below="@id/progressTimeBar"
