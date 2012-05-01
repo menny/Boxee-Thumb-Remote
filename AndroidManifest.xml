@@ -2,8 +2,8 @@
 <manifest 
 	xmlns:android="http://schemas.android.com/apk/res/android"
     package="net.evendanan.android.thumbremote"
-    android:versionCode="24"
-    android:versionName="20120202-thumbs_up-dad-bday-77"
+    android:versionCode="25"
+    android:versionName="20120501"
     android:installLocation="auto">
     
     <supports-screens
@@ -14,7 +14,7 @@
 			android:anyDensity="true" />
 		        <!-- http://d.android.com/guide/practices/screens_support.html read about legacy. -->
     
-    <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="10"></uses-sdk>
+    <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="15"></uses-sdk>
 	
 	<uses-permission android:name="android.permission.INTERNET" />
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
