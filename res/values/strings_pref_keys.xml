@@ -59,4 +59,6 @@
     <string name="settings_key_network_timeout_key">settings_key_network_timeout_key</string>
     <string name="settings_key_network_timeout_default_value">750</string>
     
+    <string name="settings_key_pause_on_call">settings_key_pause_on_call</string>
+    <bool name="settings_key_pause_on_call_default">true</bool>
 </resources>

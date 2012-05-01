@@ -45,9 +45,10 @@ public class Settings {
 	private final boolean KEEP_SCREEN_ON_DEFAULT;
 	private final String SCREEN_ORIENTATION_KEY;
 	private final String SCREEN_ORIENTATION_DEFAULT_VALUE;
-	
 	private final String NETWORK_TIMEOUT_KEY;
 	private final String NETWORK_TIMEOUT_DEFAULT_VALUE;
+	private final String PAUSE_ON_CALL_KEY;
+	private final boolean PAUSE_ON_CALL_DEFAULT;
 	
 	private SharedPreferences mPreferences;
 
@@ -86,6 +87,9 @@ public class Settings {
 		
 		NETWORK_TIMEOUT_KEY = res.getString(R.string.settings_key_network_timeout_key);
 		NETWORK_TIMEOUT_DEFAULT_VALUE = res.getString(R.string.settings_key_network_timeout_default_value);
+		
+		PAUSE_ON_CALL_KEY = res.getString(R.string.settings_key_pause_on_call);
+		PAUSE_ON_CALL_DEFAULT = res.getBoolean(R.bool.settings_key_pause_on_call_default);
 	}
 
 	public int getVolumeStep() {
@@ -131,6 +135,10 @@ public class Settings {
 	
 	public boolean getHandleBack() {
 		return mPreferences.getBoolean(HANDLE_HARD_BACK_KEY, HANDLE_HARD_BACK_DEFAULT);
+	}
+		
+	public boolean getPauseOnCall() {
+		return mPreferences.getBoolean(PAUSE_ON_CALL_KEY, PAUSE_ON_CALL_DEFAULT);
 	}
 	
 	public boolean getKeepScreenOn(){

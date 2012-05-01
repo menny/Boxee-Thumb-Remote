@@ -196,11 +196,18 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 	public State getServiceState() {return mState;}
 	
 	private void onPhone() {
-		Log.i(TAG, "Got a phone call! Pausing if running...");
-		if (mRemote.isMediaPlaying())
+		if (RemoteApplication.getConfig().getPauseOnCall())
 		{
-			Log.d(TAG, "Pausing media, since it is runing.");
-			remoteFlipPlayPause();
+			Log.i(TAG, "Got a phone call! Pausing if running...");
+			if (mRemote.isMediaPlaying())
+			{
+				Log.d(TAG, "Pausing media, since it is runing.");
+				remoteFlipPlayPause();
+			}
+		}
+		else
+		{
+			Log.i(TAG, "Got a phone call! But auto-pause is disabled.");
 		}
 	}
 	

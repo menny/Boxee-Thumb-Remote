@@ -97,4 +97,8 @@
 	<string name="discoverying_dialog_message">Looking for a server…</string>
 	
 	<string name="slide_to_time">Seek to:</string>
+	
+	<string name="pause_on_call_title">Pause media on call</string>
+	<string name="pause_on_call_yes">Incoming phone calls will pause running media</string>
+	<string name="pause_on_call_no">Media will continue to run</string>
 </resources>
