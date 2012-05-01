@@ -53,7 +53,14 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 	private final BroadcastReceiver mCallReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            onPhone();
+        	if (intent != null)
+        	{
+        		String newState = intent.getStringExtra(TelephonyManager.EXTRA_STATE);
+        		if (newState != null && newState.equals(TelephonyManager.EXTRA_STATE_RINGING))
+        		{
+        			onPhone();
+        		}
+        	}
         }
     };
     
