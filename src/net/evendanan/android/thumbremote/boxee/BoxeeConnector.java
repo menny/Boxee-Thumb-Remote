@@ -433,8 +433,10 @@ public class BoxeeConnector implements ServerConnector  {
 			sendKeyPress(61704);
 		else
 		{
+			/* issue #3: allow lowercase letters anyhow
 			if (Character.isLetter(unicode)) unicode = Character.toUpperCase(unicode);
-			//this is abug I can't find a way to fix: lowercase L does not register in Boxee....
+			//this is a bug I can't find a way to fix: lowercase L does not register in Boxee....
+			 */
 			sendKeyPress(unicode + 61696);
 		}
 	}
