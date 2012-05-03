@@ -7,4 +7,9 @@
    		<item name="android:maxWidth">320dp</item>
     </style>
     
+    
+    <style name="BoxeeInOut">
+        <item name="android:windowEnterAnimation">@anim/boxee_dialog_in</item>
+        <item name="android:windowExitAnimation">@anim/boxee_dialog_out</item>
+    </style>
 </resources>

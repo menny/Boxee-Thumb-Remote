@@ -204,8 +204,8 @@ public class RemoteUiActivity extends Activity implements
 		};
 		*/
 		mHandler = new Handler();
-		mInAnimation = AnimationUtils.loadAnimation(getApplicationContext(), android.R.anim.slide_in_left);
-		mOutAnimation = AnimationUtils.loadAnimation(getApplicationContext(), android.R.anim.slide_out_right);
+		mInAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.boxee_dialog_in);
+		mOutAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.boxee_dialog_out);
 		mOutAnimation.setAnimationListener(new AnimationListener() {
 			@Override
 			public void onAnimationStart(Animation animation) {}
@@ -846,6 +846,7 @@ public class RemoteUiActivity extends Activity implements
 	@Override
 	protected void onPrepareDialog(int id, Dialog dialog) {
 		mAlertDialog = dialog;
+		if (mAlertDialog != null) mAlertDialog.getWindow().setWindowAnimations(R.style.BoxeeInOut);
 		if (id == DIALOG_MEDIA_TIME_SEEK)
 		{
 			mMediaSeekBarInUserChange = false;
@@ -1005,6 +1006,7 @@ public class RemoteUiActivity extends Activity implements
 					break;
 				case DISCOVERYING:
 					mPleaseWaitDialog = ProgressDialog.show(RemoteUiActivity.this, getString(R.string.discoverying_dialog_title), getString(R.string.discoverying_dialog_message), true, false);
+					mPleaseWaitDialog.getWindow().setWindowAnimations(R.style.BoxeeInOut);
 					break;
 				case ERROR_NO_PASSWORD:
 					showDialog(DIALOG_NO_PASSWORD);
