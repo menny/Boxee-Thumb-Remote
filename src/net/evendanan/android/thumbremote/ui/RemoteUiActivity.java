@@ -15,7 +15,6 @@ import net.evendanan.android.thumbremote.UiView;
 import net.evendanan.android.thumbremote.network.HttpRequest;
 import net.evendanan.android.thumbremote.service.ServerRemoteService;
 import net.evendanan.android.thumbremote.service.State;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -34,12 +33,14 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.support.v4.app.FragmentActivity;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.method.KeyListener;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -56,7 +57,7 @@ import android.widget.TextView;
 import android.widget.ViewFlipper;
 
 
-public class RemoteUiActivity extends Activity implements
+public class RemoteUiActivity extends FragmentActivity implements
 		OnSharedPreferenceChangeListener, OnClickListener, OnShakeListener, UiView, OnSeekBarChangeListener {
 
 	public final static String TAG = RemoteUiActivity.class.toString();
@@ -75,11 +76,12 @@ public class RemoteUiActivity extends Activity implements
 	private static final int MESSAGE_MEDIA_METADATA_CHANGED = MESSAGE_MEDIA_PLAYING_PROGRESS_CHANGED + 1;
 	*/
 	// Menu items
+	/*
 	private static final int MENU_SETTINGS = Menu.FIRST;
 	private static final int MENU_HELP = MENU_SETTINGS+1;
 	private static final int MENU_RESCAN = MENU_HELP+1;
 	private static final int MENU_EXIT = MENU_RESCAN+1;
-	
+	*/
 	// ViewFlipper
 	private static final int PAGE_NOTPLAYING = 0;
 	private static final int PAGE_NOWPLAYING = 1;
@@ -355,35 +357,27 @@ public class RemoteUiActivity extends Activity implements
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		menu.add(Menu.NONE, MENU_SETTINGS, 0, R.string.settings).setIcon(
-				android.R.drawable.ic_menu_preferences);
-		
-		menu.add(Menu.NONE, MENU_HELP, 0, R.string.help).setIcon(
-				android.R.drawable.ic_menu_help);
-		
-		menu.add(Menu.NONE, MENU_RESCAN, 0, R.string.rescan_servers).setIcon(
-				android.R.drawable.ic_menu_search);
-		
-		menu.add(Menu.NONE, MENU_EXIT, 0, R.string.exit_app).setIcon(
-				android.R.drawable.ic_menu_close_clear_cancel);
-		return true;
+		MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.menu, menu);
+	    //MenuItemCompat.setShowAsAction(menu.findItem(R.id.menu_settings), MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
+	    return true;
 	}
 	
 	@Override
 	public boolean onMenuItemSelected(int featureId, MenuItem item) {
 		switch(item.getItemId())
 		{
-		case MENU_EXIT:
+		case R.id.menu_exit_app:
 			if (mBoundService != null) mBoundService.forceStop();
 			finish();
 			return true;
-		case MENU_HELP:
+		case R.id.menu_help:
 			startHelpActivity();
 			return true;
-		case MENU_SETTINGS:
+		case R.id.menu_settings:
 			startSetupActivity();
 			return true;
-		case MENU_RESCAN:
+		case R.id.menu_rescan_servers:
 			if (mBoundService != null) mBoundService.remoteRescanForServers();
 			return true;
 		default:
