@@ -36,10 +36,10 @@ public class FragmentAlertDialogSupport extends DialogFragment {
     public static final int DIALOG_MEDIA_TIME_SEEK = 3;
     public static final int DIALOG_DISCOVERYING = 4;
 
-    public static FragmentAlertDialogSupport newInstance(int type) {
+    public static FragmentAlertDialogSupport newInstance(int dialog_id) {
         FragmentAlertDialogSupport frag = new FragmentAlertDialogSupport();
         Bundle args = new Bundle();
-        args.putInt("type", type);
+        args.putInt("dialog_id", dialog_id);
         frag.setArguments(args);
         return frag;
     }
@@ -61,10 +61,8 @@ public class FragmentAlertDialogSupport extends DialogFragment {
                         dialog.cancel();
                     }
                 });
-            
-        AlertDialog alert = builder.create();
-        
-        return alert;
+
+        return builder.create();
     }
 
     private Dialog createMediaTimeSeekDialog() {
@@ -115,9 +113,7 @@ public class FragmentAlertDialogSupport extends DialogFragment {
                                 dialog.cancel();
                             }
                         });
-        AlertDialog alert = builder.create();
-
-        return alert;
+        return builder.create();
     }
 
     private Dialog creatDiscoveryProgressDialog() {
@@ -126,13 +122,13 @@ public class FragmentAlertDialogSupport extends DialogFragment {
         p.setMessage(getString(R.string.discoverying_dialog_message));
         p.setIndeterminate(true);
         p.setCancelable(false);
-        
+
         return p;
     }
-    
+
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        final int id = getArguments().getInt("type");
+        final int id = getArguments().getInt("dialog_id");
 
         Dialog dialog = null;
         switch (id)
@@ -154,6 +150,8 @@ public class FragmentAlertDialogSupport extends DialogFragment {
         if (dialog != null)
             dialog.getWindow().setWindowAnimations(R.style.BoxeeInOut);
         
-        return null;
-    }   
+        ((RemoteUiActivity)getActivity()).onFragmentDialogReady(dialog, id);
+        
+        return dialog;
+    }
 }

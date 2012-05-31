@@ -6,6 +6,7 @@
 
 package net.evendanan.android.thumbremote.ui;
 
+import android.app.Dialog;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -122,6 +123,8 @@ public class RemoteUiActivity extends FragmentActivity implements
     private boolean mDragged = false;
     private boolean mIsMediaActive = false;
     //private ProgressDialog mPleaseWaitDialog;
+
+    private Dialog mOpenDialog;
 
     private Handler mHandler;
 
@@ -443,18 +446,23 @@ public class RemoteUiActivity extends FragmentActivity implements
         
         DialogFragment newFragment = FragmentAlertDialogSupport.newInstance(dialog_id);
         if (newFragment == null) return;
+        
+        newFragment.show(getSupportFragmentManager(), "dialog");
+    }
+    
+    public void onFragmentDialogReady(Dialog dialog, final int dialog_id) {
+        mOpenDialog = dialog;
+        
         if (dialog_id == FragmentAlertDialogSupport.DIALOG_MEDIA_TIME_SEEK)
         {
             mMediaSeekBarInUserChange = false;
             mSeekToPercentRequest = -1;
-            mMediaSeekBar = (SeekBar) newFragment.getDialog().findViewById(R.id.time_seek_bar);
+            mMediaSeekBar = (SeekBar) mOpenDialog.findViewById(R.id.time_seek_bar);
             mMediaSeekBar.setMax(mTotalDuration);
             mMediaSeekBar.setProgress(mCurrentTime);
-            mMediaSeekDialogTime = (TextView) newFragment.getDialog().findViewById(R.id.time_string);
+            mMediaSeekDialogTime = (TextView) mOpenDialog.findViewById(R.id.time_string);
             mMediaSeekDialogTime.setText(mTextElapsed.getText());
         }
-        
-        newFragment.show(getSupportFragmentManager(), "dialog");
     }
 
     public void removeAnyDialogs() {
@@ -467,6 +475,11 @@ public class RemoteUiActivity extends FragmentActivity implements
             ft.remove(prev);
         }
         ft.addToBackStack(null);
+        
+        if (mOpenDialog != null)
+            mOpenDialog.dismiss();
+        
+        mOpenDialog = null;
     }
 
     private void flipTo(int page) {
@@ -962,12 +975,10 @@ public class RemoteUiActivity extends FragmentActivity implements
                 if (TextUtils.isEmpty(serverName))
                 {
                     mActionBarHelper.onTitleChanged(getText(R.string.not_connected));
-                    //mServerTitle.setText(R.string.not_connected);
                 }
                 else
                 {
                     mActionBarHelper.onTitleChanged(getString(R.string.connected_to, serverName));
-                    //mServerTitle.setText(getString(R.string.connected_to, serverName));
                 }
             }
         });
