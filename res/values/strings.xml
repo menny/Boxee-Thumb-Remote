@@ -60,7 +60,7 @@
     <string name="quick_overview">This is the simplest WiFi remote for Boxee you\'ll find!\nWith only your thumb, you can control your Boxee. You don\'t even have to look at the remote app UI!</string>
     <string name="swipe_help_overview">Navigation with this remote is done by swipe gestures: swipe your thumb up, to navigate up in Boxee. Swipe down to navigate down, etc. Tap to select an item in Boxee.\nSimple, ah?</string>
     <string name="other_features_overview">There are other features too:\n * Auto detection of a Boxee server.\n * Physical BACK button can be mapped to Boxee\'s BACK (set in app settings).\n * Android soft-keyboard will send keys to Boxee, e.g., when there is a text-box open in Boxee.\n * Automatically pauses a playing video upon a phone call!\n * And more!</string>
-    <string name="how_to_get_to_help">There are some settings (and a link to this help) from the MENU.</string>
+    <string name="how_to_get_to_help">There are some settings (at the title, see it?). And more is hiding at the MENU.</string>
     <string name="close_button">Close</string>
     
     

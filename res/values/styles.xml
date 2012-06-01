@@ -24,7 +24,7 @@
     </style>
 
     <style name="ActionBarCompat">
-        <item name="android:background">#eee</item>
+        <item name="android:background">@color/actionbar_background_color</item>
     </style>
 
     <style name="ActionBarCompatItemBase">
@@ -32,11 +32,6 @@
         <item name="android:scaleType">center</item>
         <item name="android:background">@drawable/actionbar_compat_item</item>
     </style>
-<!-- 
-    <style name="ActionBarCompatProgressIndicator" parent="android:style/Widget.ProgressBar.Large">
-        <item name="android:indeterminate">true</item>
-    </style>
- -->    
 
     <style name="ActionBarCompatTitleBase">
         <item name="android:id">@id/actionbar_compat_title</item>
@@ -55,8 +50,4 @@
 
     <style name="ActionBarCompatItem" parent="style/ActionBarCompatItemBase">
     </style>
-<!-- 
-    <style name="ActionBarCompatHomeItem" parent="style/ActionBarCompatItemBase">
-    </style>
- -->    
 </resources>

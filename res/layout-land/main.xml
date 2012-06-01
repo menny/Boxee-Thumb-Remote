@@ -1,98 +1,89 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="@drawable/background">
-    <!-- 
-    <LinearLayout android:id="@+id/serverTitleLayout"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:layout_width="fill_parent" android:layout_height="wrap_content"
-   		android:layout_alignParentTop="true">
-        <TextView android:id="@+id/serverTitle"
-            android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:gravity="center"
-			android:maxLines="1"
-	   		android:marqueeRepeatLimit="marquee_forever"
-	   		android:ellipsize="marquee"
-	   		android:textSize="20sp"
-   			android:textColor="@android:color/white"/>
-	</LinearLayout>
-	 -->
-    <LinearLayout android:orientation="horizontal"
-		android:layout_width="fill_parent" android:layout_height="fill_parent"
-		android:weightSum="5"
-   		android:layout_alignParentTop="true"
-		android:layout_alignParentBottom="true"
-		>
-		<LinearLayout android:id="@+id/controls_layout"
-	    	android:layout_weight="3"
-	    	android:layout_height="fill_parent" android:layout_width="0px"
-	    	android:orientation="vertical"
-	    	android:layout_margin="4dp" 
-	    	android:weightSum="1">
-	    	<TextView
-				android:id="@+id/textNowPlayingTitle"
-				android:text=""
-				android:layout_height="wrap_content"
-				android:layout_width="fill_parent" 
-				android:gravity="center"
-				android:maxLines="1"
-		   		android:marqueeRepeatLimit="marquee_forever"
-		   		android:ellipsize="marquee"
-		   		android:textSize="18sp"
-		   		android:textColor="@android:color/white"
-				/>
-	    	<ScrollView
-	    		android:layout_height="0px" android:layout_weight="1"
-				android:layout_width="fill_parent">
-				<TextView
-					android:id="@+id/textMediaDetails"
-					android:text=""
-					android:layout_height="wrap_content"
-					android:layout_width="fill_parent"
-			   		android:textSize="14sp"
-			   		android:textColor="@android:color/white"
-					/>
-	   		</ScrollView>
-		   	<include layout="@layout/media_control_buttons"
-		   		android:layout_gravity="left"
-				android:layout_height="wrap_content" android:layout_width="fill_parent"/>
-		</LinearLayout>
+    android:background="@drawable/background" >
 
-		<ImageView
-			android:id="@+id/thumbnail"
-			android:src="@drawable/no_media_background"
-			android:layout_width="0px"
-			android:layout_height="fill_parent"
-			android:layout_weight="2"
-			android:scaleType="centerInside"
-			android:adjustViewBounds="true"
-			android:layout_margin="4dp"/>
-	</LinearLayout>
-    
-    <ImageView 
-		android:id="@+id/buttonOpenKeyboard"
-		android:layout_height="40dp" 
-		android:layout_width="40dp"
-		android:src="@drawable/button_keyboard_on"
-		android:scaleType="centerInside"  
-		android:layout_margin="3dp"
-		android:layout_alignParentRight="true"
-		android:layout_alignParentBottom="true"/>
-    
-    <EditText android:id="@+id/keyboard_text" android:layout_centerInParent="true" android:layout_height="0px" android:layout_width="0px"
-	    android:textSize="0px"
-	    android:textColor="@android:color/white"
-	    android:inputType="textNoSuggestions"
-        android:visibility="invisible"
-        android:padding="0px" android:layout_margin="0px"/>
-    
-    <include layout="@layout/messages"
-   		android:layout_centerInParent="true"
-		android:layout_height="wrap_content"
-		android:layout_width="fill_parent" />
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentTop="true"
+        android:orientation="horizontal"
+        android:weightSum="5" >
+
+        <LinearLayout
+            android:id="@+id/controls_layout"
+            android:layout_width="0px"
+            android:layout_height="fill_parent"
+            android:layout_margin="4dp"
+            android:layout_weight="3"
+            android:orientation="vertical"
+            android:weightSum="1" >
+
+            <include
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                layout="@layout/media_title" />
+
+            <ScrollView
+                android:layout_width="fill_parent"
+                android:layout_height="0px"
+                android:layout_weight="1" >
+
+                <TextView
+                    android:id="@+id/textMediaDetails"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textColor="@android:color/white"
+                    android:textSize="14sp" />
+            </ScrollView>
+
+            <include
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                layout="@layout/media_control_buttons" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/thumbnail"
+            android:layout_width="0px"
+            android:layout_height="fill_parent"
+            android:layout_margin="4dp"
+            android:layout_weight="2"
+            android:adjustViewBounds="true"
+            android:scaleType="centerInside"
+            android:src="@drawable/no_media_background" />
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/buttonOpenKeyboard"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_margin="3dp"
+        android:scaleType="centerInside"
+        android:src="@drawable/button_keyboard_on" />
+
+    <EditText
+        android:id="@+id/keyboard_text"
+        android:layout_width="0px"
+        android:layout_height="0px"
+        android:layout_centerInParent="true"
+        android:layout_margin="0px"
+        android:inputType="textNoSuggestions"
+        android:padding="0px"
+        android:textColor="@android:color/white"
+        android:textSize="0px"
+        android:visibility="invisible" />
+
+    <include
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        layout="@layout/messages" />
+
 </RelativeLayout>
-    

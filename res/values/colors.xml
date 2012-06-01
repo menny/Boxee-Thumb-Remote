@@ -15,5 +15,6 @@
   -->
 
 <resources>
-    <color name="actionbar_title_color">#224894</color>
+    <color name="actionbar_title_color">#88A</color>
+    <color name="actionbar_background_color">#181818</color>
 </resources>
