@@ -16,6 +16,7 @@
 
 package com.example.android.actionbarcompat;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
@@ -24,13 +25,14 @@ import android.os.Bundle;
  * An extension of {@link ActionBarHelperBase} that provides Android 3.0-specific functionality for
  * Honeycomb tablets. It thus requires API level 11.
  */
+@TargetApi(11)
 public class ActionBarHelperHoneycomb extends ActionBarHelperBase {
 
     protected ActionBarHelperHoneycomb(Activity activity) {
         super(activity);
     }
     
-    @Override
+	@Override
     public void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         mActivity.getActionBar().setDisplayShowHomeEnabled(false);

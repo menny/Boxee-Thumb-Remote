@@ -141,8 +141,7 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 			}
 		});
 		
-		mStatePoller = new ServerStatePoller(mRemote, getApplicationContext());
-		mStatePoller.poll();
+		createStatePoller();
 		
 		IntentFilter callFilter = new IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
         registerReceiver(mCallReceiver, callFilter);
@@ -154,6 +153,11 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
         //and I want my own reference.
         bindService(new Intent(this, ServerRemoteService.class), mKeepAliveConnection, Context.BIND_AUTO_CREATE);
         */
+	}
+	private void createStatePoller() {
+		if (mStatePoller != null) mStatePoller.stop();
+		mStatePoller = new ServerStatePoller(mRemote, getApplicationContext());
+		mStatePoller.poll();
 	}
 /*
     @Override
@@ -189,11 +193,11 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 	
 	@Override
 	public void onDestroy() {
-		mStatePoller.stop();
-		
 		cancelPlayingNotification();
 		unregisterReceiver(mCallReceiver);
 		unregisterReceiver(mNetworkChangedReceiver);
+		
+		mStatePoller.stop();
 		
 		setServiceState(State.DEAD);
 		
@@ -221,6 +225,7 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 	private void onNetworkChanged()
 	{
 		Log.i(TAG, "Got network! Trying to reconnect...");
+		createStatePoller();
 		setServer();
 	}
 	

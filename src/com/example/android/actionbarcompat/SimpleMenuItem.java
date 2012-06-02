@@ -16,6 +16,7 @@
 
 package com.example.android.actionbarcompat;
 
+import android.annotation.TargetApi;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.view.ActionProvider;
@@ -30,6 +31,7 @@ import android.view.View;
  * <code>com.android.internal.view.menu.MenuItemImpl</code> in AOSP for a more complete
  * implementation.
  */
+@TargetApi(14)
 public class SimpleMenuItem implements MenuItem {
 
     private SimpleMenu mMenu;
@@ -129,7 +131,8 @@ public class SimpleMenuItem implements MenuItem {
         return this;
     }
 
-    public ActionProvider getActionProvider() {
+    @TargetApi(14)
+	public ActionProvider getActionProvider() {
         // Noop
         return null;
     }
@@ -149,8 +152,8 @@ public class SimpleMenuItem implements MenuItem {
         return false;
     }
 
-    @Override
-    public MenuItem setOnActionExpandListener(OnActionExpandListener onActionExpandListener) {
+    @TargetApi(14)
+	public MenuItem setOnActionExpandListener(OnActionExpandListener onActionExpandListener) {
         // Noop
         return this;
     }
