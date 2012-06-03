@@ -2,8 +2,8 @@
 <manifest 
 	xmlns:android="http://schemas.android.com/apk/res/android"
     package="net.evendanan.android.thumbremote"
-    android:versionCode="25"
-    android:versionName="20120503"
+    android:versionCode="26"
+    android:versionName="20120603"
     android:installLocation="auto">
     
     <supports-screens
