@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
   	xmlns:android="http://schemas.android.com/apk/res/android"
-	android:layout_width="@dimen/seekbar_dialog_width"
+  	android:minWidth="@dimen/seekbar_dialog_width"
+	android:layout_width="wrap_content"
   	android:layout_height="wrap_content"
   	android:orientation="vertical"
-  	android:padding="8dp">
+  	android:padding="12dp">
   
     <LinearLayout android:orientation="horizontal"
         android:layout_width="fill_parent" android:layout_height="wrap_content"
