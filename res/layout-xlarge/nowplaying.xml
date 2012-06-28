@@ -1,107 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-	xmlns:android="http://schemas.android.com/apk/res/android"
-	android:id="@+id/nowplayinginfo"
-	android:orientation="vertical"
-	android:layout_height="wrap_content"
-	android:focusable="false"
-	android:layout_width="wrap_content">
-		
-	<LinearLayout android:layout_height="wrap_content" 
-	android:layout_width="wrap_content"
-	android:orientation="horizontal"
-	android:weightSum="6">
-		<ImageView 
-			android:id="@+id/buttonPreviousMedia"
-			android:layout_height="wrap_content" 
-			android:layout_width="0px" android:layout_weight="1"
-			android:src="@drawable/icon_osd_previous_on"
-			android:scaleType="centerInside" 
-			android:layout_margin="3dp"
-			/>
-	
-		<ImageView 
-			android:id="@+id/buttonSmallSkipBack"
-			android:layout_height="wrap_content" 
-			android:layout_width="0px" android:layout_weight="1"
-			android:src="@drawable/icon_osd_bwd_on"
-			android:scaleType="centerInside"  
-			android:layout_margin="3dp" 
-			/>
-					
-		<ImageView 
-			android:id="@+id/buttonStop"
-			android:layout_height="wrap_content" 
-			android:layout_width="0px" android:layout_weight="1"
-			android:src="@drawable/icon_osd_stop_on"  
-			android:scaleType="centerInside" 
-			android:layout_margin="3dp"
-			/>
-		
-		<ImageView 
-			android:id="@+id/buttonPlayPause" 
-			android:layout_height="wrap_content" 
-			android:layout_width="0px" android:layout_weight="1"
-			android:src="@drawable/icon_osd_play_on"  
-			android:scaleType="centerInside" 
-			android:layout_margin="3dp"
-			/>
-							
-		<ImageView 
-			android:id="@+id/buttonSmallSkipFwd"
-			android:layout_height="wrap_content" 
-			android:layout_width="0px" android:layout_weight="1"
-			android:src="@drawable/icon_osd_fwd_on"  
-			android:scaleType="centerInside" 
-			android:layout_margin="3dp"
-			/>
-		
-		<ImageView 
-			android:id="@+id/buttonNextMedia"
-			android:layout_height="wrap_content" 
-			android:layout_width="0px" android:layout_weight="1"
-			android:src="@drawable/icon_osd_next_on"  
-			android:scaleType="centerInside" 
-			android:layout_margin="3dp"
-			/>
-	</LinearLayout>
-	
-	<RelativeLayout 
-	android:id="@+id/layoutTimeBar" 
-	android:layout_width="fill_parent" 
-	android:layout_height="wrap_content"
-	android:padding="5dp"
-	android:focusable="true" android:focusableInTouchMode="true"
-	android:clickable="true" 
-	>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/nowplayinginfo"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:focusable="false"
+    android:orientation="vertical" >
 
-	<ProgressBar 
-		android:id="@+id/progressTimeBar"
-		android:layout_height="10dp" 
-		android:layout_width="fill_parent" 
-		android:layout_alignParentTop="true"
-		android:max="100"
-		android:layout_marginBottom="5dp"
-		style="?android:attr/progressBarStyleHorizontal"
-		/>
-	
-	<TextView
-		android:id="@+id/textElapsed"
-		android:text=""
-		android:layout_height="wrap_content"
-		android:layout_width="wrap_content" 
-		android:layout_below="@id/progressTimeBar"
-		android:layout_alignLeft="@id/progressTimeBar"
-		android:gravity="left"
-		/>
-	
-	<TextView
-		android:id="@+id/textDuration"
-		android:layout_height="wrap_content"
-		android:layout_width="wrap_content" 
-		android:layout_below="@id/progressTimeBar"
-		android:layout_alignRight="@id/progressTimeBar"
-		/>
-	</RelativeLayout>
-		
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="6" >
+
+        <ImageView
+            android:id="@+id/buttonPreviousMedia"
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:layout_margin="3dp"
+            android:layout_weight="1"
+            android:scaleType="centerInside"
+            android:src="@drawable/icon_osd_previous_on" />
+
+        <ImageView
+            android:id="@+id/buttonSmallSkipBack"
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:layout_margin="3dp"
+            android:layout_weight="1"
+            android:scaleType="centerInside"
+            android:src="@drawable/icon_osd_bwd_on" />
+
+        <ImageView
+            android:id="@+id/buttonStop"
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:layout_margin="3dp"
+            android:layout_weight="1"
+            android:scaleType="centerInside"
+            android:src="@drawable/icon_osd_stop_on" />
+
+        <ImageView
+            android:id="@+id/buttonPlayPause"
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:layout_margin="3dp"
+            android:layout_weight="1"
+            android:scaleType="centerInside"
+            android:src="@drawable/icon_osd_play_on" />
+
+        <ImageView
+            android:id="@+id/buttonSmallSkipFwd"
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:layout_margin="3dp"
+            android:layout_weight="1"
+            android:scaleType="centerInside"
+            android:src="@drawable/icon_osd_fwd_on" />
+
+        <ImageView
+            android:id="@+id/buttonNextMedia"
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:layout_margin="3dp"
+            android:layout_weight="1"
+            android:scaleType="centerInside"
+            android:src="@drawable/icon_osd_next_on" />
+    </LinearLayout>
+
+    <include layout="@layout/nowplaying_progress" />
+
 </LinearLayout>
