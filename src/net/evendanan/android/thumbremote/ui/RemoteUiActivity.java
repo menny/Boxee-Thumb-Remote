@@ -938,6 +938,7 @@ public class RemoteUiActivity extends FragmentActivity implements
                         showFragmentDialog(FragmentAlertDialogSupport.DIALOG_NO_SERVER);
                         break;
                     case IDLE:
+                        break;
                 }
 
                 String serverName = mBoundService != null ? mBoundService
