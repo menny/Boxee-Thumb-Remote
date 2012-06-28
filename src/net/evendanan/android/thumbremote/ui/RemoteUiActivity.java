@@ -71,19 +71,7 @@ public class RemoteUiActivity extends FragmentActivity implements
 		for (char c : punctuation.toCharArray())
 			msPunctuation.add(c);
 	}
-	/*
-	 * private static final int MESSAGE_MEDIA_PLAYING_CHANGED = 97565; private
-	 * static final int MESSAGE_MEDIA_PLAYING_PROGRESS_CHANGED =
-	 * MESSAGE_MEDIA_PLAYING_CHANGED + 1; private static final int
-	 * MESSAGE_MEDIA_METADATA_CHANGED = MESSAGE_MEDIA_PLAYING_PROGRESS_CHANGED +
-	 * 1;
-	 */
-	// Menu items
-	/*
-	 * private static final int MENU_SETTINGS = Menu.FIRST; private static final
-	 * int MENU_HELP = MENU_SETTINGS+1; private static final int MENU_RESCAN =
-	 * MENU_HELP+1; private static final int MENU_EXIT = MENU_RESCAN+1;
-	 */
+
 	// ViewFlipper
 	private static final int PAGE_NOTPLAYING = 0;
 	private static final int PAGE_NOWPLAYING = 1;
@@ -232,8 +220,8 @@ public class RemoteUiActivity extends FragmentActivity implements
 
 		// Setup flipper
 		mFlipper = (ViewFlipper) findViewById(R.id.now_playing_flipper);
-		mFlipper.setInAnimation(this, android.R.anim.slide_in_left);
-		mFlipper.setOutAnimation(this, android.R.anim.slide_out_right);
+		mFlipper.setInAnimation(this, R.anim.flip_in);
+		mFlipper.setOutAnimation(this, R.anim.flip_out);
 
 		// Find other views
 		// mServerTitle = (TextView) findViewById(R.id.serverTitle);
