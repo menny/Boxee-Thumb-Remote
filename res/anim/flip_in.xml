@@ -37,6 +37,5 @@
     <translate
         android:fromYDelta="50%"
         android:toYDelta="0"
-        android:startOffset="2000"
         android:duration="@android:integer/config_shortAnimTime"/>
 </set>
