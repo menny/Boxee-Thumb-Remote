@@ -2,7 +2,7 @@
 <!--
 /*
 **
-** Copyright 2012, AnySoftKeyboard
+** Copyright 2012, Menny Even Danan
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -18,24 +18,26 @@
 */
 -->
 
-<set
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:interpolator="@android:anim/decelerate_interpolator"
->
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:interpolator="@android:anim/decelerate_interpolator" >
+
     <alpha
+        android:duration="@android:integer/config_shortAnimTime"
         android:fromAlpha="1.0"
-        android:toAlpha="0.5"
-        android:duration="@android:integer/config_shortAnimTime" />
-     <scale
-        android:interpolator="@android:anim/linear_interpolator"
-        android:fromXScale="1.0"
-        android:toXScale="1.0"
-        android:fromYScale="1.0"
-        android:toYScale="0.0"
+        android:toAlpha="0.5" />
+
+    <scale
+        android:duration="@android:integer/config_shortAnimTime"
         android:fillAfter="false"
-        android:duration="@android:integer/config_shortAnimTime" />
+        android:fromXScale="1.0"
+        android:fromYScale="1.0"
+        android:interpolator="@android:anim/linear_interpolator"
+        android:toXScale="1.0"
+        android:toYScale="0.0" />
+
     <translate
+        android:duration="@android:integer/config_shortAnimTime"
         android:fromYDelta="0"
-        android:toYDelta="50%"
-        android:duration="@android:integer/config_shortAnimTime"/>
+        android:toYDelta="50%" />
+
 </set>
