@@ -3,7 +3,7 @@
 	xmlns:android="http://schemas.android.com/apk/res/android"
     package="net.evendanan.android.thumbremote"
     android:versionCode="28"
-    android:versionName="20120804"
+    android:versionName="20120704"
     android:installLocation="auto">
     
     <supports-screens
