@@ -324,7 +324,7 @@ public class BoxeeConnector implements ServerConnector  {
 	}
 
 	@Override
-	public Bitmap getMediaPoster() {
+    public Bitmap getMediaPoster() {
 		return mThumbnail;
 	}
 
