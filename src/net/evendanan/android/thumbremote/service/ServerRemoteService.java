@@ -113,6 +113,7 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 
             @Override
             public void onMediaPlayingStateChanged(ServerState serverState) {
+                Log.d(TAG, "Media playing state has changed to "+(serverState.isMediaActive()? "active":"inactive"));
                 if (serverState.isMediaActive())
                 {
                     showPlayingNotification(serverState.getMediaTitle(),
@@ -203,6 +204,7 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
 
     @Override
     public void onDestroy() {
+        Log.i(TAG, "Thumb Remote Service is now at destroy...");
         cancelPlayingNotification();
         unregisterReceiver(mCallReceiver);
         unregisterReceiver(mNetworkChangedReceiver);
@@ -264,32 +266,39 @@ public class ServerRemoteService extends Service implements BoxeeDiscovererThrea
             }
         }.execute();
     }
+    
+    private NotificationCompat2.Builder getSimple(String title, boolean isPlaying, PendingIntent pendingIntent) {
+        return new NotificationCompat2.Builder(getApplicationContext())
+            .setSmallIcon(isPlaying ? R.drawable.notification_playing
+                    : R.drawable.notification_paused)
+            .setTicker(getString(isPlaying ? R.string.server_is_playing
+                    : R.string.server_is_paused, title))
+            .setContentTitle(getText(R.string.app_name))
+            .setContentText(getString(isPlaying ? R.string.server_is_playing
+                    : R.string.server_is_paused, title))
+            .setContentIntent(pendingIntent)
+            .setPriority(NotificationCompat2.PRIORITY_MIN)
+            .setOngoing(true);
+      }
 
     private void showPlayingNotification(String title, Bitmap poster, boolean isPlaying)
     {
-        Intent notificationIntent = new Intent(this, RemoteUiActivity.class);
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+        Intent notificationIntent = new Intent(getApplicationContext(), RemoteUiActivity.class);
+        PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, notificationIntent, 0);
 
-        NotificationCompat2.Builder builder = new Builder(getApplicationContext());
-        if (poster != null)
-            builder.setLargeIcon(poster);
-        else
-            builder.setSmallIcon(isPlaying ? R.drawable.notification_playing
-                    : R.drawable.notification_paused);
+        Builder builder = getSimple(title, isPlaying, contentIntent);
 
-        builder
-                .setTicker(
-                        getString(isPlaying ? R.string.server_is_playing
-                                : R.string.server_is_paused, title))
-                .setContentTitle(getText(R.string.app_name))
-                .setContentText(
-                        getString(isPlaying ? R.string.server_is_playing
-                                : R.string.server_is_paused, title))
-                .setContentIntent(contentIntent);
+        Notification notification;
+        if (poster != null) {
+            notification = new NotificationCompat2.BigPictureStyle(builder)
+                .bigPicture(poster)
+                .build();
+        } else {
+            notification = builder.build();
+        }
 
-        Notification notification = builder.build();
-        notification.flags |= Notification.FLAG_ONGOING_EVENT;
-        notification.flags |= Notification.FLAG_NO_CLEAR;
+        //notification.flags |= Notification.FLAG_ONGOING_EVENT;
+        //notification.flags |= Notification.FLAG_NO_CLEAR;
         // notifying
         mNotificationManager.notify(NOTIFICATION_PLAYING_ID, notification);
     }
