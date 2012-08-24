@@ -1,4 +1,6 @@
 /* The following code was written by Menny Even Danan
+/* And modified by Roger Lemmon on 8/23/12 to put server discovery
+ * back? into the settings screen for people with more than one server
  * and is released under the APACHE 2.0 license
  *
  * http://www.apache.org/licenses/LICENSE-2.0
@@ -14,8 +16,6 @@ import net.evendanan.android.thumbremote.RemoteApplication;
 import net.evendanan.android.thumbremote.ServerAddress;
 import net.evendanan.android.thumbremote.boxee.BoxeeConnector;
 import net.evendanan.android.thumbremote.boxee.BoxeeDiscovererThread;
-
-
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -41,11 +41,13 @@ import android.widget.Toast;
 /**
  * Handles preference storage for BoxeeRemote.
  */
+
 public class SettingsActivity extends PreferenceActivity implements
 		BoxeeDiscovererThread.Receiver,
 		OnPreferenceClickListener, 
 		OnSharedPreferenceChangeListener {
-	
+	private BoxeeDiscovererThread mServerDiscoverer;
+    
 	private final Preference.OnPreferenceChangeListener numberCheckListener = new Preference.OnPreferenceChangeListener() {
 
 	    @Override
@@ -93,6 +95,19 @@ public class SettingsActivity extends PreferenceActivity implements
 		mServersScreen.addPreference(mCustomServerPreference);
 
 		getPreferenceScreen().findPreference(getText(R.string.settings_key_network_timeout_key)).setOnPreferenceChangeListener(numberCheckListener);
+		
+		new AsyncTask<Void, Void, Void>()
+        {
+            @Override
+            protected Void doInBackground(Void... params) {
+                if (mServerDiscoverer != null)
+                    mServerDiscoverer.setReceiver(null);
+                mServerDiscoverer = new BoxeeDiscovererThread(SettingsActivity.this,
+                		SettingsActivity.this);
+                mServerDiscoverer.start();
+				return null;
+            }
+        }.execute(); 
 	}
 
 	@Override
