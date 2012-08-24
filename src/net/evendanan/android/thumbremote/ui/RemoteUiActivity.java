@@ -6,13 +6,17 @@
 
 package net.evendanan.android.thumbremote.ui;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 
 import net.evendanan.android.thumbremote.R;
 import net.evendanan.android.thumbremote.RemoteApplication;
+import net.evendanan.android.thumbremote.ServerAddress;
 import net.evendanan.android.thumbremote.ServerState;
 import net.evendanan.android.thumbremote.ShakeListener.OnShakeListener;
 import net.evendanan.android.thumbremote.UiView;
+import net.evendanan.android.thumbremote.boxee.BoxeeDiscovererThread;
 import net.evendanan.android.thumbremote.network.HttpRequest;
 import net.evendanan.android.thumbremote.service.ServerRemoteService;
 import net.evendanan.android.thumbremote.service.State;
@@ -26,6 +30,7 @@ import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.graphics.Bitmap;
 import android.graphics.Point;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -42,7 +47,9 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.MotionEvent;
+import android.view.SubMenu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
@@ -61,8 +68,9 @@ import com.example.android.actionbarcompat.ActionBarHelperBase;
 
 public class RemoteUiActivity extends FragmentActivity implements
         OnSharedPreferenceChangeListener, OnClickListener, OnShakeListener,
-        UiView, OnSeekBarChangeListener {
+        UiView, OnSeekBarChangeListener, BoxeeDiscovererThread.Receiver {
 
+	private BoxeeDiscovererThread mServerDiscoverer;
     public final static String TAG = RemoteUiActivity.class.toString();
 
     //
@@ -94,7 +102,9 @@ public class RemoteUiActivity extends FragmentActivity implements
     TextView mMediaDetails = null;
     InputMethodManager mImeManager;
     TextView mKeyboardText;
-
+    SubMenu mServersGroup;
+    private HashMap<String, ServerAddress> mServers;
+    
     private double mSeekToPercentRequest = -1;
     private int mTotalDuration = 0;
     private int mCurrentTime = 0;
@@ -152,6 +162,7 @@ public class RemoteUiActivity extends FragmentActivity implements
             mBoundService = null;
         }
     };
+	private MenuItem mServersMenu;
 
     void doBindService() {
         startService(new Intent(getApplicationContext(),
@@ -184,7 +195,7 @@ public class RemoteUiActivity extends FragmentActivity implements
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
         super.onCreate(savedInstanceState);
         mActionBarHelper.onCreate(savedInstanceState);
-
+        
         mHandler = new Handler();
         mInAnimation = AnimationUtils.loadAnimation(getApplicationContext(),
                 R.anim.boxee_dialog_in);
@@ -279,7 +290,10 @@ public class RemoteUiActivity extends FragmentActivity implements
         setButtonAction(R.id.buttonOpenKeyboard, 0);
         // mShakeDetector = new ShakeListener(getApplicationContext());
         // mShakeDetector.setOnShakeListener(this);
-
+        mServersGroup = (SubMenu)findViewById(R.id.servers_group);
+        mServers = new HashMap<String, ServerAddress>();
+        
+       
         startHelpOnFirstRun();
     }
 
@@ -360,6 +374,8 @@ public class RemoteUiActivity extends FragmentActivity implements
         boolean retValue = false;
         retValue |= mActionBarHelper.onCreateOptionsMenu(menu);
         retValue |= super.onCreateOptionsMenu(menu);
+        mServersMenu = menu.getItem(0);
+        scanForServersMenu();
         return retValue;
     }
 
@@ -974,4 +990,51 @@ public class RemoteUiActivity extends FragmentActivity implements
         if (mBoundService != null)
             mBoundService.remoteRescanForServers();
     }
+
+    public void scanForServersMenu(){
+    	new AsyncTask<Void, Void, Void>()
+        {
+            @Override
+            protected Void doInBackground(Void... params) {
+                if (mServerDiscoverer != null)
+                    mServerDiscoverer.setReceiver(null);
+                mServerDiscoverer = new BoxeeDiscovererThread(RemoteUiActivity.this,
+                		RemoteUiActivity.this);
+                mServerDiscoverer.start();
+				return null;
+            }
+        }.execute(); 
+    }
+    
+	@Override
+	public void addAnnouncedServers(ArrayList<ServerAddress> servers) {
+		mServersMenu.setOnMenuItemClickListener(new OnMenuItemClickListener() {
+			@Override
+			public boolean onMenuItemClick(MenuItem item) {
+				if(item.getSubMenu().size() < 1){
+					scanForServersMenu();
+				}
+				return false;
+			}
+		});
+		
+		for (ServerAddress server : servers) {
+			final String name = server.name() != null ? server.name() : server.address().getHostName();
+			final String serverNameKey = server.type()+"@"+name;
+			mServersMenu.getSubMenu().add(serverNameKey);
+			mServersMenu.getSubMenu().getItem(mServersMenu.getSubMenu().size() - 1).setOnMenuItemClickListener(new OnMenuItemClickListener() {
+				@Override
+				public boolean onMenuItemClick(MenuItem item) {
+					ServerAddress server = mServers.get(item.getTitle());
+					if (server == null) {
+						return true;
+					}
+					RemoteApplication.getConfig().putServer(server, false);
+					rescanForServers();
+					return false;
+				}
+			});
+			mServers.put(serverNameKey, server);
+		}
+	}
 }

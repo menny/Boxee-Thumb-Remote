@@ -236,7 +236,8 @@ public class SettingsActivity extends PreferenceActivity implements
 		mServersScreen.addPreference(mCustomServerPreference);
 		//and now the one I discovered
 		for (ServerAddress server : servers) {
-			final String serverNameKey = server.name()+"@"+server.address().getHostName();
+			final String name = server.name() != null ? server.name() : server.address().getHostName();
+			final String serverNameKey = server.type()+"@"+name;
 			Preference preference = new Preference(this);
 			preference.setOrder(mServers.size());
 			preference.setTitle(serverNameKey);
