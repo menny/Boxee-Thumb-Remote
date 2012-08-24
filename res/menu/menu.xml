@@ -2,6 +2,19 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <item
+        android:id="@+id/menu_servers"
+        android:icon="@drawable/ic_action_servers"
+        android:orderInCategory="99"
+        android:showAsAction="ifRoom"
+        android:title="@string/servers">
+        <menu>
+            <group android:checkableBehavior="single" android:visible="true" android:enabled="true" android:menuCategory="container" android:id="@+id/servers_group">
+                
+            </group>
+        </menu>
+    </item>
+    
+    <item
         android:id="@+id/menu_settings"
         android:icon="@android:drawable/ic_menu_preferences"
         android:orderInCategory="100"
@@ -28,4 +41,5 @@
         android:orderInCategory="103"
         android:showAsAction="never"
         android:title="@string/exit_app"/>
+    
 </menu>
